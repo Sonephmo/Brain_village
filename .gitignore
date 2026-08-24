@@ -1,0 +1,13 @@
+# Claude Code 워크트리 (홈 디렉터리 체크아웃 포함, 추적 제외)
+.claude/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Node
+node_modules/
+dist/
+.env
+.env.local
