@@ -7,7 +7,7 @@ import { GameRunner, type Snapshot } from '../game/engine'
 import { COMMANDS, PRACTICE, PRACTICE_NARRATION, ROUND_SIZE, flagsForCommand } from '../game/commands'
 import type { CommandLog } from '../game/types'
 import type { FaceName } from '../assets'
-import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, beep, playCountdown, playNarration, stopNarration } from '../game/audio'
+import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, beep, playCountdown, playNarration, playSfx, stopNarration } from '../game/audio'
 import { playBgm, stopBgm } from '../game/bgm'
 import type { AvatarPick } from './TutorialScreen'
 
@@ -61,6 +61,11 @@ export function GameScreen({
       window.clearTimeout(t)
       runner.stop()
     }
+  }, [stage])
+
+  // 게임 종료: "끝!" 이미지와 함께 마무리 휘슬
+  useEffect(() => {
+    if (stage === 'end') playSfx('whistleLong')
   }, [stage])
 
   // 카운트다운 3-2-1-시작 — 음원을 한 번 재생하고 이미지를 소리 지점에 맞춘다.

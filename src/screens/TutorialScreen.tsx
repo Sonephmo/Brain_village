@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { FX, IMG, TUT_CHAR, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { poseEngine } from '../game/pose'
-import { beep, goodChime, playNarration, stopNarration, type NarrationKey } from '../game/audio'
+import { playNarration, playSfx, stopNarration, type NarrationKey } from '../game/audio'
 import { playBgm } from '../game/bgm'
 
 import type { Avatar as AvatarId } from '../assets'
@@ -81,7 +81,7 @@ export function TutorialScreen({
         const p2ok = kb || check(2)
         setOk({ p1: p1ok, p2: p2ok })
         if (p1ok && p2ok) {
-          goodChime()
+          playSfx('whistleShort')
           holdRef.current = { p1: 0, p2: 0 }
           setOk({ p1: false, p2: false })
           setStep('calibration')
@@ -102,7 +102,7 @@ export function TutorialScreen({
           setCalibProgress(Math.min(1, t))
           if (t >= 1) {
             poseEngine.finishCalibration()
-            goodChime()
+            playSfx('whistleShort')
             calibStartRef.current = null
             setCalibProgress(0)
             setStep('gender')
@@ -125,7 +125,7 @@ export function TutorialScreen({
             g.since = now
           } else if (hand && now - g.since > 1200) {
             const pick: AvatarPick = hand === 'left' ? 'grandma' : 'grandfa'
-            beep(880, 120)
+            playSfx('whistleShort')
             setPicks(prev => ({ ...prev, [key]: pick }))
           }
         }
@@ -143,7 +143,7 @@ export function TutorialScreen({
   }, [picks, onDone])
 
   const pickByClick = (pid: 'p1' | 'p2', pick: AvatarPick) => {
-    beep(880, 120)
+    playSfx('whistleShort')
     setPicks(prev => (prev[pid] ? prev : { ...prev, [pid]: pick }))
   }
 

@@ -4,7 +4,7 @@
 
 import type { Command, CommandLog, ErrorType, ExpectedAction, PlayerId, PlayerJudge } from './types'
 import { poseEngine } from './pose'
-import { speakCommand, stopSpeech, goodChime, greatChime, neutralTick, transitionChime } from './audio'
+import { speakCommand, stopSpeech, neutralTick, playSfx, transitionChime } from './audio'
 
 export type Phase = 'idle' | 'speak' | 'window' | 'feedback' | 'roleswap' | 'done'
 
@@ -333,9 +333,9 @@ export class GameRunner {
       })
     }
 
-    // 실패 연출 배제(스펙 §6): 0명 정답이어도 부정적 사운드 대신 중립 톤
-    if (nCorrect === 2) greatChime()
-    else if (nCorrect === 1) goodChime()
+    // GOOD / GREAT 이펙트가 뜨는 순간 진행자 휘슬을 분다.
+    // 실패 연출 배제(스펙 §6): 0명 정답이면 휘슬 없이 중립 톤만 (부정적 소리 아님)
+    if (nCorrect > 0) playSfx('whistleShort')
     else neutralTick()
 
     this.phase = 'feedback'

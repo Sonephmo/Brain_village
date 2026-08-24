@@ -82,7 +82,7 @@ export function initAudio(): Promise<void> {
     } catch {
       /* 카운트다운 음원 실패 시 비프음으로 대체된다 */
     }
-    await loadNarrations(ac)
+    await Promise.all([loadNarrations(ac), loadSfx(ac)])
   })()
   return loadPromise
 }
@@ -238,6 +238,54 @@ export function stopSpeech() {
   stopClips()
 }
 
+// ─── 효과음 (휘슬) ───
+//
+// 운동회 진행자 휘슬. 기존 합성 비프음을 대체한다.
+// 마무리휘슬은 앞 481ms가 무음이라 그대로 재생하면 "끝!" 이미지보다 늦게 들린다 → 잘라낸다.
+// 원본 음량이 낮아(0.199 / 0.451) 음성(0.85)에 묻히므로 정규화하되, 휘슬은 고음이 조밀해
+// 같은 피크에서도 훨씬 크게 들리므로 음성보다 낮은 목표치를 쓴다.
+
+export type SfxKey = 'whistleShort' | 'whistleLong'
+
+const SFX_FILE: Record<SfxKey, string> = {
+  whistleShort: '짧은휘슬.m4a',
+  whistleLong: '마무리휘슬.m4a',
+}
+/** 휘슬별 목표 피크. 짧은휘슬은 구령마다 울려서 더 낮게 잡았다. */
+const SFX_TARGET: Record<SfxKey, number> = {
+  whistleShort: 0.55,
+  whistleLong: 0.75,
+}
+
+const sfx = new Map<SfxKey, NarrPlan>()
+
+async function loadSfx(ac: AudioContext) {
+  await Promise.all(
+    (Object.keys(SFX_FILE) as SfxKey[]).map(async key => {
+      try {
+        const res = await fetch(`${import.meta.env.BASE_URL}assets/Sound/${encodeURIComponent(SFX_FILE[key])}`)
+        if (!res.ok) return
+        const buf = await ac.decodeAudioData(await res.arrayBuffer())
+        sfx.set(key, analyzeNarration(buf, SFX_TARGET[key]))
+      } catch {
+        /* 효과음 실패는 무시한다 (게임 진행에 지장 없음) */
+      }
+    }),
+  )
+}
+
+export function playSfx(key: SfxKey) {
+  const plan = sfx.get(key)
+  if (!plan) return
+  const ac = audioCtx()
+  const src = ac.createBufferSource()
+  src.buffer = plan.buf
+  const g = ac.createGain()
+  g.gain.value = plan.gain
+  src.connect(g).connect(ac.destination)
+  src.start(ac.currentTime, plan.start, plan.dur)
+}
+
 // ─── 나레이션 (튜토리얼·연습 안내) ───
 //
 // 단어 클립과 달리 **문장**이므로 내부 쉼을 압축하면 억양이 망가진다.
@@ -274,7 +322,7 @@ interface NarrPlan {
 const narrations = new Map<NarrationKey, NarrPlan>()
 let narrSource: AudioBufferSourceNode | null = null
 
-function analyzeNarration(buf: AudioBuffer): NarrPlan {
+function analyzeNarration(buf: AudioBuffer, targetPeak = TARGET_PEAK): NarrPlan {
   const d = buf.getChannelData(0)
   const sr = buf.sampleRate
   let s = 0
@@ -293,7 +341,7 @@ function analyzeNarration(buf: AudioBuffer): NarrPlan {
     buf,
     start,
     dur: end - start,
-    gain: peak > 0.01 ? Math.min(4, Math.max(0.5, TARGET_PEAK / peak)) : 1,
+    gain: peak > 0.01 ? Math.min(6, Math.max(0.5, targetPeak / peak)) : 1,
   }
 }
 
