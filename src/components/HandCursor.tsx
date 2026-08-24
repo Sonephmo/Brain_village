@@ -101,23 +101,75 @@ export function HandCursor() {
  * 스테이지 좌표(0~1) → 실제 화면 좌표로 변환해 elementFromPoint로 찾는다.
  * 기존 onClick 핸들러가 그대로 동작하므로 화면별 추가 배선이 필요 없다.
  */
+/** 커서 좌표(0~1)를 실제 화면 좌표로. 스테이지가 0이면 null */
+function toClient(nx: number, ny: number): { x: number; y: number } | null {
+  const stage = document.querySelector('.stage')
+  if (!stage) return null
+  const r = stage.getBoundingClientRect()
+  // 창이 최소화되거나 레이아웃이 잠시 멈추면 rect가 0이 되어 좌표가 NaN이 된다.
+  if (r.width <= 0 || r.height <= 0) return null
+  const x = r.left + r.width * nx
+  const y = r.top + r.height * ny
+  return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null
+}
+
+function mouseEvt(type: string, x: number, y: number, related: Element | null) {
+  return new MouseEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    clientX: x,
+    clientY: y,
+    relatedTarget: related,
+  })
+}
+
 export function useHandControl(enabled: boolean, holdMs = 1000) {
   useEffect(() => {
     if (!enabled) return
+
     void handEngine.start(holdMs, (nx, ny) => {
-      const stage = document.querySelector('.stage')
-      if (!stage) return
-      const r = stage.getBoundingClientRect()
-      // 창이 최소화되거나 레이아웃이 잠시 멈추면 rect가 0이 되어 좌표가 NaN이 된다.
-      // 그대로 넘기면 elementFromPoint가 예외를 던지므로 유효할 때만 클릭한다.
-      if (r.width <= 0 || r.height <= 0) return
-      const cx = r.left + r.width * nx
-      const cy = r.top + r.height * ny
-      if (!Number.isFinite(cx) || !Number.isFinite(cy)) return
-      const el = document.elementFromPoint(cx, cy)
+      const p = toClient(nx, ny)
+      if (!p) return
+      const el = document.elementFromPoint(p.x, p.y)
       if (el instanceof HTMLElement) el.click()
     })
-    return () => handEngine.stop()
+
+    // 커서가 지나가는 곳에 마우스 이동 이벤트를 만들어 준다.
+    //
+    // 손 커서는 dwell 때 click()만 보내므로, 그대로 두면 호버로 동작하는 UI가
+    // 전혀 반응하지 않는다(마을의 스포트라이트·설명 패널이 그랬다).
+    // React는 mouseover/mouseout으로 onMouseEnter/onMouseLeave를 합성하므로
+    // 커서 아래 요소가 바뀔 때마다 그 둘을 보내면 마우스와 똑같이 동작한다.
+    // (CSS :hover는 실제 포인터만 반응하므로, 호버 연출은 상태 기반이어야 한다)
+    let hovered: Element | null = null
+    let raf = 0
+    const track = () => {
+      raf = requestAnimationFrame(track)
+      const s = handEngine.state()
+      if (!s.tracking) {
+        if (hovered) {
+          hovered.dispatchEvent(mouseEvt('mouseout', 0, 0, null))
+          hovered = null
+        }
+        return
+      }
+      const p = toClient(s.x, s.y)
+      if (!p) return
+      const el = document.elementFromPoint(p.x, p.y)
+      // 요소가 바뀔 때만 보낸다 (mousemove를 쓰는 곳이 없어 매 프레임 보낼 이유가 없다)
+      if (el !== hovered) {
+        if (hovered) hovered.dispatchEvent(mouseEvt('mouseout', p.x, p.y, el))
+        if (el) el.dispatchEvent(mouseEvt('mouseover', p.x, p.y, hovered))
+        hovered = el
+      }
+    }
+    raf = requestAnimationFrame(track)
+
+    return () => {
+      cancelAnimationFrame(raf)
+      if (hovered) hovered.dispatchEvent(mouseEvt('mouseout', 0, 0, null))
+      handEngine.stop()
+    }
   }, [enabled, holdMs])
 }
 

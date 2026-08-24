@@ -81,13 +81,12 @@ button.pixel-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #b9962
 button.pixel-btn.secondary { background: #e8e8e8; box-shadow: 0 6px 0 #9a9a9a; }
 
 .hotspot { position: absolute; }
+/* 켜고 끄는 것은 React 상태가 한다(손 커서의 합성 이벤트로는 CSS :hover가 안 되므로).
+   여기서는 전환 효과만 담당한다. */
 .hotspot .glow {
-  opacity: 0;
-  transform: scale(0.9);
   transition: opacity 0.28s ease-out, transform 0.28s ease-out;
   pointer-events: none;
 }
-.hotspot:hover .glow { opacity: 1; transform: scale(1); }
 
 /* 호버한 곳의 설명 패널 — 부드럽게 떠오른다 */
 .village-panel {

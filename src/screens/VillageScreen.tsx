@@ -65,7 +65,10 @@ export function VillageScreen({ onEnterGame }: { onEnterGame: () => void }) {
             else showToast('준비중입니다!')
           }}
         >
-          {/* 호버 강조 링 (피그마 Place_* 노드의 #37ff83 글로우) */}
+          {/* 호버 강조 링 (피그마 Place_* 노드의 #37ff83 글로우).
+              CSS :hover가 아니라 **상태**로 켠다 — 손 커서가 보내는 합성 이벤트로는
+              CSS :hover가 발동하지 않기 때문이다. 실제 마우스도 onMouseEnter로
+              같은 상태를 세팅하므로 양쪽 모두 동작한다. */}
           <div
             className="glow"
             style={{
@@ -73,6 +76,8 @@ export function VillageScreen({ onEnterGame }: { onEnterGame: () => void }) {
               inset: -12,
               borderRadius: '50%',
               boxShadow: '0 0 60px 20px rgba(55,255,131,0.45)',
+              opacity: hover?.key === p.key ? 1 : 0,
+              transform: hover?.key === p.key ? 'scale(1)' : 'scale(0.9)',
             }}
           />
         </div>
