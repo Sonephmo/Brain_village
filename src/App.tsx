@@ -29,7 +29,13 @@ export default function App() {
   //  - 2인 판정이 필요한 화면(튜토리얼·게임) → game: 절반씩 2회 추론.
   //    커서는 1P 오른손 손목을 재사용하므로 추가 추론이 없다.
   usePoseMode(screen === 'tutorial' || screen === 'game' ? 'game' : 'menu')
-  useHandControl(true, 1000)
+
+  // 손 제스처(주먹 클릭)는 **본게임 화면에서만 끈다.**
+  //  - 참가자가 구령에 맞춰 손을 드는 중이라 주먹이 섞여 들어와 오클릭이 날 수 있다
+  //    (특히 진행요원용 '중단하기' 버튼)
+  //  - 제스처 모델이 GPU를 나눠 쓰지 않게 되어 판정 fps가 8 → 12로 돌아온다
+  // 결과(리포트) 화면에서 다시 켜져 손으로 다시하기/처음으로를 고를 수 있다.
+  useHandControl(screen !== 'game', 1000)
 
   return (
     <div className="stage-wrap">

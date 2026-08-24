@@ -165,12 +165,16 @@ class HandEngine {
     }
   }
 
-  /** 위치는 poseEngine, 주먹은 이 엔진 — 합쳐서 커서 상태로 돌려준다 */
+  /**
+   * 위치는 poseEngine, 주먹은 이 엔진 — 합쳐서 커서 상태로 돌려준다.
+   * 엔진이 꺼져 있으면(본게임 등) tracking=false라 커서가 그려지지 않는다.
+   * 누를 수 없는 커서가 떠다니면 혼란스럽고 게임 중 시선을 뺏기 때문이다.
+   */
   state(): HandState {
     const now = performance.now()
     const p = poseEngine.pointer()
     return {
-      tracking: p.visible,
+      tracking: this.running && p.visible,
       x: p.x,
       y: p.y,
       fist: this.fist,
