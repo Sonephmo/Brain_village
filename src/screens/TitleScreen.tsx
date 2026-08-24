@@ -1,39 +1,94 @@
+import { useEffect, useState } from 'react'
 import { FX, IMG, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { beep } from '../game/audio'
 
-// 피그마 1_MainTitle 프레임 그대로. 좌표·크기는 디자인 CSS 값을 사용한다.
-//   Image_Main          1920x2075  (0, -23)   ← 프레임보다 커서 아래가 잘린다
+// 피그마 1_MainTitle 프레임. 좌표·크기는 디자인 CSS 값 그대로.
+//   Image_Main          1920x2075  (0, -23)   ← 프레임보다 커서 위로 패닝된다
 //   Title_BrainVillage  1292x727   (314, -23)
 //   Button_Start        663x228    (629, 752)
+//
+// 인트로는 디자인의 6초 타임라인(1회 재생)을 그대로 재현한다.
+//   Image_Main   y 0 → -792px        0 ~ 5.0s
+//   Title 로고   opacity 0 → 1    3.97 ~ 5.0s
+//   Button_Start opacity 0 → 1    4.94 ~ 5.69s
+// 부스에서 참가자가 바뀔 때마다 6초를 기다리지 않도록, 화면을 누르면 인트로를 끝낸다.
+const INTRO_MS = 6000
 const BTN = frameSize(FX.btnStart, { w: 663 })
 
 export function TitleScreen({ onStart }: { onStart: () => void }) {
+  const [introDone, setIntroDone] = useState(false)
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setIntroDone(true), INTRO_MS)
+    return () => window.clearTimeout(t)
+  }, [])
+
+  const start = () => {
+    beep(880, 100)
+    onStart()
+  }
+
   return (
-    <div className="fill fade-in" style={{ background: '#FFFFFF' }}>
+    <div
+      className="fill"
+      style={{ background: '#FFFFFF', cursor: introDone ? 'default' : 'pointer' }}
+      onClick={() => {
+        // 인트로 중 클릭은 스킵으로만 쓰고 게임을 시작하지 않는다(오터치 방지)
+        if (!introDone) setIntroDone(true)
+      }}
+    >
       <img
         src={IMG.titleMain}
         alt=""
-        style={{ position: 'absolute', left: 0, top: -23, width: 1920, height: 2075, objectFit: 'cover' }}
+        className={introDone ? undefined : 'intro-pan'}
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: -23,
+          width: 1920,
+          height: 2075,
+          objectFit: 'cover',
+          transform: introDone ? 'translateY(-792px)' : undefined,
+        }}
       />
       <img
         src={IMG.titleLogo}
         alt="브레인빌리지"
-        style={{ position: 'absolute', left: 314, top: -23, width: 1292, height: 727, objectFit: 'cover' }}
+        className={introDone ? undefined : 'intro-logo'}
+        style={{
+          position: 'absolute',
+          left: 314,
+          top: -23,
+          width: 1292,
+          height: 727,
+          objectFit: 'cover',
+          opacity: introDone ? 1 : undefined,
+        }}
       />
       <div
         role="button"
         aria-label="시작하기"
+        className={introDone ? undefined : 'intro-btn'}
         style={{
           position: 'absolute',
           left: 629,
           top: 752 + (228 - BTN.height) / 2,
           ...BTN,
+          opacity: introDone ? 1 : undefined,
+          // 인트로 중에는 버튼이 보이지 않으므로 클릭도 받지 않는다
+          pointerEvents: introDone ? 'auto' : 'none',
           cursor: 'pointer',
         }}
-        onClick={() => {
-          beep(880, 100)
-          onStart()
+        onClick={e => {
+          e.stopPropagation()
+          // pointer-events:none는 실제 포인터만 막는다. 키보드 Enter나 보조기술이 보내는
+          // 클릭으로 인트로 중에 게임이 시작되지 않도록 핸들러에서도 막는다.
+          if (!introDone) {
+            setIntroDone(true)
+            return
+          }
+          start()
         }}
       >
         <Sprite frame={FX.btnStart} style={{ inset: 0 }} />

@@ -112,6 +112,36 @@ button.pixel-btn.secondary { background: #e8e8e8; box-shadow: 0 6px 0 #9a9a9a; }
   pointer-events: none;
 }
 
+/* 타이틀 인트로 — 피그마 1_MainTitle 타임라인(6초, 1회) 그대로.
+   키프레임 안의 animation-timing-function은 그 키프레임에서 시작하는 구간에 적용된다. */
+@keyframes title-pan {
+  0% { transform: translateY(0); animation-timing-function: cubic-bezier(0.302, -0.034, 0.375, 1.039); }
+  83.33% { transform: translateY(-792px); animation-timing-function: linear; }
+  100% { transform: translateY(-792px); }
+}
+@keyframes title-logo-in {
+  0% { opacity: 0; animation-timing-function: linear; }
+  66.15% { opacity: 0; animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); }
+  83.25% { opacity: 1; animation-timing-function: linear; }
+  100% { opacity: 1; }
+}
+@keyframes title-btn-in {
+  0% { opacity: 0; animation-timing-function: linear; }
+  82.35% { opacity: 0; animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); }
+  94.75% { opacity: 1; animation-timing-function: linear; }
+  100% { opacity: 1; }
+}
+
+.intro-pan { animation: title-pan 6s forwards; }
+.intro-logo { animation: title-logo-in 6s forwards; }
+.intro-btn { animation: title-btn-in 6s forwards; }
+
+/* 어지럼증 등으로 모션을 줄이도록 설정한 환경에서는 큰 패닝을 재생하지 않고 종료 상태로 둔다 */
+@media (prefers-reduced-motion: reduce) {
+  .intro-pan { animation: none; transform: translateY(-792px); }
+  .intro-logo, .intro-btn { animation: none; opacity: 1; }
+}
+
 .fade-in { animation: fadeIn 0.35s ease-out; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
