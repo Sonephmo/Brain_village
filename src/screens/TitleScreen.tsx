@@ -3,7 +3,7 @@ import { FX, IMG, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { beep, initAudio } from '../game/audio'
 import { playBgm, stopBgm } from '../game/bgm'
-import { HandCursor, useHandControl } from '../components/HandCursor'
+import { useHandControl } from '../components/HandCursor'
 import { cameraError, cameraStream } from '../game/camera'
 
 // 피그마 1_MainTitle 프레임. 좌표·크기는 디자인 CSS 값 그대로.
@@ -117,9 +117,6 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
       >
         <Sprite frame={FX.btnStart} style={{ inset: 0 }} />
       </div>
-
-      {/* 손이 실제로 잡힐 때만 그려진다. 인트로 중에도 보여주어 "인식되고 있다"를 알린다 */}
-      <HandCursor />
 
       {/* 카메라를 못 열었으면 진행요원이 알 수 있게 알린다 (마우스로는 계속 진행 가능) */}
       {introDone && camFailed && (

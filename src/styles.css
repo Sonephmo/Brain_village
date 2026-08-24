@@ -9,17 +9,19 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* 커스텀 커서 — 펼친 손(기본) / 주먹(누름).
-   원본 362x362는 CSS 커서 상한(128px)을 넘어 무시되므로 40x64로 리사이즈한 파일을 쓴다.
-   핫스팟 (19,0) = 가운뎃손가락 끝. 두 상태가 같은 크롭·핫스팟이라 전환 시 손이 튀지 않는다. */
+   원본 362x362는 CSS 커서 상한(128px)을 넘어 무시되므로 81x128로 리사이즈한 파일을 쓴다
+   (상한에 맞춘 최대 크기 — 부스 화면을 멀리서 봐도 보이도록).
+   핫스팟 (38,0) = 가운뎃손가락 끝. 두 상태가 같은 크롭·핫스팟이라 전환 시 손이 튀지 않는다.
+   손 제스처 커서(HandCursor)도 **같은 파일을 같은 픽셀 크기로** 그려 둘이 완전히 일치한다. */
 html, body {
-  cursor: url('/assets/Cursor_Idle_cur.png') 19 0, auto;
+  cursor: url('/assets/Cursor_Idle_cur.png') 38 0, auto;
 }
 button, [role='button'], .hotspot {
-  cursor: url('/assets/Cursor_Idle_cur.png') 19 0, pointer;
+  cursor: url('/assets/Cursor_Idle_cur.png') 38 0, pointer;
 }
 html:active, body:active,
 button:active, [role='button']:active, .hotspot:active {
-  cursor: url('/assets/Cursor_Selecting_cur.png') 19 0, pointer;
+  cursor: url('/assets/Cursor_Selecting_cur.png') 38 0, pointer;
 }
 
 html, body, #root {

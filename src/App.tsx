@@ -4,6 +4,7 @@ import { VillageScreen } from './screens/VillageScreen'
 import { TutorialScreen, type AvatarPick } from './screens/TutorialScreen'
 import { GameScreen } from './screens/GameScreen'
 import { ResultScreen } from './screens/ResultScreen'
+import { HandCursor } from './components/HandCursor'
 import type { CommandLog } from './game/types'
 
 type Screen = 'title' | 'village' | 'tutorial' | 'game' | 'result'
@@ -55,6 +56,15 @@ export default function App() {
           />
         )}
       </div>
+
+      {/*
+        손 제스처 커서는 **스테이지 밖**에 둔다.
+        스테이지에는 scale 변형이 걸려 있고, 변형된 조상은 position:fixed 자손의
+        컨테이닝 블록이 되어 배율이 그대로 적용된다. 안쪽에 두면 마우스 커서와
+        크기가 어긋나므로 여기서 화면 좌표로 그린다.
+        손이 잡히지 않으면 스스로 아무것도 렌더하지 않는다.
+      */}
+      <HandCursor />
     </div>
   )
 }
