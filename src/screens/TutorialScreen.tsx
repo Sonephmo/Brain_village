@@ -162,6 +162,24 @@ export function TutorialScreen({
     setPicks(prev => (prev[pid] ? prev : { ...prev, [pid]: pick }))
   }
 
+  /** 진행요원용: 현재 단계를 건너뛴다 (버튼과 키보드 1번이 공유) */
+  const skipStep = () => {
+    if (step === 'position') setStep('calibration')
+    else if (step === 'calibration') {
+      poseEngine.finishCalibration()
+      setStep('gender')
+    } else onDone({ p1: picks.p1 ?? 'grandma', p2: picks.p2 ?? 'grandfa' })
+  }
+
+  // 진행요원 단축키: 1 = 단계 건너뛰기. 부스에서 버튼을 찾지 않고 바로 넘길 수 있다.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === '1') skipStep()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   return (
     <div className="fill fade-in">
       <img src={IMG.tutBg} alt="" className="fill" style={{ objectFit: 'cover' }} />
@@ -271,15 +289,9 @@ export function TutorialScreen({
       {/* 진행요원용 스킵 (부스 상황 대비) */}
       <button
         className="pixel-btn secondary staff-skip"
-        onClick={() => {
-          if (step === 'position') setStep('calibration')
-          else if (step === 'calibration') {
-            poseEngine.finishCalibration()
-            setStep('gender')
-          } else onDone({ p1: picks.p1 ?? 'grandma', p2: picks.p2 ?? 'grandfa' })
-        }}
+        onClick={skipStep}
       >
-        건너뛰기 ▸
+        건너뛰기 ▸ (1)
       </button>
     </div>
   )

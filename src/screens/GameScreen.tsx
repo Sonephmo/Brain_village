@@ -68,6 +68,30 @@ export function GameScreen({
     if (stage === 'end') playSfx('whistleLong')
   }, [stage])
 
+  /** 진행요원용: 지금까지의 점수로 결과 화면으로. 되돌릴 수 없어 두 번 눌러야 실행된다 */
+  const requestAbort = () => {
+    if (!abortArmed) {
+      setAbortArmed(true)
+      window.setTimeout(() => setAbortArmed(false), 4000)
+      return
+    }
+    runnerRef.current?.abort()
+  }
+
+  // 진행요원 단축키
+  //   1 = 연습에서 현재 구령 건너뛰기 (시간 제한이 없어 막힐 수 있는 구간)
+  //   2 = 결과 화면으로 이동. 버튼과 같은 2단계 확인을 거친다 — 세션을 끝내는
+  //       동작이라 키 한 번의 오타로 실행되면 안 되고, 화면의 버튼이 무장 상태를
+  //       보여주므로 눌렀는지 알 수 있다.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === '1' && stage === 'practice') runnerRef.current?.skipCurrent()
+      else if (e.key === '2' && stage === 'main') requestAbort()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   // 카운트다운 3-2-1-시작 — 음원을 한 번 재생하고 이미지를 소리 지점에 맞춘다.
   // 음원의 소리 간격이 1000ms가 아니라 약 910ms라 실측 큐를 쓴다.
   useEffect(() => {
@@ -305,7 +329,7 @@ export function GameScreen({
           })}
           {/* 부스에서 동작 인식이 안 되는 참가자가 있어도 진행이 막히지 않도록 하는 예비 수단 */}
           <button className="pixel-btn secondary staff-skip" onClick={() => runnerRef.current?.skipCurrent()}>
-            이 구령 건너뛰기 ▸
+            이 구령 건너뛰기 ▸ (1)
           </button>
         </>
       )}
@@ -315,16 +339,9 @@ export function GameScreen({
         <button
           className="pixel-btn secondary staff-skip"
           style={abortArmed ? { opacity: 1, background: '#ffd0d0' } : undefined}
-          onClick={() => {
-            if (!abortArmed) {
-              setAbortArmed(true)
-              window.setTimeout(() => setAbortArmed(false), 4000)
-              return
-            }
-            runnerRef.current?.abort()
-          }}
+          onClick={requestAbort}
         >
-          {abortArmed ? '한 번 더 누르면 중단' : '중단하기 ▸'}
+          {abortArmed ? '한 번 더 누르면 중단 (2)' : '중단하기 ▸ (2)'}
         </button>
       )}
 

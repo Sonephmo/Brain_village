@@ -14,7 +14,7 @@ export function buildSessionLog(
 ): SessionLog {
   return {
     게임: '오락가락 청기백기',
-    버전: 'demo-2.4',
+    버전: 'demo-2.5',
     시작시각: new Date().toISOString(),
     아바타: {
       P1: avatars.p1 === 'grandma' ? '할머니' : '할아버지',
