@@ -4,7 +4,7 @@ import { VillageScreen } from './screens/VillageScreen'
 import { TutorialScreen, type AvatarPick } from './screens/TutorialScreen'
 import { GameScreen } from './screens/GameScreen'
 import { ResultScreen } from './screens/ResultScreen'
-import { HandCursor } from './components/HandCursor'
+import { HandCursor, useHandControl, usePoseMode } from './components/HandCursor'
 import type { CommandLog } from './game/types'
 
 type Screen = 'title' | 'village' | 'tutorial' | 'game' | 'result'
@@ -23,6 +23,13 @@ export default function App() {
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  // 손 커서는 모든 화면에서 살아 있다. 화면 성격에 따라 포즈 인식 모드만 바꾼다.
+  //  - 커서만 필요한 화면(타이틀·마을·결과) → menu: 전체 프레임 1회 추론
+  //  - 2인 판정이 필요한 화면(튜토리얼·게임) → game: 절반씩 2회 추론.
+  //    커서는 1P 오른손 손목을 재사용하므로 추가 추론이 없다.
+  usePoseMode(screen === 'tutorial' || screen === 'game' ? 'game' : 'menu')
+  useHandControl(true, 1000)
 
   return (
     <div className="stage-wrap">

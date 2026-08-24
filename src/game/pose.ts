@@ -34,6 +34,30 @@ const FALLBACK_MARGIN = 0.12
 /** 손목이 이 프레임 수만큼 연속으로 신뢰 불가면 내려간 것으로 처리 */
 const LOST_FRAMES = 6
 
+const RIGHT_WRIST = 16 // = R_WRIST. 포인터(커서) 기준점
+
+/**
+ * 커서 활성 영역. 손을 화면 끝까지 뻗기 어려우므로 프레임의 가운데만 화면 전체에 대응시킨다.
+ * **부스에서 카메라 화각·참가자 거리에 맞춰 조정할 값이다.**
+ */
+const POINTER_ACTIVE = { x0: 0.2, x1: 0.8, y0: 0.15, y1: 0.85 }
+/** 커서 떨림을 줄이는 지수 평활 계수 */
+const POINTER_SMOOTH = 0.35
+
+/**
+ * 인식 모드.
+ *  - `menu`: 전체 프레임 1회 추론. 커서만 필요한 화면(타이틀·마을·결과)에서 쓴다.
+ *  - `game`: 좌/우 절반 2회 추론. 2인 동작 판정이 필요한 화면에서 쓴다.
+ *            커서는 이미 계산된 1P 손목을 재사용하므로 추가 비용이 없다.
+ */
+export type PoseMode = 'menu' | 'game'
+
+export interface PointerState {
+  visible: boolean
+  x: number
+  y: number
+}
+
 type Landmark = { x: number; y: number; z: number; visibility?: number }
 
 interface Calib {
@@ -84,6 +108,12 @@ class PoseEngine {
   private video: HTMLVideoElement | null = null
   private landmarkers: [PoseLandmarker, PoseLandmarker] | null = null
   private halves: [HTMLCanvasElement, HTMLCanvasElement] | null = null
+  private fullCanvas: HTMLCanvasElement | null = null
+  private mode: PoseMode = 'menu'
+  /** 커서 원천이 되는 오른손 손목 (menu는 전체 프레임, game은 1P 반쪽 기준) */
+  private wrist: { x: number; y: number } | null = null
+  private wristLost = LOST_FRAMES
+  private ptr = { x: 0.5, y: 0.5, has: false }
   private raf = 0
   private watchdog = 0
   private lastTs = 0
@@ -157,13 +187,17 @@ class PoseEngine {
       const scale = Math.min(1, 480 / halfH) // 추론 비용을 줄이되 비율은 유지
       const cw = Math.max(64, Math.round(halfW * scale))
       const ch = Math.max(64, Math.round(halfH * scale))
-      const mk = () => {
+      const mk = (w: number, h: number) => {
         const c = document.createElement('canvas')
-        c.width = cw
-        c.height = ch
+        c.width = w
+        c.height = h
         return c
       }
-      this.halves = [mk(), mk()]
+      // halves[0]은 game 모드에서 1P 반쪽, menu 모드에서는 전체 프레임을 담는다.
+      // 전체 프레임은 가로가 2배라 비율이 달라 별도 캔버스를 쓴다
+      // (늘리면 몸 비율이 왜곡되어 임계선이 어긋난다).
+      this.halves = [mk(cw, ch), mk(cw, ch)]
+      this.fullCanvas = mk(Math.min(960, cw * 2), ch)
 
       // 첫 추론은 GPU 파이프라인이 차가워 수 초가 걸린다(실측 최대 4.9초).
       // 튜토리얼 도중에 그 비용을 치르면 인식이 멈춘 것처럼 보이므로 여기서 미리 데운다.
@@ -217,6 +251,26 @@ class PoseEngine {
     const vh = v.videoHeight
     if (!vw || !vh) return
 
+    if (this.mode === 'menu') {
+      // 커서만 필요한 화면: 전체 프레임 1회 추론 (절반씩 두 번 돌릴 이유가 없다)
+      const canvas = this.fullCanvas
+      if (!canvas) return
+      const g = canvas.getContext('2d', { willReadFrequently: false })
+      if (!g) return
+      g.drawImage(v, 0, 0, vw, vh, 0, 0, canvas.width, canvas.height)
+      const ts = Math.max(now, this.lastDetectTs[0] + 1)
+      this.lastDetectTs[0] = ts
+      try {
+        const res = this.landmarkers[0].detectForVideo(canvas, ts)
+        const lm = (res.landmarks?.[0] as Landmark[] | undefined) ?? null
+        const w = lm?.[RIGHT_WRIST]
+        this.updatePointer(w && (w.visibility ?? 0) >= VIS_MIN ? w : null)
+      } catch {
+        /* 다음 프레임에 회복된다 */
+      }
+      return
+    }
+
     // 1P(화면 왼쪽) = 원본 오른쪽 절반, 2P = 원본 왼쪽 절반
     const srcX: Record<PlayerId, number> = { 1: vw / 2, 2: 0 }
     for (const pid of [1, 2] as PlayerId[]) {
@@ -229,11 +283,54 @@ class PoseEngine {
       this.lastDetectTs[pid - 1] = ts
       try {
         const res = this.landmarkers[pid - 1].detectForVideo(canvas, ts)
-        this.applyResult(pid, (res.landmarks?.[0] as Landmark[] | undefined) ?? null)
+        const lm = (res.landmarks?.[0] as Landmark[] | undefined) ?? null
+        this.applyResult(pid, lm)
+        // 커서는 1P의 오른손 손목을 재사용한다 → 추가 추론 비용이 없다
+        if (pid === 1) {
+          const w = lm?.[RIGHT_WRIST]
+          this.updatePointer(w && (w.visibility ?? 0) >= VIS_MIN ? w : null)
+        }
       } catch {
         /* 개별 프레임 추론 실패는 다음 프레임에 회복된다 */
       }
     }
+  }
+
+  /** 손목 좌표 → 거울 보정 + 활성 영역 확대 + 평활 */
+  private updatePointer(w: { x: number; y: number } | null) {
+    if (!w) {
+      if (++this.wristLost >= LOST_FRAMES) this.ptr.has = false
+      return
+    }
+    this.wristLost = 0
+    this.wrist = { x: w.x, y: w.y }
+    const px = 1 - w.x // 거울 모드
+    const nx = Math.min(1, Math.max(0, (px - POINTER_ACTIVE.x0) / (POINTER_ACTIVE.x1 - POINTER_ACTIVE.x0)))
+    const ny = Math.min(1, Math.max(0, (w.y - POINTER_ACTIVE.y0) / (POINTER_ACTIVE.y1 - POINTER_ACTIVE.y0)))
+    if (!this.ptr.has) {
+      this.ptr.x = nx
+      this.ptr.y = ny
+      this.ptr.has = true
+    } else {
+      this.ptr.x += (nx - this.ptr.x) * POINTER_SMOOTH
+      this.ptr.y += (ny - this.ptr.y) * POINTER_SMOOTH
+    }
+  }
+
+  /** 화면 정규화 커서 좌표 (0~1). 손목이 안 잡히면 visible=false */
+  pointer(): PointerState {
+    return { visible: this.ptr.has, x: this.ptr.x, y: this.ptr.y }
+  }
+
+  /**
+   * 인식 모드 전환. 커서만 필요한 화면은 'menu'(1회 추론), 2인 판정이 필요한
+   * 화면은 'game'(2회 추론)으로 둔다.
+   */
+  setMode(mode: PoseMode) {
+    if (this.mode === mode) return
+    this.mode = mode
+    this.ptr.has = false
+    this.wristLost = LOST_FRAMES
   }
 
   private applyResult(pid: PlayerId, lm: Landmark[] | null) {

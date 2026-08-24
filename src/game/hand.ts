@@ -1,35 +1,23 @@
-// 손으로 화면을 조작하는 포인터.
+// 주먹 제스처 판정 전용 엔진.
 //
-// 역할을 두 모델로 나눈다.
-//  - **위치**: PoseLandmarker의 오른손 손목(RIGHT_WRIST). 손 랜드마커는 멀리 있는 손을
-//    자주 놓치는데, 포즈의 손목 추적은 몸 전체 맥락으로 잡아 훨씬 안정적이다.
-//    또 손목은 주먹을 쥐어도 움직이지 않아 커서가 튀지 않는다.
-//  - **주먹**: GestureRecognizer의 `Closed_Fist`. 손가락 기하를 직접 계산하는 것보다
-//    학습된 분류기가 정확하다.
+// 역할 분담:
+//  - **위치**는 `poseEngine.pointer()` 가 담당한다. 인게임에서는 2인 판정으로 이미
+//    포즈를 돌리고 있으므로, 1P의 오른손 손목을 재사용해 **추가 추론 비용이 없다.**
+//  - **주먹**만 이 엔진이 GestureRecognizer로 판정한다.
 //
-// 비용: 포즈 42ms + 제스처 87ms(빈 화면 최악값) → 매 프레임 둘 다 돌리면 8fps로 커서가
-// 끊긴다. 그래서 **포즈는 매 프레임, 제스처는 GESTURE_EVERY 프레임마다** 돌린다.
-// 커서는 부드럽게 움직이고, 주먹은 1초 유지를 판정할 만큼만 자주 확인하면 된다.
-//
-// 좌표 규약: 화면은 거울 모드라 화면상 위치는 x를 뒤집는다(screenX = 1 - x).
+// 비용: 제스처는 회당 87ms(빈 화면 최악값)로 포즈(42ms)보다 2배 느리다.
+// 매 프레임 돌리면 커서가 끊기므로 GESTURE_EVERY 프레임마다 확인한다.
+// 커서 위치는 포즈가 매 프레임 갱신하니 부드럽고, 주먹은 1초 유지를 판정할 만큼만
+// 자주 보면 된다.
 
-import { FilesetResolver, GestureRecognizer, PoseLandmarker } from '@mediapipe/tasks-vision'
+import { FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision'
 import { cameraReady, cameraVideo, openCamera } from './camera'
+import { poseEngine } from './pose'
 
-const RIGHT_WRIST = 16 // 참가자 기준 오른손 손목
-const VIS_MIN = 0.5
-
-/** 제스처를 몇 프레임마다 확인할지 (1이면 매 프레임) */
+/** 제스처를 몇 프레임마다 확인할지 (fps가 낮으면 3~4로 올린다) */
 const GESTURE_EVERY = 2
-/** 커서 떨림을 줄이는 지수 평활 계수 */
-const SMOOTH = 0.35
-/** 손목이 이 프레임 수만큼 안 보이면 커서를 숨긴다 */
-const LOST_FRAMES = 8
-/**
- * 손을 화면 끝까지 뻗기는 어렵다. 카메라 프레임의 가운데 영역만 화면 전체에 대응시킨다.
- * **부스 현장에서 카메라 위치·참가자 거리에 맞춰 조정할 값이다.**
- */
-const ACTIVE = { x0: 0.2, x1: 0.8, y0: 0.15, y1: 0.85 }
+/** 이 점수 미만의 주먹 판정은 무시한다 (오탐 방지) */
+const FIST_SCORE_MIN = 0.5
 
 export interface HandState {
   tracking: boolean
@@ -39,29 +27,21 @@ export interface HandState {
   progress: number
 }
 
-type Landmark = { x: number; y: number; z: number; visibility?: number }
-
 class HandEngine {
   ready = false
   error: string | null = null
   delegate: 'GPU' | 'CPU' | null = null
 
-  private pose: PoseLandmarker | null = null
   private gesture: GestureRecognizer | null = null
   private canvas: HTMLCanvasElement | null = null
   private raf = 0
   private running = false
   private lastTs = 0
-  private poseTs = 0
   private gestureTs = 0
   private frame = 0
   private fps = 0
   private gestureName = ''
 
-  private smoothX = 0.5
-  private smoothY = 0.5
-  private hasPoint = false
-  private lost = LOST_FRAMES
   private fist = false
   private fistSince = 0
   /** 클릭 후 주먹을 펴기 전까지 재클릭을 막는다 */
@@ -77,35 +57,23 @@ class HandEngine {
       this.error = 'camera'
       return false
     }
-    if (!this.pose || !this.gesture) {
+    if (!this.gesture) {
       try {
         const base = import.meta.env.BASE_URL
         const fileset = await FilesetResolver.forVisionTasks(`${base}wasm`)
-        const build = async (delegate: 'GPU' | 'CPU') => {
-          const pose = await PoseLandmarker.createFromOptions(fileset, {
-            baseOptions: { modelAssetPath: `${base}models/pose_landmarker_lite.task`, delegate },
-            runningMode: 'VIDEO',
-            numPoses: 1,
-          })
-          const gesture = await GestureRecognizer.createFromOptions(fileset, {
+        const make = (delegate: 'GPU' | 'CPU') =>
+          GestureRecognizer.createFromOptions(fileset, {
             baseOptions: { modelAssetPath: `${base}models/gesture_recognizer.task`, delegate },
             runningMode: 'VIDEO',
             numHands: 1,
           })
-          return { pose, gesture }
-        }
         try {
-          const m = await build('GPU')
-          this.pose = m.pose
-          this.gesture = m.gesture
+          this.gesture = await make('GPU')
           this.delegate = 'GPU'
         } catch {
-          const m = await build('CPU')
-          this.pose = m.pose
-          this.gesture = m.gesture
+          this.gesture = await make('CPU')
           this.delegate = 'CPU'
         }
-
         const c = document.createElement('canvas')
         const scale = Math.min(1, 480 / (video.videoHeight || 720))
         c.width = Math.max(64, Math.round((video.videoWidth || 1280) * scale))
@@ -117,9 +85,7 @@ class HandEngine {
           g.fillStyle = '#808080'
           g.fillRect(0, 0, c.width, c.height)
           try {
-            this.poseTs = performance.now()
-            this.pose.detectForVideo(c, this.poseTs)
-            this.gestureTs = this.poseTs + 1
+            this.gestureTs = performance.now()
             this.gesture.recognizeForVideo(c, this.gestureTs)
           } catch {
             /* 워밍업 실패는 무시 */
@@ -144,8 +110,6 @@ class HandEngine {
   }
 
   private reset() {
-    this.hasPoint = false
-    this.lost = LOST_FRAMES
     this.fist = false
     this.fistSince = 0
     this.consumed = false
@@ -162,54 +126,18 @@ class HandEngine {
     if (dt < 1000) this.fps = this.fps ? this.fps * 0.9 + (1000 / dt) * 0.1 : 1000 / dt
 
     const v = cameraVideo()
-    if (!this.pose || !this.gesture || !this.canvas || !v || !cameraReady()) return
+    if (!this.gesture || !this.canvas || !v || !cameraReady()) return
+    if (++this.frame % GESTURE_EVERY !== 0) return
+
     const g = this.canvas.getContext('2d')
     if (!g) return
     g.drawImage(v, 0, 0, this.canvas.width, this.canvas.height)
-    this.frame++
-
-    // 위치: 매 프레임
     try {
-      this.poseTs = Math.max(now, this.poseTs + 1)
-      const r = this.pose.detectForVideo(this.canvas, this.poseTs)
-      this.applyPose((r.landmarks?.[0] as Landmark[] | undefined) ?? null)
+      this.gestureTs = Math.max(now, this.gestureTs + 1)
+      const r = this.gesture.recognizeForVideo(this.canvas, this.gestureTs)
+      this.applyGesture(r, now)
     } catch {
       /* 개별 프레임 실패는 다음 프레임에 회복된다 */
-    }
-
-    // 주먹: 몇 프레임마다 (커서 갱신률을 지키기 위해)
-    if (this.frame % GESTURE_EVERY === 0) {
-      try {
-        this.gestureTs = Math.max(this.poseTs + 1, this.gestureTs + 1)
-        const r = this.gesture.recognizeForVideo(this.canvas, this.gestureTs)
-        this.applyGesture(r, now)
-      } catch {
-        /* 무시 */
-      }
-    }
-  }
-
-  private applyPose(lm: Landmark[] | null) {
-    const w = lm?.[RIGHT_WRIST]
-    if (!w || (w.visibility ?? 0) < VIS_MIN) {
-      if (++this.lost >= LOST_FRAMES) this.hasPoint = false
-      return
-    }
-    this.lost = 0
-
-    // 거울 보정 후 활성 영역을 화면 전체로 확대 + 클램프
-    const px = 1 - w.x
-    const py = w.y
-    const nx = Math.min(1, Math.max(0, (px - ACTIVE.x0) / (ACTIVE.x1 - ACTIVE.x0)))
-    const ny = Math.min(1, Math.max(0, (py - ACTIVE.y0) / (ACTIVE.y1 - ACTIVE.y0)))
-
-    if (!this.hasPoint) {
-      this.smoothX = nx
-      this.smoothY = ny
-      this.hasPoint = true
-    } else {
-      this.smoothX += (nx - this.smoothX) * SMOOTH
-      this.smoothY += (ny - this.smoothY) * SMOOTH
     }
   }
 
@@ -219,7 +147,7 @@ class HandEngine {
   ) {
     const top = res.gestures?.[0]?.[0]
     this.gestureName = top?.categoryName ?? ''
-    const fistNow = this.gestureName === 'Closed_Fist' && (top?.score ?? 0) >= 0.5
+    const fistNow = this.gestureName === 'Closed_Fist' && (top?.score ?? 0) >= FIST_SCORE_MIN
 
     if (fistNow && !this.fist) {
       this.fist = true
@@ -232,16 +160,19 @@ class HandEngine {
 
     if (this.fist && !this.consumed && now - this.fistSince >= this.holdMs) {
       this.consumed = true
-      this.onDwell?.(this.smoothX, this.smoothY)
+      const p = poseEngine.pointer()
+      this.onDwell?.(p.x, p.y)
     }
   }
 
+  /** 위치는 poseEngine, 주먹은 이 엔진 — 합쳐서 커서 상태로 돌려준다 */
   state(): HandState {
     const now = performance.now()
+    const p = poseEngine.pointer()
     return {
-      tracking: this.hasPoint,
-      x: this.smoothX,
-      y: this.smoothY,
+      tracking: p.visible,
+      x: p.x,
+      y: p.y,
       fist: this.fist,
       progress:
         this.fist && !this.consumed
@@ -252,14 +183,13 @@ class HandEngine {
     }
   }
 
-  /** 부스 점검용 (fps가 낮으면 ACTIVE 영역이나 GESTURE_EVERY를 조정한다) */
   status() {
     return {
       ready: this.ready,
       running: this.running,
       delegate: this.delegate,
       error: this.error,
-      fps: Math.round(this.fps),
+      gestureFps: Math.round(this.fps),
       gesture: this.gestureName,
       ...this.state(),
     }

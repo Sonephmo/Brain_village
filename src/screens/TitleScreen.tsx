@@ -3,7 +3,6 @@ import { FX, IMG, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { beep, initAudio } from '../game/audio'
 import { playBgm, stopBgm } from '../game/bgm'
-import { useHandControl } from '../components/HandCursor'
 import { cameraError, cameraStream } from '../game/camera'
 
 // 피그마 1_MainTitle 프레임. 좌표·크기는 디자인 CSS 값 그대로.
@@ -22,11 +21,8 @@ const BTN = frameSize(FX.btnStart, { w: 663 })
 export function TitleScreen({ onStart }: { onStart: () => void }) {
   const [introDone, setIntroDone] = useState(false)
 
-  // 1P 오른손으로 커서를 움직이고, 주먹을 1초 유지하면 클릭한다.
-  // **인트로가 끝나기를 기다리지 않고 바로 시작한다** — 모델 로드(0.8초)와
-  // GPU 워밍업(최대 4.8초)이 있어, 인트로 후에 켜면 커서가 11초쯤 뒤에 나타난다.
+  // 손 커서는 App에서 전역으로 켠다(모든 화면에서 유효).
   // 인트로 중 주먹은 인트로 스킵으로 동작한다(배경 클릭과 같다).
-  useHandControl(true, 1000)
 
   // 카메라 실패 여부는 비동기로 결정되므로 잠시 뒤 확인한다
   const [camFailed, setCamFailed] = useState(false)

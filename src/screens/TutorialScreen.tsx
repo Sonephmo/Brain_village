@@ -46,9 +46,7 @@ export function TutorialScreen({
     p2: { hand: null, since: 0 },
   })
 
-  useEffect(() => {
-    void poseEngine.init()
-  }, [])
+  // 카메라·포즈 초기화와 모드 전환은 App이 전역으로 담당한다(usePoseMode).
 
   // 튜토리얼 BGM은 연습 구간까지 이어진다.
   // 연습은 GameScreen에 있으므로 여기서 정지하지 않고, GameScreen이 같은 트랙을

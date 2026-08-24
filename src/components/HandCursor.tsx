@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { BASE } from '../assets'
 import { handEngine, type HandState } from '../game/hand'
+import { poseEngine, type PoseMode } from '../game/pose'
 
 // 손으로 조작하는 커서.
 //
@@ -45,11 +46,12 @@ export function HandCursor() {
     return () => cancelAnimationFrame(raf.current)
   }, [])
 
-  if (!state.tracking || !rect) return null
+  if (!state.tracking || !rect || rect.width <= 0 || rect.height <= 0) return null
 
   // 손 좌표(0~1)는 스테이지 기준 → 실제 화면 좌표로 환산
   const x = rect.left + rect.width * state.x
   const y = rect.top + rect.height * state.y
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null
 
   return (
     <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9000 }}>
@@ -106,9 +108,29 @@ export function useHandControl(enabled: boolean, holdMs = 1000) {
       const stage = document.querySelector('.stage')
       if (!stage) return
       const r = stage.getBoundingClientRect()
-      const el = document.elementFromPoint(r.left + r.width * nx, r.top + r.height * ny)
+      // 창이 최소화되거나 레이아웃이 잠시 멈추면 rect가 0이 되어 좌표가 NaN이 된다.
+      // 그대로 넘기면 elementFromPoint가 예외를 던지므로 유효할 때만 클릭한다.
+      if (r.width <= 0 || r.height <= 0) return
+      const cx = r.left + r.width * nx
+      const cy = r.top + r.height * ny
+      if (!Number.isFinite(cx) || !Number.isFinite(cy)) return
+      const el = document.elementFromPoint(cx, cy)
       if (el instanceof HTMLElement) el.click()
     })
     return () => handEngine.stop()
   }, [enabled, holdMs])
+}
+
+/**
+ * 화면에 맞는 포즈 인식 모드를 정한다.
+ *  - `menu`: 커서만 필요한 화면 → 전체 프레임 1회 추론
+ *  - `game`: 2인 동작 판정이 필요한 화면 → 좌/우 절반 2회 추론
+ *            (커서는 1P 손목을 재사용하므로 추가 비용 없음)
+ * 카메라·모델은 화면이 바뀌어도 유지되므로 모드만 바꾼다.
+ */
+export function usePoseMode(mode: PoseMode) {
+  useEffect(() => {
+    void poseEngine.init()
+    poseEngine.setMode(mode)
+  }, [mode])
 }
