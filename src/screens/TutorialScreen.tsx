@@ -3,6 +3,7 @@ import { FX, IMG, TUT_CHAR, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { poseEngine } from '../game/pose'
 import { beep, goodChime, speak } from '../game/audio'
+import { playBgm } from '../game/bgm'
 
 import type { Avatar as AvatarId } from '../assets'
 
@@ -30,6 +31,13 @@ export function TutorialScreen({
 
   useEffect(() => {
     void poseEngine.init()
+  }, [])
+
+  // 튜토리얼 BGM은 연습 구간까지 이어진다.
+  // 연습은 GameScreen에 있으므로 여기서 정지하지 않고, GameScreen이 같은 트랙을
+  // 다시 요청하면(같은 트랙이면 no-op) 끊기지 않고 계속 재생된다.
+  useEffect(() => {
+    playBgm('tutorial')
   }, [])
 
   useEffect(() => {

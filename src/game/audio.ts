@@ -41,6 +41,15 @@ interface ClipPlan {
 let ctx: AudioContext | null = null
 const buffers = new Map<ClipId, AudioBuffer>()
 const plans = new Map<ClipId, ClipPlan>()
+let countdownBuf: AudioBuffer | null = null
+
+/**
+ * CountDown.mp3 안의 소리 4개 시작 지점(ms). 실측값이다.
+ * 3 · 2 · 1 · 시작 이미지를 이 시점에 맞춰야 소리와 숫자가 어긋나지 않는다.
+ * (간격이 1000ms가 아니라 약 910ms다)
+ */
+export const COUNTDOWN_CUES = [0, 925, 1831, 2770]
+export const COUNTDOWN_TOTAL_MS = 3162
 let loadPromise: Promise<void> | null = null
 
 function audioCtx(): AudioContext {
@@ -67,8 +76,25 @@ export function initAudio(): Promise<void> {
         }
       }),
     )
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}assets/Sound/CountDown.mp3`)
+      if (res.ok) countdownBuf = await ac.decodeAudioData(await res.arrayBuffer())
+    } catch {
+      /* 카운트다운 음원 실패 시 비프음으로 대체된다 */
+    }
   })()
   return loadPromise
+}
+
+/** 카운트다운 음원을 한 번 재생한다. 음원이 없으면 false를 돌려 호출부가 비프음으로 대체한다. */
+export function playCountdown(): boolean {
+  if (!countdownBuf) return false
+  const ac = audioCtx()
+  const src = ac.createBufferSource()
+  src.buffer = countdownBuf
+  src.connect(ac.destination)
+  src.start()
+  return true
 }
 
 /**

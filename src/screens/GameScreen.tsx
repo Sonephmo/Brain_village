@@ -7,7 +7,8 @@ import { GameRunner, type Snapshot } from '../game/engine'
 import { COMMANDS, PRACTICE, ROUND_SIZE, flagsForCommand } from '../game/commands'
 import type { CommandLog } from '../game/types'
 import type { FaceName } from '../assets'
-import { beep, speak } from '../game/audio'
+import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, beep, playCountdown, speak } from '../game/audio'
+import { playBgm, stopBgm } from '../game/bgm'
 import type { AvatarPick } from './TutorialScreen'
 
 type Stage = 'practice' | 'countdown' | 'main' | 'end'
@@ -28,6 +29,14 @@ export function GameScreen({
   const finishRef = useRef(onFinish)
   finishRef.current = onFinish
 
+  // BGM: 연습까지는 튜토리얼 트랙을 이어서 재생하고, 카운트다운부터 본게임은 무음.
+  // 구령 청취를 방해하지 않기 위한 결정이다(고령자 대상).
+  useEffect(() => {
+    if (stage === 'practice') playBgm('tutorial')
+    else stopBgm()
+  }, [stage])
+  useEffect(() => () => stopBgm(), [])
+
   // 연습 (무채점 5구령, 튜토리얼 배경)
   useEffect(() => {
     if (stage !== 'practice') return
@@ -35,6 +44,8 @@ export function GameScreen({
     const runner = new GameRunner({
       commands: PRACTICE,
       scored: false,
+      // 연습은 시간으로 끊지 않고 두 사람이 함께 성공할 때까지 기다린다
+      waitForSuccess: true,
       onSnapshot: setSnap,
       onFinish: () => {
         setSnap(null)
@@ -49,23 +60,25 @@ export function GameScreen({
     }
   }, [stage])
 
-  // 카운트다운 3-2-1-Start
+  // 카운트다운 3-2-1-시작 — 음원을 한 번 재생하고 이미지를 소리 지점에 맞춘다.
+  // 음원의 소리 간격이 1000ms가 아니라 약 910ms라 실측 큐를 쓴다.
   useEffect(() => {
     if (stage !== 'countdown') return
-    speak('이제 진짜 시작이에요!', false, () => undefined)
-    let i = -1
-    const iv = window.setInterval(() => {
-      i += 1
-      if (i < COUNT_IMGS.length) {
+    const withSound = playCountdown()
+    const timers = COUNTDOWN_CUES.map((cue, i) =>
+      window.setTimeout(() => {
         setCountIdx(i)
-        beep(i === COUNT_IMGS.length - 1 ? 1320 : 880, 150)
-      } else {
-        window.clearInterval(iv)
-        setCountIdx(-1)
-        setStage('main')
-      }
-    }, 1000)
-    return () => window.clearInterval(iv)
+        if (!withSound) beep(i === COUNTDOWN_CUES.length - 1 ? 1320 : 880, 150)
+      }, cue),
+    )
+    const done = window.setTimeout(() => {
+      setCountIdx(-1)
+      setStage('main')
+    }, COUNTDOWN_TOTAL_MS)
+    return () => {
+      timers.forEach(window.clearTimeout)
+      window.clearTimeout(done)
+    }
   }, [stage])
 
   // 본 게임 (2라운드 × 10구령)
@@ -241,6 +254,37 @@ export function GameScreen({
       {/* 종료 */}
       {stage === 'end' && (
         <img src={IMG.end} alt="끝!" className="pop" style={{ position: 'absolute', left: 629, top: 301, width: 777, height: 583 }} />
+      )}
+
+      {/* 연습: 시간 제한이 없으므로 각자 지금 자세가 맞는지 보여준다 */}
+      {isPractice && snap?.phase === 'window' && (
+        <>
+          {(['p1', 'p2'] as const).map(pid => {
+            const ok = snap.practiceOk[pid]
+            return (
+              <p
+                key={pid}
+                className="pixel-text"
+                style={{
+                  position: 'absolute',
+                  left: pid === 'p1' ? 130 : 1290,
+                  width: 500,
+                  top: 880,
+                  fontSize: 46,
+                  textAlign: 'center',
+                  color: ok ? '#1f9d4d' : '#8a5a00',
+                  textShadow: '0 2px 0 rgba(255,255,255,0.8)',
+                }}
+              >
+                {ok ? '좋아요! 그대로' : '따라해 보세요'}
+              </p>
+            )
+          })}
+          {/* 부스에서 동작 인식이 안 되는 참가자가 있어도 진행이 막히지 않도록 하는 예비 수단 */}
+          <button className="pixel-btn secondary staff-skip" onClick={() => runnerRef.current?.skipCurrent()}>
+            이 구령 건너뛰기 ▸
+          </button>
+        </>
       )}
 
       {/* 카메라 (중앙 하단, ON/OFF 토글 가능) */}

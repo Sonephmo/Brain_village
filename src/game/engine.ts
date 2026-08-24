@@ -12,6 +12,7 @@ const WINDOW_MS = 2000
 const FEEDBACK_MS = 1000
 const ROLESWAP_MS = 5000
 const HOLD_MS = 250 // 단발 노이즈 방지 유지 시간
+const PRACTICE_HOLD_MS = 400 // 연습: 두 사람이 자세를 이만큼 유지하면 통과
 
 interface HandTrack {
   raised: boolean
@@ -34,6 +35,8 @@ export interface Snapshot {
   windowRemainMs: number
   score: number
   judged: { p1: PlayerJudge; p2: PlayerJudge } | null
+  /** 연습 모드에서 각 플레이어가 지금 기대 동작을 만족하고 있는지 */
+  practiceOk: { p1: boolean; p2: boolean }
   live: {
     p1: { left: boolean; right: boolean }
     p2: { left: boolean; right: boolean }
@@ -43,6 +46,11 @@ export interface Snapshot {
 export interface RunnerOptions {
   commands: Command[]
   scored: boolean
+  /**
+   * 연습 모드. 반응 창을 2초로 끊지 않고 **두 사람이 기대 동작을 함께 만들 때까지 기다린다.**
+   * 시간 제한이 없으므로 조건을 만족하지 못하면 다음 구령으로 넘어가지 않는다.
+   */
+  waitForSuccess?: boolean
   roleSwapAfter?: number // 이 인덱스 완료 후 역할 교체 화면 (0-based, 예: 9)
   onSnapshot: (s: Snapshot) => void
   onFinish: (logs: CommandLog[], score: number) => void
@@ -75,6 +83,7 @@ export class GameRunner {
   private judged: { p1: PlayerJudge; p2: PlayerJudge } | null = null
   private lastEmit = 0
   private stopped = false
+  private matchStart = 0 // 연습: 두 사람이 자세를 맞추기 시작한 시각
 
   constructor(opt: RunnerOptions) {
     this.opt = opt
@@ -101,6 +110,12 @@ export class GameRunner {
     return this.opt.commands[this.cmdIndex] ?? null
   }
 
+  /** 진행요원용: 대기 중인 구령을 통과 처리한다 (연습에서 동작 인식이 안 될 때의 예비 수단) */
+  skipCurrent() {
+    if (this.stopped || this.phase !== 'window') return
+    this.judge(performance.now())
+  }
+
   private nextCommand() {
     this.cmdIndex += 1
     if (this.cmdIndex >= this.opt.commands.length) {
@@ -111,6 +126,7 @@ export class GameRunner {
     }
     const now = performance.now()
     this.judged = null
+    this.matchStart = 0
     this.phase = 'speak'
     this.phaseStart = now
     // 구령 시작 시점 손 상태 기록 (이전 구령의 잔손은 재올림해야 인정)
@@ -144,7 +160,10 @@ export class GameRunner {
     this.lastTick = now
     this.trackHands(now)
 
-    if (this.phase === 'window' && now - this.windowOpenAt >= WINDOW_MS) {
+    if (this.phase === 'window' && this.opt.waitForSuccess) {
+      // 연습: 시간으로 끊지 않고 두 사람이 함께 성공할 때까지 기다린다
+      if (this.practiceMatched(now)) this.judge(now)
+    } else if (this.phase === 'window' && now - this.windowOpenAt >= WINDOW_MS) {
       this.judge(now)
     } else if (this.phase === 'feedback' && now - this.phaseStart >= FEEDBACK_MS) {
       const swapAfter = this.opt.roleSwapAfter
@@ -199,6 +218,34 @@ export class GameRunner {
     }
   }
 
+  /** 지금 이 순간 플레이어의 손 상태가 기대 동작과 일치하는지 (연습 모드 판정용) */
+  private poseMatches(pid: PlayerId, expected: ExpectedAction): boolean {
+    const p = poseEngine.getPose(pid)
+    switch (expected) {
+      case 'none':
+        return !p.leftRaised && !p.rightRaised
+      case 'both':
+        return p.leftRaised && p.rightRaised
+      case 'left':
+        return p.leftRaised && !p.rightRaised
+      case 'right':
+        return p.rightRaised && !p.leftRaised
+    }
+  }
+
+  /** 두 사람이 동시에 기대 동작을 PRACTICE_HOLD_MS 동안 유지했는가 */
+  private practiceMatched(now: number): boolean {
+    const cmd = this.command
+    if (!cmd) return false
+    const ok = this.poseMatches(1, cmd.expect.p1) && this.poseMatches(2, cmd.expect.p2)
+    if (!ok) {
+      this.matchStart = 0
+      return false
+    }
+    if (!this.matchStart) this.matchStart = now
+    return now - this.matchStart >= PRACTICE_HOLD_MS
+  }
+
   private judgePlayer(pid: PlayerId, expected: ExpectedAction): PlayerJudge {
     const t = this.tracks![pid]
     const premature = t.left.premature || t.right.premature
@@ -249,8 +296,11 @@ export class GameRunner {
 
   private judge(now: number) {
     const cmd = this.command!
-    const p1 = this.judgePlayer(1, cmd.expect.p1)
-    const p2 = this.judgePlayer(2, cmd.expect.p2)
+    // 연습은 성공해서 이 지점에 도달한 것이므로 정답으로 확정한다.
+    // (창 기반 판정은 발화 중 미리 든 손을 조급반응으로 보지만, 연습에선 벌점 개념이 없다)
+    const ok = (): PlayerJudge => ({ correct: true, errorType: null, reactionMs: null })
+    const p1 = this.opt.waitForSuccess ? ok() : this.judgePlayer(1, cmd.expect.p1)
+    const p2 = this.opt.waitForSuccess ? ok() : this.judgePlayer(2, cmd.expect.p2)
     this.judged = { p1, p2 }
 
     const nCorrect = (p1.correct ? 1 : 0) + (p2.correct ? 1 : 0)
@@ -295,6 +345,12 @@ export class GameRunner {
         this.phase === 'window' ? Math.max(0, WINDOW_MS - (now - this.windowOpenAt)) : 0,
       score: this.score,
       judged: this.judged,
+      practiceOk: this.command
+        ? {
+            p1: this.poseMatches(1, this.command.expect.p1),
+            p2: this.poseMatches(2, this.command.expect.p2),
+          }
+        : { p1: false, p2: false },
       live: {
         p1: { left: p1.leftRaised, right: p1.rightRaised },
         p2: { left: p2.leftRaised, right: p2.rightRaised },
