@@ -1,4 +1,4 @@
-import type { ClipId } from './audio'
+import type { ClipId, NarrationKey } from './audio'
 import type { Command } from './types'
 
 // 확정 구령 시퀀스 (demo-spec v1.2)
@@ -76,6 +76,18 @@ export const PRACTICE: Command[] = [
   cmd(104, 'L2', ['오른손', '들어'], false, 'right', 'right', G.allRight),
   cmd(105, 'L1', ['양손', '들어'], false, 'both', 'both', G.allBoth),
 ]
+
+/**
+ * 연습 구령별 가이드 나레이션. 시간 제한이 없어 구령 뒤에 이어서 들려줄 수 있다.
+ * 103(왼손)은 녹음이 "두 사람 모두 한손을 들어주세요"로 구령('왼손 들어')과
+ * 어긋나 연결하지 않았다 — 화면 텍스트로만 안내한다.
+ */
+export const PRACTICE_NARRATION: Record<number, NarrationKey> = {
+  101: 'guideBlue',
+  102: 'guideWhite',
+  104: 'guideRight',
+  105: 'guideBoth',
+}
 
 /** 라운드별 역할: 1~10구령은 1P=청기, 11~20구령은 교체 */
 export function flagsForCommand(index: number): { p1: 'blue' | 'white'; p2: 'blue' | 'white' } {

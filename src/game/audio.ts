@@ -82,6 +82,7 @@ export function initAudio(): Promise<void> {
     } catch {
       /* 카운트다운 음원 실패 시 비프음으로 대체된다 */
     }
+    await loadNarrations(ac)
   })()
   return loadPromise
 }
@@ -235,6 +236,107 @@ export function speakCommand(
 
 export function stopSpeech() {
   stopClips()
+}
+
+// ─── 나레이션 (튜토리얼·연습 안내) ───
+//
+// 단어 클립과 달리 **문장**이므로 내부 쉼을 압축하면 억양이 망가진다.
+// 앞뒤 무음만 잘라내고 음량만 맞춘다.
+
+export type NarrationKey =
+  | 'facePosition' // 얼굴을 원 안에 위치시켜주세요
+  | 'stretch' // 양팔을 3초간 머리 위로 들어주세요
+  | 'genderSelect' // 당신의 성별을 선택해주세요
+  | 'guideBlue' // 청기를 들고 있는 사람이 양손을 위로 들어주세요
+  | 'guideWhite' // 백기를 들고 있는 사람이 양손을 위로 들어주세요
+  | 'guideRight' // 두 사람 모두 오른손을 들어주세요
+  | 'guideBoth' // 두 사람 모두 양손을 들어주세요
+
+const NARRATION_DIR = '브레인빌리지v_03_튜토리얼_02가람이'
+const NARRATION_FILE: Record<NarrationKey, string> = {
+  facePosition: '01_얼굴을_원_안에_위치시켜주세요',
+  stretch: '03_양팔을_3초간_머리_위로_들어주세요',
+  genderSelect: '04_당신의_성별을_선택해주세요',
+  guideBlue: '05_청기를_들고_있는_사람이_양손을_위로_들어주세요',
+  guideWhite: '06_백기를_들고_있는_사람이_양손을_위로_들어주세요',
+  guideRight: '08_두_사람_모두_오른손을_들어주세요',
+  guideBoth: '09_두_사람_모두_양손을_들어주세요',
+}
+// 미사용: 02_양손을_원_안에_위치시켜_주세요 (대응 단계 없음)
+//         07_두_사람_모두_한손을_들어주세요 (구령은 '왼손'이라 문구 불일치)
+
+interface NarrPlan {
+  buf: AudioBuffer
+  start: number
+  dur: number
+  gain: number
+}
+const narrations = new Map<NarrationKey, NarrPlan>()
+let narrSource: AudioBufferSourceNode | null = null
+
+function analyzeNarration(buf: AudioBuffer): NarrPlan {
+  const d = buf.getChannelData(0)
+  const sr = buf.sampleRate
+  let s = 0
+  let e = d.length - 1
+  while (s < d.length && Math.abs(d[s]) < SILENCE_TH) s++
+  while (e > s && Math.abs(d[e]) < SILENCE_TH) e--
+  const pad = 0.02
+  const start = Math.max(0, s / sr - pad)
+  const end = Math.min(buf.duration, e / sr + pad)
+  let peak = 0
+  for (let i = Math.round(start * sr); i < Math.round(end * sr); i++) {
+    const a = Math.abs(d[i])
+    if (a > peak) peak = a
+  }
+  return {
+    buf,
+    start,
+    dur: end - start,
+    gain: peak > 0.01 ? Math.min(4, Math.max(0.5, TARGET_PEAK / peak)) : 1,
+  }
+}
+
+async function loadNarrations(ac: AudioContext) {
+  await Promise.all(
+    (Object.keys(NARRATION_FILE) as NarrationKey[]).map(async key => {
+      try {
+        const url = `${import.meta.env.BASE_URL}assets/Sound/${encodeURIComponent(NARRATION_DIR)}/${encodeURIComponent(NARRATION_FILE[key])}.mp3`
+        const res = await fetch(url)
+        if (!res.ok) return
+        narrations.set(key, analyzeNarration(await ac.decodeAudioData(await res.arrayBuffer())))
+      } catch {
+        /* 개별 나레이션 실패는 화면 텍스트로 대체된다 */
+      }
+    }),
+  )
+}
+
+export function stopNarration() {
+  if (narrSource) {
+    try {
+      narrSource.stop()
+    } catch {
+      /* 이미 정지 */
+    }
+    narrSource = null
+  }
+}
+
+/** 나레이션을 재생한다. 이미 재생 중인 것은 멈춘다. 재생 길이(ms)를 돌려준다. */
+export function playNarration(key: NarrationKey): number {
+  const plan = narrations.get(key)
+  if (!plan) return 0
+  stopNarration()
+  const ac = audioCtx()
+  const src = ac.createBufferSource()
+  src.buffer = plan.buf
+  const g = ac.createGain()
+  g.gain.value = plan.gain
+  src.connect(g).connect(ac.destination)
+  src.start(ac.currentTime, plan.start, plan.dur)
+  narrSource = src
+  return Math.round(plan.dur * 1000)
 }
 
 // ─── 효과음 ───

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { FX, IMG, TUT_CHAR, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { poseEngine } from '../game/pose'
-import { beep, goodChime } from '../game/audio'
+import { beep, goodChime, playNarration, stopNarration, type NarrationKey } from '../game/audio'
 import { playBgm } from '../game/bgm'
 
 import type { Avatar as AvatarId } from '../assets'
@@ -47,8 +47,16 @@ export function TutorialScreen({
     }
   })
 
-  // 단계 안내는 화면의 큰 텍스트로만 한다.
-  // (TTS 음성은 몰입을 깨뜨려 제거했다. 정식 녹음 수령 시 이 자리에 넣을 것)
+  // 단계 안내 나레이션 (사람 녹음). 화면 텍스트와 같은 문장이어야 한다.
+  useEffect(() => {
+    const key: Record<Step, NarrationKey> = {
+      position: 'facePosition',
+      calibration: 'stretch',
+      gender: 'genderSelect',
+    }
+    playNarration(key[step])
+    return () => stopNarration()
+  }, [step])
 
   // 100ms 폴링으로 단계 진행 체크 (판정용이 아니라 UI 진행용)
   useEffect(() => {
@@ -193,7 +201,7 @@ export function TutorialScreen({
             성별선택
           </p>
           <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 162, fontSize: 56, textAlign: 'center', color: '#111', textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}>
-            당신의 캐릭터를 선택해주세요
+            당신의 성별을 선택해주세요
           </p>
           {([1, 2] as const).map(pid => {
             const key = pid === 1 ? 'p1' : 'p2'

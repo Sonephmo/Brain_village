@@ -4,10 +4,10 @@ import { Avatar, poseFromHands } from '../components/Avatar'
 import { CameraPanel } from '../components/CameraPanel'
 import { Sprite } from '../components/Sprite'
 import { GameRunner, type Snapshot } from '../game/engine'
-import { COMMANDS, PRACTICE, ROUND_SIZE, flagsForCommand } from '../game/commands'
+import { COMMANDS, PRACTICE, PRACTICE_NARRATION, ROUND_SIZE, flagsForCommand } from '../game/commands'
 import type { CommandLog } from '../game/types'
 import type { FaceName } from '../assets'
-import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, beep, playCountdown } from '../game/audio'
+import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, beep, playCountdown, playNarration, stopNarration } from '../game/audio'
 import { playBgm, stopBgm } from '../game/bgm'
 import type { AvatarPick } from './TutorialScreen'
 
@@ -100,6 +100,21 @@ export function GameScreen({
     runnerRef.current = runner
     runner.start()
     return () => runner.stop()
+  }, [stage])
+
+  // 연습: 구령이 끝나고 반응 대기가 시작되면 가이드 나레이션을 이어서 들려준다.
+  // 시간 제한이 없으므로 안내가 끝날 때까지 기다려도 진행에 지장이 없다.
+  const narratedRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (stage !== 'practice' || snap?.phase !== 'window' || !snap.command) return
+    const id = snap.command.id
+    if (narratedRef.current === id) return
+    narratedRef.current = id
+    const key = PRACTICE_NARRATION[id]
+    if (key) playNarration(key)
+  }, [stage, snap?.phase, snap?.command])
+  useEffect(() => {
+    if (stage !== 'practice') stopNarration()
   }, [stage])
 
   const isPractice = stage === 'practice'
