@@ -1,59 +1,62 @@
-// MediaPipe HandLandmarker 래퍼 — 손으로 화면을 조작하기 위한 것.
+// 손으로 화면을 조작하는 포인터.
 //
-// PoseLandmarker(몸 33점)로는 주먹을 판별할 수 없다. 손가락 정보가 없기 때문이다.
-// 그래서 메뉴 조작에는 손 랜드마크 21점을 쓴다. 게임 중에는 몸 인식만 돌리므로
-// 두 모델이 동시에 추론하는 일은 없다(프레임 비용이 겹치지 않는다).
+// 역할을 두 모델로 나눈다.
+//  - **위치**: PoseLandmarker의 오른손 손목(RIGHT_WRIST). 손 랜드마커는 멀리 있는 손을
+//    자주 놓치는데, 포즈의 손목 추적은 몸 전체 맥락으로 잡아 훨씬 안정적이다.
+//    또 손목은 주먹을 쥐어도 움직이지 않아 커서가 튀지 않는다.
+//  - **주먹**: GestureRecognizer의 `Closed_Fist`. 손가락 기하를 직접 계산하는 것보다
+//    학습된 분류기가 정확하다.
 //
-// 좌표 규약: 화면은 거울 모드라 화면상 위치는 x를 뒤집어야 한다(screenX = 1 - x).
+// 비용: 포즈 42ms + 제스처 87ms(빈 화면 최악값) → 매 프레임 둘 다 돌리면 8fps로 커서가
+// 끊긴다. 그래서 **포즈는 매 프레임, 제스처는 GESTURE_EVERY 프레임마다** 돌린다.
+// 커서는 부드럽게 움직이고, 주먹은 1초 유지를 판정할 만큼만 자주 확인하면 된다.
+//
+// 좌표 규약: 화면은 거울 모드라 화면상 위치는 x를 뒤집는다(screenX = 1 - x).
 
-import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision'
+import { FilesetResolver, GestureRecognizer, PoseLandmarker } from '@mediapipe/tasks-vision'
 import { cameraReady, cameraVideo, openCamera } from './camera'
 
-// 손 랜드마크 인덱스
-const WRIST = 0
-const INDEX_MCP = 5
-const MIDDLE_MCP = 9
-const TIPS = [8, 12, 16, 20] // 검지·중지·약지·소지 끝
-const PIPS = [6, 10, 14, 18] // 각 손가락 둘째 관절
+const RIGHT_WRIST = 16 // 참가자 기준 오른손 손목
+const VIS_MIN = 0.5
 
-/** 주먹으로 볼 최소 접힌 손가락 수 */
-const FIST_FINGERS = 3
-/** 커서 떨림을 줄이는 지수 평활 계수 (작을수록 부드럽고 느리다) */
+/** 제스처를 몇 프레임마다 확인할지 (1이면 매 프레임) */
+const GESTURE_EVERY = 2
+/** 커서 떨림을 줄이는 지수 평활 계수 */
 const SMOOTH = 0.35
-/** 손이 이 프레임 수만큼 안 보이면 커서를 숨긴다 */
+/** 손목이 이 프레임 수만큼 안 보이면 커서를 숨긴다 */
 const LOST_FRAMES = 8
 /**
- * 손은 화면 끝까지 편하게 뻗기 어렵다. 카메라 프레임의 가운데 영역만
- * 화면 전체에 대응시켜 적은 움직임으로 전체를 덮게 한다.
+ * 손을 화면 끝까지 뻗기는 어렵다. 카메라 프레임의 가운데 영역만 화면 전체에 대응시킨다.
+ * **부스 현장에서 카메라 위치·참가자 거리에 맞춰 조정할 값이다.**
  */
 const ACTIVE = { x0: 0.2, x1: 0.8, y0: 0.15, y1: 0.85 }
 
 export interface HandState {
-  /** 손이 추적되고 있는지 */
   tracking: boolean
-  /** 화면 정규화 좌표 (0~1, 거울 보정됨) */
   x: number
   y: number
-  /** 주먹을 쥐고 있는지 */
   fist: boolean
-  /** 주먹 유지 시간 대비 진행률 (0~1) */
   progress: number
 }
 
-type Landmark = { x: number; y: number; z: number }
+type Landmark = { x: number; y: number; z: number; visibility?: number }
 
 class HandEngine {
   ready = false
   error: string | null = null
   delegate: 'GPU' | 'CPU' | null = null
 
-  private lm: HandLandmarker | null = null
+  private pose: PoseLandmarker | null = null
+  private gesture: GestureRecognizer | null = null
   private canvas: HTMLCanvasElement | null = null
   private raf = 0
   private running = false
   private lastTs = 0
-  private lastDetect = 0
+  private poseTs = 0
+  private gestureTs = 0
+  private frame = 0
   private fps = 0
+  private gestureName = ''
 
   private smoothX = 0.5
   private smoothY = 0.5
@@ -74,23 +77,35 @@ class HandEngine {
       this.error = 'camera'
       return false
     }
-    if (!this.lm) {
+    if (!this.pose || !this.gesture) {
       try {
         const base = import.meta.env.BASE_URL
         const fileset = await FilesetResolver.forVisionTasks(`${base}wasm`)
-        const make = (delegate: 'GPU' | 'CPU') =>
-          HandLandmarker.createFromOptions(fileset, {
-            baseOptions: { modelAssetPath: `${base}models/hand_landmarker.task`, delegate },
+        const build = async (delegate: 'GPU' | 'CPU') => {
+          const pose = await PoseLandmarker.createFromOptions(fileset, {
+            baseOptions: { modelAssetPath: `${base}models/pose_landmarker_lite.task`, delegate },
             runningMode: 'VIDEO',
-            numHands: 2, // 오른손을 골라내려면 두 손을 다 봐야 한다
+            numPoses: 1,
           })
+          const gesture = await GestureRecognizer.createFromOptions(fileset, {
+            baseOptions: { modelAssetPath: `${base}models/gesture_recognizer.task`, delegate },
+            runningMode: 'VIDEO',
+            numHands: 1,
+          })
+          return { pose, gesture }
+        }
         try {
-          this.lm = await make('GPU')
+          const m = await build('GPU')
+          this.pose = m.pose
+          this.gesture = m.gesture
           this.delegate = 'GPU'
         } catch {
-          this.lm = await make('CPU')
+          const m = await build('CPU')
+          this.pose = m.pose
+          this.gesture = m.gesture
           this.delegate = 'CPU'
         }
+
         const c = document.createElement('canvas')
         const scale = Math.min(1, 480 / (video.videoHeight || 720))
         c.width = Math.max(64, Math.round((video.videoWidth || 1280) * scale))
@@ -102,8 +117,10 @@ class HandEngine {
           g.fillStyle = '#808080'
           g.fillRect(0, 0, c.width, c.height)
           try {
-            this.lastDetect = performance.now()
-            this.lm.detectForVideo(c, this.lastDetect)
+            this.poseTs = performance.now()
+            this.pose.detectForVideo(c, this.poseTs)
+            this.gestureTs = this.poseTs + 1
+            this.gesture.recognizeForVideo(c, this.gestureTs)
           } catch {
             /* 워밍업 실패는 무시 */
           }
@@ -132,6 +149,7 @@ class HandEngine {
     this.fist = false
     this.fistSince = 0
     this.consumed = false
+    this.gestureName = ''
   }
 
   private loop = () => {
@@ -144,58 +162,44 @@ class HandEngine {
     if (dt < 1000) this.fps = this.fps ? this.fps * 0.9 + (1000 / dt) * 0.1 : 1000 / dt
 
     const v = cameraVideo()
-    if (!this.lm || !this.canvas || !v || !cameraReady()) return
+    if (!this.pose || !this.gesture || !this.canvas || !v || !cameraReady()) return
     const g = this.canvas.getContext('2d')
     if (!g) return
     g.drawImage(v, 0, 0, this.canvas.width, this.canvas.height)
-    const ts = Math.max(now, this.lastDetect + 1)
-    this.lastDetect = ts
+    this.frame++
+
+    // 위치: 매 프레임
     try {
-      const res = this.lm.detectForVideo(this.canvas, ts)
-      this.apply(res, now)
+      this.poseTs = Math.max(now, this.poseTs + 1)
+      const r = this.pose.detectForVideo(this.canvas, this.poseTs)
+      this.applyPose((r.landmarks?.[0] as Landmark[] | undefined) ?? null)
     } catch {
       /* 개별 프레임 실패는 다음 프레임에 회복된다 */
     }
+
+    // 주먹: 몇 프레임마다 (커서 갱신률을 지키기 위해)
+    if (this.frame % GESTURE_EVERY === 0) {
+      try {
+        this.gestureTs = Math.max(this.poseTs + 1, this.gestureTs + 1)
+        const r = this.gesture.recognizeForVideo(this.canvas, this.gestureTs)
+        this.applyGesture(r, now)
+      } catch {
+        /* 무시 */
+      }
+    }
   }
 
-  private apply(
-    res: { landmarks?: Landmark[][]; handedness?: Array<Array<{ categoryName?: string }>> },
-    now: number,
-  ) {
-    const hands = res.landmarks ?? []
-    if (hands.length === 0) {
-      if (++this.lost >= LOST_FRAMES) {
-        this.hasPoint = false
-        this.fist = false
-        this.fistSince = 0
-        this.consumed = false
-      }
+  private applyPose(lm: Landmark[] | null) {
+    const w = lm?.[RIGHT_WRIST]
+    if (!w || (w.visibility ?? 0) < VIS_MIN) {
+      if (++this.lost >= LOST_FRAMES) this.hasPoint = false
       return
     }
     this.lost = 0
 
-    // 오른손을 고른다. 거울 모드에서는 MediaPipe가 붙이는 라벨이 뒤집혀 보이므로
-    // 라벨을 그대로 믿지 않고, 손이 하나면 그 손을 쓴다(메뉴가 멈추지 않게).
-    let idx = 0
-    if (hands.length > 1) {
-      const labels = res.handedness ?? []
-      const right = labels.findIndex(h => h[0]?.categoryName === 'Right')
-      if (right >= 0) idx = right
-      else {
-        // 라벨을 못 얻으면 화면상 더 왼쪽(= 1P 자리)에 있는 손을 쓴다
-        idx = hands.reduce(
-          (best, h, i) => (1 - h[MIDDLE_MCP].x < 1 - hands[best][MIDDLE_MCP].x ? i : best),
-          0,
-        )
-      }
-    }
-    const lm = hands[idx]
-
-    // 기준점은 손바닥 중심(중지 MCP). 손끝을 쓰면 주먹을 쥘 때 커서가 튄다.
-    const px = 1 - lm[MIDDLE_MCP].x // 거울 보정
-    const py = lm[MIDDLE_MCP].y
-
-    // 활성 영역을 화면 전체로 확대 + 클램프
+    // 거울 보정 후 활성 영역을 화면 전체로 확대 + 클램프
+    const px = 1 - w.x
+    const py = w.y
     const nx = Math.min(1, Math.max(0, (px - ACTIVE.x0) / (ACTIVE.x1 - ACTIVE.x0)))
     const ny = Math.min(1, Math.max(0, (py - ACTIVE.y0) / (ACTIVE.y1 - ACTIVE.y0)))
 
@@ -207,20 +211,15 @@ class HandEngine {
       this.smoothX += (nx - this.smoothX) * SMOOTH
       this.smoothY += (ny - this.smoothY) * SMOOTH
     }
+  }
 
-    // 주먹 판별: 손가락 끝이 손목에 PIP보다 가까우면 접힌 것.
-    // 손 크기(손목~중지 MCP)로 정규화해 거리와 무관하게 동작한다.
-    const wrist = lm[WRIST]
-    const palm = Math.hypot(lm[MIDDLE_MCP].x - wrist.x, lm[MIDDLE_MCP].y - wrist.y) || 0.001
-    let curled = 0
-    for (let i = 0; i < TIPS.length; i++) {
-      const tip = lm[TIPS[i]]
-      const pip = lm[PIPS[i]]
-      const dTip = Math.hypot(tip.x - wrist.x, tip.y - wrist.y) / palm
-      const dPip = Math.hypot(pip.x - wrist.x, pip.y - wrist.y) / palm
-      if (dTip < dPip) curled++
-    }
-    const fistNow = curled >= FIST_FINGERS
+  private applyGesture(
+    res: { gestures?: Array<Array<{ categoryName?: string; score?: number }>> },
+    now: number,
+  ) {
+    const top = res.gestures?.[0]?.[0]
+    this.gestureName = top?.categoryName ?? ''
+    const fistNow = this.gestureName === 'Closed_Fist' && (top?.score ?? 0) >= 0.5
 
     if (fistNow && !this.fist) {
       this.fist = true
@@ -253,6 +252,7 @@ class HandEngine {
     }
   }
 
+  /** 부스 점검용 (fps가 낮으면 ACTIVE 영역이나 GESTURE_EVERY를 조정한다) */
   status() {
     return {
       ready: this.ready,
@@ -260,6 +260,7 @@ class HandEngine {
       delegate: this.delegate,
       error: this.error,
       fps: Math.round(this.fps),
+      gesture: this.gestureName,
       ...this.state(),
     }
   }
