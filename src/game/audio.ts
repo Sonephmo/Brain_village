@@ -192,7 +192,10 @@ export function speakCommand(
 ) {
   stopClips()
   if (!clipsReady(words)) {
-    speak(text, isFake, onEnd)
+    // 클립 로드 실패 시의 대체 경로. TTS는 몰입을 깨뜨려 쓰지 않고,
+    // 화면의 구령 텍스트를 읽을 시간만 무음으로 확보한 뒤 반응 창을 연다.
+    const ms = Math.max(1200, text.length * 130)
+    activeTimer = window.setTimeout(() => onEnd(ms), ms)
     return
   }
   const ac = audioCtx()
@@ -230,60 +233,8 @@ export function speakCommand(
   )
 }
 
-// ─── 안내 멘트: 녹음이 없어 TTS 사용 ───
-
-let koVoice: SpeechSynthesisVoice | null = null
-function pickKoVoice() {
-  const voices = window.speechSynthesis?.getVoices() ?? []
-  koVoice = voices.find(v => v.lang.startsWith('ko')) ?? null
-}
-if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-  pickKoVoice()
-  window.speechSynthesis.onvoiceschanged = pickKoVoice
-}
-
-export function speak(text: string, isQuestion: boolean, onEnd: (spokenMs: number) => void) {
-  const fallback = () => {
-    const ms = Math.max(1200, text.length * 130)
-    window.setTimeout(() => {
-      beep(isQuestion ? 660 : 880, 150)
-      onEnd(ms)
-    }, ms)
-  }
-  if (!('speechSynthesis' in window)) {
-    fallback()
-    return
-  }
-  try {
-    window.speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.lang = 'ko-KR'
-    if (koVoice) u.voice = koVoice
-    u.rate = 0.92
-    u.pitch = isQuestion ? 1.25 : 1.0
-    const start = performance.now()
-    let done = false
-    const finish = () => {
-      if (done) return
-      done = true
-      onEnd(performance.now() - start)
-    }
-    u.onend = finish
-    u.onerror = finish
-    window.setTimeout(finish, Math.max(3500, text.length * 350))
-    window.speechSynthesis.speak(u)
-  } catch {
-    fallback()
-  }
-}
-
 export function stopSpeech() {
   stopClips()
-  try {
-    window.speechSynthesis?.cancel()
-  } catch {
-    /* noop */
-  }
 }
 
 // ─── 효과음 ───
@@ -317,4 +268,15 @@ export function greatChime() {
 
 export function neutralTick() {
   beep(520, 80, 0.08)
+}
+
+/**
+ * 역할 교체처럼 규칙이 바뀌는 구간을 알리는 전환음.
+ * 안내 음성을 없앤 뒤 이 구간이 완전히 무음이 되어, 참가자가 화면 변화를
+ * 놓치지 않도록 정답 차임과 구분되는 소리를 둔다.
+ */
+export function transitionChime() {
+  beep(659, 140, 0.13)
+  setTimeout(() => beep(523, 140, 0.13), 150)
+  setTimeout(() => beep(784, 260, 0.13), 300)
 }

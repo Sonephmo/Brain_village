@@ -3,8 +3,7 @@ import { FX, IMG, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import type { CommandLog } from '../game/types'
 import { buildSessionLog, downloadJson, isCompleted } from '../game/logging'
-import { speak } from '../game/audio'
-import { playBgm, setBgmVolume, stopBgm } from '../game/bgm'
+import { playBgm, stopBgm } from '../game/bgm'
 import { useEffect } from 'react'
 import type { AvatarPick } from './TutorialScreen'
 
@@ -29,19 +28,12 @@ export function ResultScreen({
   const completed = isCompleted(logs)
   const beat = completed && score >= 90 // 마을 오버레이 내러티브: 1등팀 89점
 
-  // 결과 BGM은 진입과 동시에 재생한다. 다만 점수 안내 음성이 묻히지 않도록
-  // 안내 중에는 볼륨을 낮춰 두고, 안내가 끝나면 정상 볼륨으로 올린다.
+  // 결과 BGM은 진입과 동시에 정상 볼륨으로 재생한다.
+  // (점수 안내 TTS가 있던 동안엔 볼륨을 낮췄지만, TTS를 제거해 더킹이 필요 없다)
   useEffect(() => {
-    playBgm('report', 0.22)
-    speak(
-      beat
-        ? `팀 점수 ${score}점! 1등입니다! 제주도로 떠나요!`
-        : `팀 점수 ${score}점! 정말 잘하셨어요!`,
-      false,
-      () => setBgmVolume(0.45),
-    )
+    playBgm('report')
     return () => stopBgm()
-  }, [beat, score])
+  }, [])
 
   return (
     <div className="fill fade-in">

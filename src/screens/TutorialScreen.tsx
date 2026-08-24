@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { FX, IMG, TUT_CHAR, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { poseEngine } from '../game/pose'
-import { beep, goodChime, speak } from '../game/audio'
+import { beep, goodChime } from '../game/audio'
 import { playBgm } from '../game/bgm'
 
 import type { Avatar as AvatarId } from '../assets'
@@ -47,15 +47,8 @@ export function TutorialScreen({
     }
   })
 
-  // 단계 안내 멘트
-  useEffect(() => {
-    const lines: Record<Step, string> = {
-      position: '얼굴을 원 안에 위치시켜 주세요',
-      calibration: '양팔을 3초간 머리 위로 들어주세요',
-      gender: '캐릭터를 선택해 주세요. 할머니는 왼손, 할아버지는 오른손을 들어주세요',
-    }
-    speak(lines[step], false, () => undefined)
-  }, [step])
+  // 단계 안내는 화면의 큰 텍스트로만 한다.
+  // (TTS 음성은 몰입을 깨뜨려 제거했다. 정식 녹음 수령 시 이 자리에 넣을 것)
 
   // 100ms 폴링으로 단계 진행 체크 (판정용이 아니라 UI 진행용)
   useEffect(() => {

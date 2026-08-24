@@ -7,7 +7,7 @@ import { GameRunner, type Snapshot } from '../game/engine'
 import { COMMANDS, PRACTICE, ROUND_SIZE, flagsForCommand } from '../game/commands'
 import type { CommandLog } from '../game/types'
 import type { FaceName } from '../assets'
-import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, beep, playCountdown, speak } from '../game/audio'
+import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, beep, playCountdown } from '../game/audio'
 import { playBgm, stopBgm } from '../game/bgm'
 import type { AvatarPick } from './TutorialScreen'
 
@@ -42,7 +42,6 @@ export function GameScreen({
   // 연습 (무채점 5구령, 튜토리얼 배경)
   useEffect(() => {
     if (stage !== 'practice') return
-    speak('연습을 시작할게요! 구령을 잘 듣고 따라해 보세요!', false, () => undefined)
     const runner = new GameRunner({
       commands: PRACTICE,
       scored: false,
@@ -55,7 +54,9 @@ export function GameScreen({
       },
     })
     runnerRef.current = runner
-    const t = window.setTimeout(() => runner.start(), 3600)
+    // 화면이 바뀐 것을 참가자가 인지할 최소 시간만 두고 시작한다
+    // (안내 음성을 기다리던 3.6초는 TTS 제거로 불필요해졌다)
+    const t = window.setTimeout(() => runner.start(), 1200)
     return () => {
       window.clearTimeout(t)
       runner.stop()

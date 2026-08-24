@@ -4,7 +4,7 @@
 
 import type { Command, CommandLog, ErrorType, ExpectedAction, PlayerId, PlayerJudge } from './types'
 import { poseEngine } from './pose'
-import { speak, speakCommand, stopSpeech, goodChime, greatChime, neutralTick } from './audio'
+import { speakCommand, stopSpeech, goodChime, greatChime, neutralTick, transitionChime } from './audio'
 
 export type Phase = 'idle' | 'speak' | 'window' | 'feedback' | 'roleswap' | 'done'
 
@@ -182,7 +182,7 @@ export class GameRunner {
       if (swapAfter != null && this.cmdIndex === swapAfter) {
         this.phase = 'roleswap'
         this.phaseStart = now
-        speak('역할을 바꿔요! 이제 깃발 색이 바뀝니다!', false, () => undefined)
+        transitionChime()
         this.emit(true)
       } else {
         this.nextCommand()
