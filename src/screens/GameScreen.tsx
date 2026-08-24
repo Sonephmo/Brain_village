@@ -25,6 +25,8 @@ export function GameScreen({
   const [stage, setStage] = useState<Stage>('practice')
   const [snap, setSnap] = useState<Snapshot | null>(null)
   const [countIdx, setCountIdx] = useState(-1)
+  // 중단은 세션을 끝내는 동작이라 오클릭을 막기 위해 두 번 눌러야 실행된다
+  const [abortArmed, setAbortArmed] = useState(false)
   const runnerRef = useRef<GameRunner | null>(null)
   const finishRef = useRef(onFinish)
   finishRef.current = onFinish
@@ -285,6 +287,24 @@ export function GameScreen({
             이 구령 건너뛰기 ▸
           </button>
         </>
+      )}
+
+      {/* 진행요원용 중단 (참가자 이탈 등). 지금까지의 점수로 결과 화면으로 넘어간다 */}
+      {stage === 'main' && (
+        <button
+          className="pixel-btn secondary staff-skip"
+          style={abortArmed ? { opacity: 1, background: '#ffd0d0' } : undefined}
+          onClick={() => {
+            if (!abortArmed) {
+              setAbortArmed(true)
+              window.setTimeout(() => setAbortArmed(false), 4000)
+              return
+            }
+            runnerRef.current?.abort()
+          }}
+        >
+          {abortArmed ? '한 번 더 누르면 중단' : '중단하기 ▸'}
+        </button>
       )}
 
       {/* 카메라 (중앙 하단, ON/OFF 토글 가능) */}

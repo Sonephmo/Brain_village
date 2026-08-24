@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { FX, IMG, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import type { CommandLog } from '../game/types'
-import { buildSessionLog, downloadJson } from '../game/logging'
+import { buildSessionLog, downloadJson, isCompleted } from '../game/logging'
 import { speak } from '../game/audio'
 import { useEffect } from 'react'
 import type { AvatarPick } from './TutorialScreen'
@@ -24,7 +24,9 @@ export function ResultScreen({
   onTitle: () => void
 }) {
   const session = useMemo(() => buildSessionLog(logs, score, avatars), [logs, score, avatars])
-  const beat = score >= 90 // 마을 오버레이 내러티브: 1등팀 89점
+  // 진행요원이 중단한 세션은 20구령을 다 하지 않았으므로 '완주'라고 말하지 않는다
+  const completed = isCompleted(logs)
+  const beat = completed && score >= 90 // 마을 오버레이 내러티브: 1등팀 89점
 
   useEffect(() => {
     speak(
@@ -49,7 +51,11 @@ export function ResultScreen({
         {score}점
       </p>
       <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 700, fontSize: 56, textAlign: 'center', color: '#fff' }}>
-        {beat ? '1등팀(89점)을 넘었어요! 제주도 여행 당첨!' : '두 분이 힘을 모아 완주했어요!'}
+        {beat
+          ? '1등팀(89점)을 넘었어요! 제주도 여행 당첨!'
+          : completed
+            ? '두 분이 힘을 모아 완주했어요!'
+            : `여기까지 하셨어요! (${logs.length}구령)`}
       </p>
       {/* 같은 팀이 한 번 더 → 마을 / 다음 팀 → 타이틀 리셋 */}
       <div

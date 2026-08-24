@@ -41,6 +41,9 @@ export interface SessionLog {
   아바타: { P1: string; P2: string }
   라운드역할: { R1: { P1: string; P2: string }; R2: { P1: string; P2: string } }
   입력모드: '포즈인식' | '키보드'
+  /** 20구령을 모두 마쳤는지. false면 진행요원이 중단한 세션이다. */
+  완주: boolean
+  진행구령수: number
   구령기록: CommandLog[]
   팀점수: number
   만점: number

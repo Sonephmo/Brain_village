@@ -116,6 +116,18 @@ export class GameRunner {
     this.judge(performance.now())
   }
 
+  /** 진행요원용: 지금까지의 기록으로 게임을 끝낸다 (참가자 이탈 등) */
+  abort() {
+    if (this.stopped) return
+    const { logs, score } = this
+    this.stop()
+    this.phase = 'done'
+    this.judged = null
+    // 마지막 스냅샷을 갱신해 구령 텍스트·타이머가 멈춘 채 남지 않게 한다
+    this.emit(true)
+    this.opt.onFinish(logs, score)
+  }
+
   private nextCommand() {
     this.cmdIndex += 1
     if (this.cmdIndex >= this.opt.commands.length) {
