@@ -52,8 +52,10 @@ export interface SessionLog {
 // 포즈 엔진이 프레임마다 갱신하는 플레이어 상태
 export interface PlayerPose {
   present: boolean
-  noseX: number | null // 반쪽 프레임 내 정규화 좌표 (0~1)
+  noseX: number | null // 반쪽 프레임 내 정규화 좌표 (0~1, 원본 기준)
   noseY: number | null
+  /** 거울 모드를 반영한 화면상 가로 위치 (= 1 - noseX). 화면 요소와 대조할 때 쓴다. */
+  screenX: number | null
   leftRaised: boolean // 사용자 신체 기준 왼손이 임계선 위
   rightRaised: boolean
   leftWristY: number | null

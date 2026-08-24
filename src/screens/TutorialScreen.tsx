@@ -10,6 +10,22 @@ import type { Avatar as AvatarId } from '../assets'
 type Step = 'position' | 'calibration' | 'gender'
 export type AvatarPick = AvatarId
 
+// 얼굴 원의 위치·크기 (디자인 A_1 game tut 1의 P1/P2_Face zone, 1920x1080 기준)
+const ZONE = { p1X: 412, p2X: 1508, y: 479.5, rx: 175, ry: 192.5 }
+
+/**
+ * 코가 얼굴 원 안에 있는지. 좌표는 **각 플레이어 반쪽 프레임** 기준이라
+ * 화면 절반(960px)에 대응시켜 비교한다. 가로는 거울 보정된 screenX를 쓴다.
+ * (이전 구현은 세로만 봐서 원 옆에 서 있어도 통과됐다)
+ */
+function faceInZone(pid: 1 | 2, screenX: number | null, noseY: number | null): boolean {
+  if (screenX == null || noseY == null) return true // 좌표를 못 얻으면 막지 않는다
+  const cx = (pid === 1 ? ZONE.p1X : ZONE.p2X - 960) / 960 // 반쪽 안에서의 중심 비율
+  const dx = (screenX - cx) / (ZONE.rx / 960)
+  const dy = (noseY - ZONE.y / 1080) / (ZONE.ry / 1080)
+  return dx * dx + dy * dy <= 1
+}
+
 // 튜토리얼 (디자인 확정 순서): ① 위치잡기 → ② 스트레칭 캘리브레이션 → ③ 성별선택(동작)
 // 연습 구령은 GameScreen의 practice 단계에서 진행
 export function TutorialScreen({
@@ -66,7 +82,7 @@ export function TutorialScreen({
       if (step === 'position') {
         const check = (pid: 1 | 2) => {
           const p = poseEngine.getPose(pid)
-          const inZone = p.present && (p.noseY == null || (p.noseY > 0.1 && p.noseY < 0.7))
+          const inZone = p.present && faceInZone(pid, p.screenX, p.noseY)
           const key = pid === 1 ? 'p1' : 'p2'
           if (inZone) {
             if (!holdRef.current[key]) holdRef.current[key] = now
