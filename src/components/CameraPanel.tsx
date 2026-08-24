@@ -11,18 +11,34 @@ export function CameraPanel({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [on, setOn] = useState(true)
+  const [hasStream, setHasStream] = useState(!!poseEngine.stream)
   const visible = forceOn || on
+
+  // 카메라 획득은 비동기라, 스트림이 생기면 뒤늦게라도 패널을 띄운다
+  useEffect(() => {
+    if (hasStream) return
+    const iv = window.setInterval(() => {
+      if (poseEngine.stream) {
+        setHasStream(true)
+        window.clearInterval(iv)
+      }
+    }, 500)
+    return () => window.clearInterval(iv)
+  }, [hasStream])
 
   useEffect(() => {
     if (videoRef.current && poseEngine.stream && visible) {
       videoRef.current.srcObject = poseEngine.stream
       void videoRef.current.play().catch(() => undefined)
     }
-  }, [visible])
+  }, [visible, hasStream])
+
+  // 카메라가 없으면(키보드 모드) 검은 박스로 화면을 가리지 않는다
+  if (!hasStream) return null
 
   return (
     <div className="camera-panel" style={style}>
-      {visible && poseEngine.stream ? (
+      {visible ? (
         <>
           <video ref={videoRef} muted playsInline />
           <div className="camera-split" />
@@ -40,10 +56,10 @@ export function CameraPanel({
             fontSize: 30,
           }}
         >
-          {poseEngine.stream ? '카메라 꺼짐' : '카메라 없음 (키보드 모드)'}
+          카메라 꺼짐
         </div>
       )}
-      {!forceOn && poseEngine.stream && (
+      {!forceOn && (
         <button
           className="pixel-btn secondary"
           style={{ position: 'absolute', right: 8, top: 8, fontSize: 20, padding: '4px 12px', zIndex: 5 }}

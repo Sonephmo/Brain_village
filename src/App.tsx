@@ -25,7 +25,7 @@ export default function App() {
 
   return (
     <div className="stage-wrap">
-      <div className="stage" style={{ transform: `scale(${scale})` }}>
+      <div className="stage" style={{ transform: `translate(-50%, -50%) scale(${scale})` }}>
         {screen === 'title' && <TitleScreen onStart={() => setScreen('village')} />}
         {screen === 'village' && <VillageScreen onEnterGame={() => setScreen('tutorial')} />}
         {screen === 'tutorial' && (

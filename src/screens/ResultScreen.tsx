@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { IMG } from '../assets'
+import { FX, IMG, frameSize } from '../assets'
+import { Sprite } from '../components/Sprite'
 import type { CommandLog } from '../game/types'
 import { buildSessionLog, downloadJson } from '../game/logging'
 import { speak } from '../game/audio'
@@ -46,17 +47,27 @@ export function ResultScreen({
       <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 700, fontSize: 56, textAlign: 'center', color: '#fff' }}>
         {beat ? '1등팀(89점)을 넘었어요! 제주도 여행 당첨!' : '두 분이 힘을 모아 완주했어요!'}
       </p>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 850, display: 'flex', gap: 30, justifyContent: 'center' }}>
-        <button
-          className="pixel-btn secondary"
-          onClick={() => downloadJson(session, `brainvillage_${Date.now()}.json`)}
-        >
-          결과 JSON 다운로드
-        </button>
-        <button className="pixel-btn" onClick={onRestart}>
-          마을로 돌아가기
-        </button>
+      <div
+        role="button"
+        onClick={onRestart}
+        style={{
+          position: 'absolute',
+          left: '50%',
+          top: 806,
+          transform: 'translateX(-50%)',
+          ...frameSize(FX.btnRetry, { w: 520 }),
+          cursor: 'pointer',
+        }}
+      >
+        <Sprite frame={FX.btnRetry} style={{ inset: 0 }} />
       </div>
+      <button
+        className="pixel-btn secondary"
+        style={{ position: 'absolute', right: 40, bottom: 32, fontSize: 30 }}
+        onClick={() => downloadJson(session, `brainvillage_${Date.now()}.json`)}
+      >
+        결과 JSON 다운로드
+      </button>
     </div>
   )
 }

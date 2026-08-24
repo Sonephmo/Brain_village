@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { IMG, PLACES } from '../assets'
-import { Sprite } from '../components/Sprite'
 import { beep } from '../game/audio'
 
 // 2_GameMap: 마을에서 미니게임 선택. 활성 1종(초등학교=청기백기), 나머지 "준비중"
@@ -28,10 +27,18 @@ export function VillageScreen({ onEnterGame }: { onEnterGame: () => void }) {
             else showToast('준비중입니다!')
           }}
         >
-          {/* 호버 시 건물 컷아웃 + 발광 (피그마 Place_* 노드의 #37ff83 글로우) */}
-          <div className="glow" style={{ position: 'absolute', inset: 0, filter: 'drop-shadow(0 0 28px #37ff83) drop-shadow(0 0 10px #37ff83)' }}>
-            <Sprite crop={p.crop} style={{ inset: 0 }} />
-          </div>
+          {/* 호버 강조 (피그마 Place_* 노드의 #37ff83 글로우) */}
+          <div
+            className="glow"
+            style={{
+              position: 'absolute',
+              inset: -10,
+              borderRadius: 14,
+              border: '5px solid #37ff83',
+              background: 'rgba(55,255,131,0.18)',
+              boxShadow: '0 0 40px #37ff83, inset 0 0 30px rgba(55,255,131,0.35)',
+            }}
+          />
           <div className="label pixel-text">{p.label}</div>
         </div>
       ))}

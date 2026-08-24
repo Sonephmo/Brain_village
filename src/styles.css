@@ -17,18 +17,22 @@ html, body, #root {
   user-select: none;
 }
 
-/* 1920x1080 고정 스테이지를 화면에 맞춰 스케일 */
+/* 1920x1080(16:9) 고정 스테이지를 화면에 맞춰 레터박스 스케일.
+   flex 배치는 flex-shrink가 width를 줄여 화면비를 깨뜨리므로 절대배치로 고정한다. */
 .stage-wrap {
+  position: relative;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+  background: #000;
 }
 .stage {
-  position: relative;
+  position: absolute;
+  left: 50%;
+  top: 50%;
   width: 1920px;
   height: 1080px;
+  flex: none;
   overflow: hidden;
   background: #000;
   transform-origin: center center;

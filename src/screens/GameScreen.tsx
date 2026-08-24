@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { EFFECT, IMG } from '../assets'
+import { FX, IMG, frameSize } from '../assets'
 import { Avatar, poseFromHands } from '../components/Avatar'
 import { CameraPanel } from '../components/CameraPanel'
 import { Sprite } from '../components/Sprite'
@@ -109,6 +109,15 @@ export function GameScreen({
   }
 
   const bg = isPractice ? IMG.tutBg : IMG.gameBg
+  // L4 복합 구령("왼손 올리지 말고 둘다 오른손 올려!")은 최대 19자라 한 줄에 안 들어간다.
+  // 길이에 따라 글자를 줄여 항상 한 줄로 읽히게 한다.
+  const cmdFontSize = (text: string, max: number) => {
+    const n = text.length
+    if (n <= 8) return max
+    if (n <= 12) return Math.round(max * 0.82)
+    if (n <= 16) return Math.round(max * 0.68)
+    return Math.round(max * 0.56)
+  }
   const showEffects = snap?.phase === 'feedback' && judged
   const nCorrect = judged ? (judged.p1.correct ? 1 : 0) + (judged.p2.correct ? 1 : 0) : 0
 
@@ -117,11 +126,12 @@ export function GameScreen({
       <img src={bg} alt="" className="fill" style={{ objectFit: 'cover', filter: stage === 'countdown' ? 'blur(5px)' : 'none' }} />
       <div className="divider-line" style={{ top: 212 }} />
 
-      {/* 아바타 (디자인 A Game play 좌표) */}
-      <Avatar avatar={avatars.p1} flag={flags.p1} pose={poseOf('p1')} face={faceOf('p1')} size={499} style={{ left: 130, top: 343 }} />
-      <Avatar avatar={avatars.p2} flag={flags.p2} pose={poseOf('p2')} face={faceOf('p2')} size={499} style={{ left: 1290, top: 343 }} />
+      {/* 아바타 (디자인 A Game play 좌표의 가로 중심 기준) */}
+      <Avatar avatar={avatars.p1} flag={flags.p1} pose={poseOf('p1')} face={faceOf('p1')} height={540} left={380} top={330} />
+      <Avatar avatar={avatars.p2} flag={flags.p2} pose={poseOf('p2')} face={faceOf('p2')} height={540} left={1540} top={330} />
 
-      {/* 구령 텍스트 */}
+      {/* 구령 텍스트 — 연습은 밝은 tut_bg라 어두운 글씨(디자인 준수), 본게임은 흰 글씨+아웃라인.
+          가이드 문장은 연습에서만 노출(본게임 프레임에는 구령만 있음). */}
       {cmd && (snap?.phase === 'speak' || snap?.phase === 'window' || snap?.phase === 'feedback') && (
         <>
           <p
@@ -130,41 +140,43 @@ export function GameScreen({
               position: 'absolute',
               left: 0,
               right: 0,
-              top: 96,
-              fontSize: 130,
+              top: isPractice ? 42 : 118,
+              fontSize: cmdFontSize(cmd.text, isPractice ? 96 : 140),
               textAlign: 'center',
-              color: '#fff',
-              textShadow: '0 6px 0 rgba(0,0,0,0.55)',
+              whiteSpace: 'nowrap',
+              color: isPractice ? '#4a4a4a' : '#fff',
+              textShadow: isPractice ? '0 3px 0 rgba(255,255,255,0.8)' : '0 6px 0 rgba(0,0,0,0.55)',
             }}
           >
             {cmd.text}
-            {cmd.isFake && <span style={{ color: '#ffb43a', fontSize: 170 }}> ?</span>}
           </p>
-          {/* 페이크 구령: 억양 외 시각 구분 (스펙 §6 접근성) */}
+          {/* 페이크 구령: 억양만으로는 난청 참가자에게 불공정 → 테두리로 시각 구분 (스펙 §6) */}
           {cmd.isFake && (
             <div
               style={{
                 position: 'absolute',
                 left: '50%',
-                top: 86,
+                top: isPractice ? 32 : 106,
                 transform: 'translateX(-50%)',
-                width: 1100,
-                height: 210,
+                width: 1240,
+                height: isPractice ? 164 : 234,
                 border: '10px dashed #ffb43a',
                 borderRadius: 20,
                 pointerEvents: 'none',
               }}
             />
           )}
-          <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 268, fontSize: 48, textAlign: 'center', color: '#fff', textShadow: '0 3px 0 rgba(0,0,0,0.5)' }}>
-            {cmd.guide}
-          </p>
+          {isPractice && (
+            <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 214, fontSize: 62, textAlign: 'center', color: '#111', textShadow: '0 2px 0 rgba(255,255,255,0.75)' }}>
+              {cmd.guide}
+            </p>
+          )}
         </>
       )}
 
       {/* 반응 창 타이머 (노란 픽셀 숫자, 100ms 단위) */}
-      {snap?.phase === 'window' && (
-        <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 0, fontSize: 96, textAlign: 'center', color: '#ffd83a', textShadow: '0 4px 0 rgba(0,0,0,0.6)' }}>
+      {snap?.phase === 'window' && !isPractice && (
+        <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 4, fontSize: 90, textAlign: 'center', color: '#ffd83a', textShadow: '0 4px 0 rgba(0,0,0,0.6)' }}>
           {(snap.windowRemainMs / 1000).toFixed(1)}
         </p>
       )}
@@ -183,7 +195,7 @@ export function GameScreen({
         </p>
       )}
       {isPractice && (
-        <p className="pixel-text" style={{ position: 'absolute', right: 40, top: 20, fontSize: 44, color: '#ffd83a', textShadow: '0 3px 0 rgba(0,0,0,0.6)' }}>
+        <p className="pixel-text" style={{ position: 'absolute', right: 40, top: 20, fontSize: 44, color: '#8a5a00', textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}>
           연습 {Math.min(cmdIndex + 1, PRACTICE.length)} / {PRACTICE.length}
         </p>
       )}
@@ -191,10 +203,18 @@ export function GameScreen({
       {/* 피드백 이펙트: 정답자 아래 Good, 둘 다 정답이면 중앙 Great. 오답은 표정으로만 (스펙 §6) */}
       {showEffects && judged && (
         <>
-          {judged.p1.correct && <Sprite crop={EFFECT.good.crop} className="pop" style={{ left: 210, top: 733, width: 627, height: 347 }} />}
-          {judged.p2.correct && <Sprite crop={EFFECT.good.crop} className="pop" style={{ left: 1163, top: 733, width: 627, height: 347 }} />}
+          {judged.p1.correct && (
+            <Sprite frame={FX.good} className="pop" style={{ ...frameSize(FX.good, { w: 460 }), left: 150, top: 880 }} />
+          )}
+          {judged.p2.correct && (
+            <Sprite frame={FX.good} className="pop" style={{ ...frameSize(FX.good, { w: 460 }), left: 1310, top: 880 }} />
+          )}
           {nCorrect === 2 && (
-            <Sprite crop={EFFECT.great.crop} className="pop" style={{ left: '50%', top: 380, width: 700, height: 326, transform: 'translateX(-50%)' }} />
+            <Sprite
+              frame={FX.great}
+              className="pop"
+              style={{ ...frameSize(FX.great, { w: 620 }), left: '50%', top: 700, transform: 'translateX(-50%)' }}
+            />
           )}
         </>
       )}
@@ -208,8 +228,8 @@ export function GameScreen({
           <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 360, fontSize: 60, textAlign: 'center', color: '#ffd83a' }}>
             이제 1P는 백기, 2P는 청기입니다
           </p>
-          <Avatar avatar={avatars.p1} flag="white" pose="up" face="good" size={420} style={{ left: 320, top: 460 }} />
-          <Avatar avatar={avatars.p2} flag="blue" pose="up" face="good" size={420} style={{ left: 1180, top: 460 }} />
+          <Avatar avatar={avatars.p1} flag="white" pose="up" face="good" height={440} left={470} top={500} />
+          <Avatar avatar={avatars.p2} flag="blue" pose="up" face="good" height={440} left={1450} top={500} />
         </div>
       )}
 

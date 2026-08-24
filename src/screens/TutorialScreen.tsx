@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { EFFECT, IMG, TUT_CHAR } from '../assets'
+import { FX, IMG, TUT_CHAR, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { poseEngine } from '../game/pose'
 import { beep, goodChime, speak } from '../game/audio'
 
+import type { Avatar as AvatarId } from '../assets'
+
 type Step = 'position' | 'calibration' | 'gender'
-export type AvatarPick = 'grandma' | 'grandfa'
+export type AvatarPick = AvatarId
 
 // 튜토리얼 (디자인 확정 순서): ① 위치잡기 → ② 스트레칭 캘리브레이션 → ③ 성별선택(동작)
 // 연습 구령은 GameScreen의 practice 단계에서 진행
@@ -159,8 +161,8 @@ export function TutorialScreen({
           </p>
           <img src={IMG.faceZone} alt="" style={{ position: 'absolute', left: 237, top: 287, width: 350, height: 385 }} />
           <img src={IMG.faceZone} alt="" style={{ position: 'absolute', left: 1333, top: 287, width: 350, height: 385 }} />
-          {ok.p1 && <Sprite crop={EFFECT.ok.crop} className="pop" style={{ left: 313, top: 720, width: 266, height: 161 }} />}
-          {ok.p2 && <Sprite crop={EFFECT.ok.crop} className="pop" style={{ left: 1384, top: 720, width: 266, height: 161 }} />}
+          {ok.p1 && <Sprite frame={FX.ok} className="pop" style={{ ...frameSize(FX.ok, { w: 266 }), left: 279, top: 700 }} />}
+          {ok.p2 && <Sprite frame={FX.ok} className="pop" style={{ ...frameSize(FX.ok, { w: 266 }), left: 1375, top: 700 }} />}
         </>
       )}
 
@@ -194,31 +196,49 @@ export function TutorialScreen({
           </p>
           {([1, 2] as const).map(pid => {
             const key = pid === 1 ? 'p1' : 'p2'
-            const baseX = pid === 1 ? 119 : 1099
+            // 각 플레이어 영역(화면 절반)의 중심
+            const half = pid === 1 ? 480 : 1440
             const picked = picks[key]
+            const opts = [
+              { id: 'grandma' as AvatarPick, cx: half - 200, hand: '왼손 들기' },
+              { id: 'grandfa' as AvatarPick, cx: half + 200, hand: '오른손 들기' },
+            ]
             return (
               <div key={pid}>
-                <div
-                  onClick={() => pickByClick(key, 'grandma')}
-                  style={{ position: 'absolute', left: baseX, top: 449, width: 300, height: 500, cursor: 'pointer', outline: picked === 'grandma' ? '8px solid #37ff83' : 'none', borderRadius: 12 }}
-                >
-                  <Sprite crop={TUT_CHAR.grandma} style={{ inset: 0 }} />
-                </div>
-                <div
-                  onClick={() => pickByClick(key, 'grandfa')}
-                  style={{ position: 'absolute', left: baseX + 403, top: 449, width: 300, height: 500, cursor: 'pointer', outline: picked === 'grandfa' ? '8px solid #37ff83' : 'none', borderRadius: 12 }}
-                >
-                  <Sprite crop={TUT_CHAR.grandfa} style={{ inset: 0 }} />
-                </div>
-                <p className="pixel-text" style={{ position: 'absolute', left: baseX - 27, top: 949, width: 353, fontSize: 40, textAlign: 'center', color: '#111', textShadow: '0 2px 0 rgba(255,255,255,0.6)' }}>
-                  왼손 들기
-                </p>
-                <p className="pixel-text" style={{ position: 'absolute', left: baseX + 376, top: 949, width: 353, fontSize: 40, textAlign: 'center', color: '#111', textShadow: '0 2px 0 rgba(255,255,255,0.6)' }}>
-                  오른손 들기
-                </p>
-                {picked && (
-                  <Sprite crop={EFFECT.ok.crop} className="pop" style={{ left: baseX + 17, top: 288, width: 266, height: 161 }} />
-                )}
+                {opts.map(o => {
+                  const size = frameSize(TUT_CHAR[o.id], { h: 470 })
+                  return (
+                    <div key={o.id}>
+                      <div
+                        onClick={() => pickByClick(key, o.id)}
+                        style={{
+                          position: 'absolute',
+                          left: o.cx - size.width / 2,
+                          top: 430,
+                          ...size,
+                          cursor: 'pointer',
+                          outline: picked === o.id ? '8px solid #37ff83' : 'none',
+                          borderRadius: 12,
+                        }}
+                      >
+                        <Sprite frame={TUT_CHAR[o.id]} style={{ inset: 0 }} />
+                      </div>
+                      <p
+                        className="pixel-text"
+                        style={{ position: 'absolute', left: o.cx - 180, top: 916, width: 360, fontSize: 42, textAlign: 'center', color: '#111', textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}
+                      >
+                        {o.hand}
+                      </p>
+                      {picked === o.id && (
+                        <Sprite
+                          frame={FX.ok}
+                          className="pop"
+                          style={{ ...frameSize(FX.ok, { w: 240 }), left: o.cx - 120, top: 300 }}
+                        />
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )
           })}
