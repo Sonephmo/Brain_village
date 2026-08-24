@@ -127,8 +127,8 @@ export function GameScreen({
       <div className="divider-line" style={{ top: 212 }} />
 
       {/* 아바타 (디자인 A Game play 좌표의 가로 중심 기준) */}
-      <Avatar avatar={avatars.p1} flag={flags.p1} pose={poseOf('p1')} face={faceOf('p1')} height={540} left={380} top={330} />
-      <Avatar avatar={avatars.p2} flag={flags.p2} pose={poseOf('p2')} face={faceOf('p2')} height={540} left={1540} top={330} />
+      <Avatar avatar={avatars.p1} flag={flags.p1} pose={poseOf('p1')} face={faceOf('p1')} size={499} left={380} top={343} />
+      <Avatar avatar={avatars.p2} flag={flags.p2} pose={poseOf('p2')} face={faceOf('p2')} size={499} left={1519} top={343} />
 
       {/* 구령 텍스트 — 연습은 밝은 tut_bg라 어두운 글씨(디자인 준수), 본게임은 흰 글씨+아웃라인.
           가이드 문장은 연습에서만 노출(본게임 프레임에는 구령만 있음). */}
@@ -221,15 +221,15 @@ export function GameScreen({
 
       {/* 역할 교체 안내 */}
       {snap?.phase === 'roleswap' && (
-        <div className="fill fade-in" style={{ background: 'rgba(0,0,0,0.6)', zIndex: 30 }}>
+        <div className="fill fade-in" style={{ background: 'rgba(0,0,0,0.86)', zIndex: 30 }}>
           <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 200, fontSize: 110, textAlign: 'center', color: '#fff' }}>
             역할을 바꿔요!
           </p>
           <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 360, fontSize: 60, textAlign: 'center', color: '#ffd83a' }}>
             이제 1P는 백기, 2P는 청기입니다
           </p>
-          <Avatar avatar={avatars.p1} flag="white" pose="up" face="good" height={440} left={470} top={500} />
-          <Avatar avatar={avatars.p2} flag="blue" pose="up" face="good" height={440} left={1450} top={500} />
+          <Avatar avatar={avatars.p1} flag="white" pose="up" face="good" size={420} left={470} top={480} />
+          <Avatar avatar={avatars.p2} flag="blue" pose="up" face="good" size={420} left={1450} top={480} />
         </div>
       )}
 
