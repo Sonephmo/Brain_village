@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { FX, IMG, TUT_CHAR, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { poseEngine } from '../game/pose'
+import { cameraStream } from '../game/camera'
 import { playNarration, playSfx, stopNarration, type NarrationKey } from '../game/audio'
 import { playBgm } from '../game/bgm'
 
@@ -57,8 +58,8 @@ export function TutorialScreen({
   }, [])
 
   useEffect(() => {
-    if (videoRef.current && poseEngine.stream) {
-      videoRef.current.srcObject = poseEngine.stream
+    if (videoRef.current && cameraStream()) {
+      videoRef.current.srcObject = cameraStream()
       void videoRef.current.play().catch(() => undefined)
     }
   })
@@ -168,7 +169,7 @@ export function TutorialScreen({
       <img src={IMG.tutBg} alt="" className="fill" style={{ objectFit: 'cover' }} />
 
       {/* 위치잡기/캘리브레이션은 카메라 강제 ON: 전체 화면 카메라 레이어 */}
-      {(step === 'position' || step === 'calibration') && poseEngine.stream && (
+      {(step === 'position' || step === 'calibration') && cameraStream() && (
         <video
           ref={videoRef}
           muted

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { poseEngine } from '../game/pose'
+import { cameraStream } from '../game/camera'
 
 // 카메라 화면: 거울 모드 + 중앙 분할선. 튜토리얼 위치잡기/캘리브레이션 구간은 강제 ON(스펙 §6)
 export function CameraPanel({
@@ -11,14 +11,14 @@ export function CameraPanel({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [on, setOn] = useState(true)
-  const [hasStream, setHasStream] = useState(!!poseEngine.stream)
+  const [hasStream, setHasStream] = useState(!!cameraStream())
   const visible = forceOn || on
 
   // 카메라 획득은 비동기라, 스트림이 생기면 뒤늦게라도 패널을 띄운다
   useEffect(() => {
     if (hasStream) return
     const iv = window.setInterval(() => {
-      if (poseEngine.stream) {
+      if (cameraStream()) {
         setHasStream(true)
         window.clearInterval(iv)
       }
@@ -27,8 +27,8 @@ export function CameraPanel({
   }, [hasStream])
 
   useEffect(() => {
-    if (videoRef.current && poseEngine.stream && visible) {
-      videoRef.current.srcObject = poseEngine.stream
+    if (videoRef.current && cameraStream() && visible) {
+      videoRef.current.srcObject = cameraStream()
       void videoRef.current.play().catch(() => undefined)
     }
   }, [visible, hasStream])

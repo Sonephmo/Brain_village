@@ -12,6 +12,7 @@
 //  - 화면 대조가 필요한 좌표(얼굴 위치)는 mirror 처리한 screenX로 따로 제공한다.
 
 import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision'
+import { cameraError, cameraStream, openCamera } from './camera'
 import type { PlayerId, PlayerPose, Hand } from './types'
 
 const NOSE = 0
@@ -126,26 +127,10 @@ class PoseEngine {
   async init(): Promise<void> {
     if (this.ready || this.initError) return
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
-        audio: false,
-      })
-      const video = document.createElement('video')
-      video.muted = true
-      video.playsInline = true
-      video.srcObject = this.stream
-      await video.play()
-      // 해상도가 확정될 때까지 기다린다 (readyState만으로는 0x0인 경우가 있다)
-      if (!video.videoWidth) {
-        await new Promise<void>(res => {
-          const done = () => {
-            video.removeEventListener('loadedmetadata', done)
-            res()
-          }
-          video.addEventListener('loadedmetadata', done)
-          window.setTimeout(done, 3000)
-        })
-      }
+      // 카메라는 camera.ts가 소유한다. 타이틀의 손 인식이 이미 열어 뒀으면 그대로 쓴다.
+      const video = await openCamera()
+      if (!video) throw new Error(cameraError() ?? 'camera unavailable')
+      this.stream = cameraStream()
       this.video = video
 
       const base = import.meta.env.BASE_URL
@@ -383,7 +368,7 @@ class PoseEngine {
   destroy() {
     cancelAnimationFrame(this.raf)
     window.clearInterval(this.watchdog)
-    this.stream?.getTracks().forEach(t => t.stop())
+    // 스트림은 camera.ts 소유이므로 여기서 멈추지 않는다 (다른 화면이 쓸 수 있다)
     this.landmarkers?.forEach(l => l.close())
     this.landmarkers = null
     this.stream = null
