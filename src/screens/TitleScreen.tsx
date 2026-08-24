@@ -2,72 +2,33 @@ import { FX, IMG, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { beep } from '../game/audio'
 
-// 1_MainTitle 프레임은 디자인에서 비어 있고, 디자인의 TitleBraintable 이미지는
-// 다른 프로젝트(브레인테이블) 로고이므로 사용하지 않는다.
-// 브레인빌리지 로고 에셋(스펙 §8 브랜딩 1종) 수령 시 이 텍스트 블록을 교체할 것.
+// 피그마 1_MainTitle 프레임 그대로. 좌표·크기는 디자인 CSS 값을 사용한다.
+//   Image_Main          1920x2075  (0, -23)   ← 프레임보다 커서 아래가 잘린다
+//   Title_BrainVillage  1292x727   (314, -23)
+//   Button_Start        663x228    (629, 752)
+const BTN = frameSize(FX.btnStart, { w: 663 })
+
 export function TitleScreen({ onStart }: { onStart: () => void }) {
   return (
-    <div className="fill fade-in" style={{ background: '#0d1b2a' }}>
+    <div className="fill fade-in" style={{ background: '#FFFFFF' }}>
       <img
-        src={IMG.mapBg}
+        src={IMG.titleMain}
         alt=""
-        className="fill"
-        style={{ objectFit: 'cover', filter: 'blur(6px) brightness(0.55)' }}
+        style={{ position: 'absolute', left: 0, top: -23, width: 1920, height: 2075, objectFit: 'cover' }}
       />
-
-      <p
-        className="pixel-text"
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 210,
-          fontSize: 200,
-          textAlign: 'center',
-          color: '#fff',
-          textShadow: '0 10px 0 rgba(0,0,0,0.6), 0 0 40px rgba(55,255,131,0.45)',
-        }}
-      >
-        브레인빌리지
-      </p>
-      <p
-        className="pixel-text"
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 500,
-          fontSize: 56,
-          textAlign: 'center',
-          color: '#37ff83',
-          letterSpacing: 8,
-        }}
-      >
-        BRAIN VILLAGE
-      </p>
-      <p
-        className="pixel-text"
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 600,
-          fontSize: 44,
-          textAlign: 'center',
-          color: 'rgba(255,255,255,0.8)',
-        }}
-      >
-        둘이 함께하는 몸으로 하는 두뇌 놀이
-      </p>
-
+      <img
+        src={IMG.titleLogo}
+        alt="브레인빌리지"
+        style={{ position: 'absolute', left: 314, top: -23, width: 1292, height: 727, objectFit: 'cover' }}
+      />
       <div
         role="button"
+        aria-label="시작하기"
         style={{
           position: 'absolute',
-          left: '50%',
-          top: 730,
-          transform: 'translateX(-50%)',
-          ...frameSize(FX.btnStart, { w: 620 }),
+          left: 629,
+          top: 752 + (228 - BTN.height) / 2,
+          ...BTN,
           cursor: 'pointer',
         }}
         onClick={() => {

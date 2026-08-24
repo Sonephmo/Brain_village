@@ -27,6 +27,8 @@ export const IMG = {
   tutBg: A('tut_bg.png'),
   gameBg: A('game_bg.png'),
   faceZone: A('face_zone.png'),
+  titleMain: A('title_main.jpg'),
+  titleLogo: A('title_logo.png'),
 }
 
 const SHEET_BLUE: [number, number] = [1536, 1024]
