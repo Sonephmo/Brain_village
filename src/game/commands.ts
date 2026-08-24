@@ -1,46 +1,83 @@
+import type { ClipId } from './audio'
 import type { Command } from './types'
 
-// 확정 구령 시퀀스 (demo-spec v1.1)
-// 동사는 디자인 확정안 "올려" 채택. 시퀀스/레벨/기대동작은 스펙 §3.4 그대로.
-// 1라운드: 1P=청기, 2P=백기 / 2라운드: 역할 교체(1P=백기, 2P=청기)
+// 확정 구령 시퀀스 (demo-spec v1.2)
+// 화면 텍스트는 **녹음된 단어와 정확히 일치**해야 한다(난청 참가자 대응, 스펙 §6).
+// 녹음 어휘 7개: 청기 · 백기 · 들어 · 올리지_말고 · 양손 · 왼손 · 오른손
+//   - 동사는 "들어" (스펙 v1.0 표기와 동일. 디자인 시안의 "올려"는 녹음과 불일치하여 폐기)
+//   - "둘다" 녹음이 없다 → **색을 지정하지 않은 구령이 두 사람 모두**를 뜻한다.
+//     (청기백기 놀이의 통상 규칙이고, 가이드 문장이 "두 사람 모두"로 보강한다)
+// 시퀀스/레벨/기대동작 배분은 스펙 §3.4를 그대로 유지한다.
 
 export const ROUND_SIZE = 10
 
+const cmd = (
+  id: number,
+  level: Command['level'],
+  words: ClipId[],
+  isFake: boolean,
+  p1: Command['expect']['p1'],
+  p2: Command['expect']['p2'],
+  guide: string,
+): Command => ({
+  id,
+  level,
+  words,
+  // 텍스트는 단어를 그대로 이어 만든다 → 화면과 음성이 항상 일치한다
+  text: words.map(w => (w === '올리지말고' ? '올리지 말고' : w)).join(' ') + (isFake ? '?' : '!'),
+  isFake,
+  expect: { p1, p2 },
+  guide,
+})
+
+const G = {
+  blueBoth: '청기를 들고있는 사람이 양손을 위로 들어주세요!',
+  whiteBoth: '백기를 들고있는 사람이 양손을 위로 들어주세요!',
+  allBoth: '두 사람 모두 양손을 들어주세요!',
+  blueLeft: '청기를 든 사람만 왼손을 들어주세요!',
+  blueRight: '청기를 든 사람만 오른손을 들어주세요!',
+  whiteLeft: '백기를 든 사람만 왼손을 들어주세요!',
+  whiteRight: '백기를 든 사람만 오른손을 들어주세요!',
+  allLeft: '두 사람 모두 왼손을 들어주세요!',
+  allRight: '두 사람 모두 오른손을 들어주세요!',
+  fake: '물음표! 움직이면 안 돼요!',
+}
+
 export const COMMANDS: Command[] = [
-  // ─── 1라운드 (1P=청, 2P=백) ───
-  { id: 1, level: 'L1', text: '청기 올려!', isFake: false, expect: { p1: 'both', p2: 'none' }, guide: '청기를 들고있는 사람이 양손을 위로 들어주세요!' },
-  { id: 2, level: 'L1', text: '백기 올려!', isFake: false, expect: { p1: 'none', p2: 'both' }, guide: '백기를 들고있는 사람이 양손을 위로 들어주세요!' },
-  { id: 3, level: 'L1', text: '백기 올려!', isFake: false, expect: { p1: 'none', p2: 'both' }, guide: '백기를 들고있는 사람이 양손을 위로 들어주세요!' },
-  { id: 4, level: 'L1', text: '청기 올려!', isFake: false, expect: { p1: 'both', p2: 'none' }, guide: '청기를 들고있는 사람이 양손을 위로 들어주세요!' },
-  { id: 5, level: 'L1', text: '둘다 올려!', isFake: false, expect: { p1: 'both', p2: 'both' }, guide: '두 사람 모두 양손을 위로 들어주세요!' },
-  { id: 6, level: 'L2', text: '청기 왼손 올려!', isFake: false, expect: { p1: 'left', p2: 'none' }, guide: '청기를 든 사람만 왼손을 올려주세요!' },
-  { id: 7, level: 'L2', text: '백기 오른손 올려!', isFake: false, expect: { p1: 'none', p2: 'right' }, guide: '백기를 든 사람만 오른손을 올려주세요!' },
-  { id: 8, level: 'L3', text: '청기 올려?', isFake: true, expect: { p1: 'none', p2: 'none' }, guide: '물음표! 움직이면 안 돼요!' },
-  { id: 9, level: 'L2', text: '둘다 왼손 올려!', isFake: false, expect: { p1: 'left', p2: 'left' }, guide: '두 사람 모두 왼손을 올려주세요!' },
-  { id: 10, level: 'L3', text: '백기 오른손 올려?', isFake: true, expect: { p1: 'none', p2: 'none' }, guide: '물음표! 움직이면 안 돼요!' },
-  // ─── 2라운드 (1P=백, 2P=청) ───
-  { id: 11, level: 'L1', text: '백기 올려!', isFake: false, expect: { p1: 'both', p2: 'none' }, guide: '백기를 들고있는 사람이 양손을 위로 들어주세요!' },
-  { id: 12, level: 'L1', text: '청기 올려!', isFake: false, expect: { p1: 'none', p2: 'both' }, guide: '청기를 들고있는 사람이 양손을 위로 들어주세요!' },
-  { id: 13, level: 'L2', text: '둘다 오른손 올려!', isFake: false, expect: { p1: 'right', p2: 'right' }, guide: '두 사람 모두 오른손을 올려주세요!' },
-  { id: 14, level: 'L2', text: '청기 왼손 올려!', isFake: false, expect: { p1: 'none', p2: 'left' }, guide: '청기를 든 사람만 왼손을 올려주세요!' },
-  { id: 15, level: 'L2', text: '백기 오른손 올려!', isFake: false, expect: { p1: 'right', p2: 'none' }, guide: '백기를 든 사람만 오른손을 올려주세요!' },
-  { id: 16, level: 'L3', text: '둘다 올려?', isFake: true, expect: { p1: 'none', p2: 'none' }, guide: '물음표! 움직이면 안 돼요!' },
-  { id: 17, level: 'L3', text: '백기 왼손 올려?', isFake: true, expect: { p1: 'none', p2: 'none' }, guide: '물음표! 움직이면 안 돼요!' },
-  { id: 18, level: 'L4', text: '청기 올리지 말고 백기 올려!', isFake: false, expect: { p1: 'both', p2: 'none' }, guide: '백기를 든 사람이 양손을 올려주세요!' },
-  { id: 19, level: 'L4', text: '백기 올리지 말고 청기 왼손 올려!', isFake: false, expect: { p1: 'none', p2: 'left' }, guide: '청기를 든 사람만 왼손을 올려주세요!' },
-  { id: 20, level: 'L4', text: '왼손 올리지 말고 둘다 오른손 올려!', isFake: false, expect: { p1: 'right', p2: 'right' }, guide: '두 사람 모두 오른손만 올려주세요!' },
+  // ─── 1라운드 (1P=청기, 2P=백기) ───
+  cmd(1, 'L1', ['청기', '들어'], false, 'both', 'none', G.blueBoth),
+  cmd(2, 'L1', ['백기', '들어'], false, 'none', 'both', G.whiteBoth),
+  cmd(3, 'L1', ['백기', '들어'], false, 'none', 'both', G.whiteBoth),
+  cmd(4, 'L1', ['청기', '들어'], false, 'both', 'none', G.blueBoth),
+  cmd(5, 'L1', ['양손', '들어'], false, 'both', 'both', G.allBoth),
+  cmd(6, 'L2', ['청기', '왼손', '들어'], false, 'left', 'none', G.blueLeft),
+  cmd(7, 'L2', ['백기', '오른손', '들어'], false, 'none', 'right', G.whiteRight),
+  cmd(8, 'L3', ['청기', '들어'], true, 'none', 'none', G.fake),
+  cmd(9, 'L2', ['왼손', '들어'], false, 'left', 'left', G.allLeft),
+  cmd(10, 'L3', ['백기', '오른손', '들어'], true, 'none', 'none', G.fake),
+  // ─── 2라운드 (역할 교체: 1P=백기, 2P=청기) ───
+  cmd(11, 'L1', ['백기', '들어'], false, 'both', 'none', G.whiteBoth),
+  cmd(12, 'L1', ['청기', '들어'], false, 'none', 'both', G.blueBoth),
+  cmd(13, 'L2', ['오른손', '들어'], false, 'right', 'right', G.allRight),
+  cmd(14, 'L2', ['청기', '왼손', '들어'], false, 'none', 'left', G.blueLeft),
+  cmd(15, 'L2', ['백기', '오른손', '들어'], false, 'right', 'none', G.whiteRight),
+  cmd(16, 'L3', ['양손', '들어'], true, 'none', 'none', G.fake),
+  cmd(17, 'L3', ['백기', '왼손', '들어'], true, 'none', 'none', G.fake),
+  cmd(18, 'L4', ['청기', '올리지말고', '백기', '들어'], false, 'both', 'none', G.whiteBoth),
+  cmd(19, 'L4', ['백기', '올리지말고', '청기', '왼손', '들어'], false, 'none', 'left', G.blueLeft),
+  cmd(20, 'L4', ['왼손', '올리지말고', '오른손', '들어'], false, 'right', 'right', G.allRight),
 ]
 
 // 튜토리얼 무채점 연습 5구령 (디자인 tut_play1~5 기준)
 export const PRACTICE: Command[] = [
-  { id: 101, level: 'L1', text: '청기 올려!', isFake: false, expect: { p1: 'both', p2: 'none' }, guide: '청기를 들고있는 사람이 양손을 위로 들어주세요!' },
-  { id: 102, level: 'L1', text: '백기 올려!', isFake: false, expect: { p1: 'none', p2: 'both' }, guide: '백기를 들고있는 사람이 양손을 위로 들어주세요!' },
-  { id: 103, level: 'L2', text: '둘다 왼손 올려!', isFake: false, expect: { p1: 'left', p2: 'left' }, guide: '두 사람 모두 왼손을 들어주세요!' },
-  { id: 104, level: 'L2', text: '둘다 오른손 올려!', isFake: false, expect: { p1: 'right', p2: 'right' }, guide: '두 사람 모두 오른손을 들어주세요!' },
-  { id: 105, level: 'L1', text: '둘다 올려!', isFake: false, expect: { p1: 'both', p2: 'both' }, guide: '두 사람 모두 양손을 들어주세요!' },
+  cmd(101, 'L1', ['청기', '들어'], false, 'both', 'none', G.blueBoth),
+  cmd(102, 'L1', ['백기', '들어'], false, 'none', 'both', G.whiteBoth),
+  cmd(103, 'L2', ['왼손', '들어'], false, 'left', 'left', G.allLeft),
+  cmd(104, 'L2', ['오른손', '들어'], false, 'right', 'right', G.allRight),
+  cmd(105, 'L1', ['양손', '들어'], false, 'both', 'both', G.allBoth),
 ]
 
-// 라운드별 역할: [1P 깃발색, 2P 깃발색]
+/** 라운드별 역할: 1~10구령은 1P=청기, 11~20구령은 교체 */
 export function flagsForCommand(index: number): { p1: 'blue' | 'white'; p2: 'blue' | 'white' } {
   return index < ROUND_SIZE ? { p1: 'blue', p2: 'white' } : { p1: 'white', p2: 'blue' }
 }

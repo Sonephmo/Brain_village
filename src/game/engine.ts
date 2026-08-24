@@ -4,7 +4,7 @@
 
 import type { Command, CommandLog, ErrorType, ExpectedAction, PlayerId, PlayerJudge } from './types'
 import { poseEngine } from './pose'
-import { speak, stopSpeech, goodChime, greatChime, neutralTick } from './audio'
+import { speak, speakCommand, stopSpeech, goodChime, greatChime, neutralTick } from './audio'
 
 export type Phase = 'idle' | 'speak' | 'window' | 'feedback' | 'roleswap' | 'done'
 
@@ -121,7 +121,7 @@ export class GameRunner {
       2: { left: newHand(now, p2.leftRaised), right: newHand(now, p2.rightRaised) },
     }
     const cmd = this.command!
-    speak(cmd.text, cmd.isFake, spokenMs => {
+    speakCommand(cmd.words, cmd.text, cmd.isFake, spokenMs => {
       if (this.stopped || this.phase !== 'speak') return
       this.spokenMs = spokenMs
       this.phase = 'window'

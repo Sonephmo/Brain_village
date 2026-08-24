@@ -8,6 +8,20 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* 커스텀 커서 — 펼친 손(기본) / 주먹(누름).
+   원본 362x362는 CSS 커서 상한(128px)을 넘어 무시되므로 40x64로 리사이즈한 파일을 쓴다.
+   핫스팟 (19,0) = 가운뎃손가락 끝. 두 상태가 같은 크롭·핫스팟이라 전환 시 손이 튀지 않는다. */
+html, body {
+  cursor: url('/assets/Cursor_Idle_cur.png') 19 0, auto;
+}
+button, [role='button'], .hotspot {
+  cursor: url('/assets/Cursor_Idle_cur.png') 19 0, pointer;
+}
+html:active, body:active,
+button:active, [role='button']:active, .hotspot:active {
+  cursor: url('/assets/Cursor_Selecting_cur.png') 19 0, pointer;
+}
+
 html, body, #root {
   width: 100%;
   height: 100%;
@@ -61,7 +75,6 @@ html, body, #root {
 
 button.pixel-btn {
   font-family: 'NeoDunggeunmo', sans-serif;
-  cursor: pointer;
   border: 4px solid #222;
   background: #ffd85e;
   color: #222;
@@ -73,7 +86,7 @@ button.pixel-btn {
 button.pixel-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #b9962f; }
 button.pixel-btn.secondary { background: #e8e8e8; box-shadow: 0 6px 0 #9a9a9a; }
 
-.hotspot { position: absolute; cursor: pointer; }
+.hotspot { position: absolute; }
 .hotspot .glow { opacity: 0; transition: opacity 0.15s; }
 .hotspot:hover .glow { opacity: 1; }
 .hotspot .label {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FX, IMG, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
-import { beep } from '../game/audio'
+import { beep, initAudio } from '../game/audio'
 
 // 피그마 1_MainTitle 프레임. 좌표·크기는 디자인 CSS 값 그대로.
 //   Image_Main          1920x2075  (0, -23)   ← 프레임보다 커서 위로 패닝된다
@@ -26,13 +26,16 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
 
   const start = () => {
     beep(880, 100)
+    // 브라우저는 사용자 제스처 없이 오디오를 재생할 수 없다.
+    // 이 클릭이 유일하게 보장된 제스처이므로 여기서 해금하고 구령 클립을 미리 받아둔다.
+    void initAudio()
     onStart()
   }
 
   return (
     <div
       className="fill"
-      style={{ background: '#FFFFFF', cursor: introDone ? 'default' : 'pointer' }}
+      style={{ background: '#FFFFFF' }}
       onClick={() => {
         // 인트로 중 클릭은 스킵으로만 쓰고 게임을 시작하지 않는다(오터치 방지)
         if (!introDone) setIntroDone(true)
@@ -78,7 +81,6 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           opacity: introDone ? 1 : undefined,
           // 인트로 중에는 버튼이 보이지 않으므로 클릭도 받지 않는다
           pointerEvents: introDone ? 'auto' : 'none',
-          cursor: 'pointer',
         }}
         onClick={e => {
           e.stopPropagation()

@@ -56,7 +56,6 @@ export function ResultScreen({
           top: 806,
           transform: 'translateX(-50%)',
           ...frameSize(FX.btnRetry, { w: 520 }),
-          cursor: 'pointer',
         }}
       >
         <Sprite frame={FX.btnRetry} style={{ inset: 0 }} />

@@ -216,7 +216,6 @@ export function TutorialScreen({
                           left: o.cx - size.width / 2,
                           top: 430,
                           ...size,
-                          cursor: 'pointer',
                           outline: picked === o.id ? '8px solid #37ff83' : 'none',
                           borderRadius: 12,
                         }}

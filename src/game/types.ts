@@ -7,7 +7,9 @@ export type ErrorType = '누락' | '오작동' | '오손' | '부분수행' | '�
 export interface Command {
   id: number
   level: Level
-  text: string // 화면 표시 + TTS 문장
+  /** 이어붙일 녹음 단어. 화면 텍스트도 이 배열에서 만들어 음성과 항상 일치시킨다. */
+  words: import('./audio').ClipId[]
+  text: string // 화면 표시 문장
   isFake: boolean // L3 물음표 페이크
   expect: { p1: ExpectedAction; p2: ExpectedAction } // 역할 기준이 아니라 "청기측/백기측"이 아닌, 라운드 반영된 플레이어 기준
   guide: string // 보조 설명 텍스트
