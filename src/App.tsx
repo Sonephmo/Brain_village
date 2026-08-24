@@ -51,6 +51,7 @@ export default function App() {
             score={result.score}
             avatars={avatars}
             onRestart={() => setScreen('village')}
+            onTitle={() => setScreen('title')}
           />
         )}
       </div>

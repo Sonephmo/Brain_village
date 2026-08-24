@@ -13,11 +13,15 @@ export function ResultScreen({
   score,
   avatars,
   onRestart,
+  onTitle,
 }: {
   logs: CommandLog[]
   score: number
   avatars: { p1: AvatarPick; p2: AvatarPick }
+  /** 같은 팀이 한 번 더: 마을로 */
   onRestart: () => void
+  /** 다음 팀 받기: 타이틀로 완전 리셋 */
+  onTitle: () => void
 }) {
   const session = useMemo(() => buildSessionLog(logs, score, avatars), [logs, score, avatars])
   const beat = score >= 90 // 마을 오버레이 내러티브: 1등팀 89점
@@ -47,19 +51,28 @@ export function ResultScreen({
       <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 700, fontSize: 56, textAlign: 'center', color: '#fff' }}>
         {beat ? '1등팀(89점)을 넘었어요! 제주도 여행 당첨!' : '두 분이 힘을 모아 완주했어요!'}
       </p>
+      {/* 같은 팀이 한 번 더 → 마을 / 다음 팀 → 타이틀 리셋 */}
       <div
         role="button"
+        aria-label="다시하기"
         onClick={onRestart}
         style={{
           position: 'absolute',
           left: '50%',
-          top: 806,
+          top: 800,
           transform: 'translateX(-50%)',
-          ...frameSize(FX.btnRetry, { w: 520 }),
+          ...frameSize(FX.btnRetry, { w: 460 }),
         }}
       >
         <Sprite frame={FX.btnRetry} style={{ inset: 0 }} />
       </div>
+      <button
+        className="pixel-btn secondary"
+        style={{ position: 'absolute', left: '50%', top: 962, transform: 'translateX(-50%)', fontSize: 34 }}
+        onClick={onTitle}
+      >
+        처음으로 (다음 팀)
+      </button>
       <button
         className="pixel-btn secondary"
         style={{ position: 'absolute', right: 40, bottom: 32, fontSize: 30 }}

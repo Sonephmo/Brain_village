@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { FX, IMG, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { beep, initAudio } from '../game/audio'
+import { playBgm, stopBgm } from '../game/bgm'
 
 // 피그마 1_MainTitle 프레임. 좌표·크기는 디자인 CSS 값 그대로.
 //   Image_Main          1920x2075  (0, -23)   ← 프레임보다 커서 위로 패닝된다
@@ -22,6 +23,12 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
   useEffect(() => {
     const t = window.setTimeout(() => setIntroDone(true), INTRO_MS)
     return () => window.clearTimeout(t)
+  }, [])
+
+  // 오프닝 BGM은 타이틀에서만 재생하고 화면을 벗어나면 멈춘다
+  useEffect(() => {
+    playBgm('opening')
+    return () => stopBgm()
   }, [])
 
   const start = () => {
