@@ -9,6 +9,10 @@ import type { CommandLog } from '../game/types'
 import type { FaceName } from '../assets'
 import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, beep, playCountdown, playNarration, playSfx, stopNarration } from '../game/audio'
 import { playBgm, stopBgm } from '../game/bgm'
+import { poseEngine } from '../game/pose'
+import { CONTENT_ID, endSession, logCommand, logRoleSwap, startSession } from '../game/telemetry'
+import { motionSampler } from '../game/motion'
+import { APP_VERSION } from '../game/logging'
 import type { AvatarPick } from './TutorialScreen'
 
 type Stage = 'practice' | 'countdown' | 'main' | 'end'
@@ -17,12 +21,15 @@ const COUNT_IMGS = [IMG.count3, IMG.count2, IMG.count1, IMG.countStart]
 
 export function GameScreen({
   avatars,
+  skipPractice = false,
   onFinish,
 }: {
   avatars: { p1: AvatarPick; p2: AvatarPick }
+  /** 결과에서 '다시하기'로 돌아온 경우. 같은 팀이 방금 연습을 마쳤으므로 본게임부터 들어간다. */
+  skipPractice?: boolean
   onFinish: (logs: CommandLog[], score: number) => void
 }) {
-  const [stage, setStage] = useState<Stage>('practice')
+  const [stage, setStage] = useState<Stage>(skipPractice ? 'countdown' : 'practice')
   const [snap, setSnap] = useState<Snapshot | null>(null)
   const [countIdx, setCountIdx] = useState(-1)
   // 중단은 세션을 끝내는 동작이라 오클릭을 막기 위해 두 번 눌러야 실행된다
@@ -116,19 +123,44 @@ export function GameScreen({
   // 본 게임 (2라운드 × 10구령)
   useEffect(() => {
     if (stage !== 'main') return
+    // 실시간 전송: 세션 시작 → 구령마다 → 종료. 실패해도 게임은 멈추지 않는다.
+    const st = poseEngine.status()
+    startSession({
+      gameKey: 'orak_flag',
+      appVersion: APP_VERSION,
+      inputMode: st.keyboardMode && !st.cameraOk ? '키보드' : '포즈인식',
+    })
+    // 동작 지표는 판정과 별개로 계속 흐른다 (구령 사이·반응 창 밖에도 움직임은 있다)
+    motionSampler.start()
+
     const runner = new GameRunner({
       commands: COMMANDS,
       scored: true,
       roleSwapAfter: ROUND_SIZE - 1,
       onSnapshot: setSnap,
+      onCommandLogged: (log, index) =>
+        logCommand(log, { contentId: CONTENT_ID, index }),
+      onRoleSwap: index => logRoleSwap(index, 1, 2),
       onFinish: (logs, score) => {
+        motionSampler.stop() // 남은 창을 닫고 마지막 배치를 올린 뒤 세션을 닫는다
+        endSession({
+          completed: logs.length >= COMMANDS.length,
+          teamScore: score,
+          maxScore: COMMANDS.length * 5,
+          commandsPlayed: logs.length,
+          abortReason: logs.length < COMMANDS.length ? '진행요원 중단' : null,
+          poseFps: poseEngine.status().fps,
+        })
         setStage('end')
         window.setTimeout(() => finishRef.current(logs, score), 2600)
       },
     })
     runnerRef.current = runner
     runner.start()
-    return () => runner.stop()
+    return () => {
+      runner.stop()
+      motionSampler.stop()
+    }
   }, [stage])
 
   // 연습: 구령이 끝나고 반응 대기가 시작되면 가이드 나레이션을 이어서 들려준다.

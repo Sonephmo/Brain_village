@@ -2,6 +2,9 @@ import type { CommandLog, SessionLog } from './types'
 import { poseEngine } from './pose'
 import { COMMANDS } from './commands'
 
+/** 로그·전송에 함께 쓰는 단일 버전 문자열. 두 군데 두면 반드시 갈라진다. */
+export const APP_VERSION = 'demo-2.9'
+
 /** 20구령을 모두 마쳤는지. 진행요원이 중단하면 기록이 모자란다. */
 export function isCompleted(logs: CommandLog[]): boolean {
   return logs.length >= COMMANDS.length
@@ -14,7 +17,7 @@ export function buildSessionLog(
 ): SessionLog {
   return {
     게임: '오락가락 청기백기',
-    버전: 'demo-2.6',
+    버전: APP_VERSION,
     시작시각: new Date().toISOString(),
     아바타: {
       P1: avatars.p1 === 'grandma' ? '할머니' : '할아버지',

@@ -54,6 +54,10 @@ export interface RunnerOptions {
   roleSwapAfter?: number // 이 인덱스 완료 후 역할 교체 화면 (0-based, 예: 9)
   onSnapshot: (s: Snapshot) => void
   onFinish: (logs: CommandLog[], score: number) => void
+  /** 구령 1개가 판정될 때마다 호출 — 실시간 전송용. 채점 세션에서만 발생한다. */
+  onCommandLogged?: (log: CommandLog, index: number) => void
+  /** 라운드 사이 역할 교체가 실제로 일어난 시점 */
+  onRoleSwap?: (swapIndex: number) => void
 }
 
 function newHand(now: number, alreadyUp: boolean): HandTrack {
@@ -180,6 +184,7 @@ export class GameRunner {
     } else if (this.phase === 'feedback' && now - this.phaseStart >= FEEDBACK_MS) {
       const swapAfter = this.opt.roleSwapAfter
       if (swapAfter != null && this.cmdIndex === swapAfter) {
+        this.opt.onRoleSwap?.(swapAfter)
         this.phase = 'roleswap'
         this.phaseStart = now
         transitionChime()
@@ -331,6 +336,7 @@ export class GameRunner {
         획득점수: gained,
         발화길이ms: Math.round(this.spokenMs),
       })
+      this.opt.onCommandLogged?.(this.logs[this.logs.length - 1], this.cmdIndex)
     }
 
     // GOOD / GREAT 이펙트가 뜨는 순간 진행자 휘슬을 분다.

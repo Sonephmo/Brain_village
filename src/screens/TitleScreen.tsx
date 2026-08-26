@@ -4,6 +4,7 @@ import { Sprite } from '../components/Sprite'
 import { beep, initAudio } from '../game/audio'
 import { playBgm, stopBgm } from '../game/bgm'
 import { cameraError, cameraStream } from '../game/camera'
+import { playerAuth, siteAuth } from '../game/auth'
 
 // 피그마 1_MainTitle 프레임. 좌표·크기는 디자인 CSS 값 그대로.
 //   Image_Main          1920x2075  (0, -23)   ← 프레임보다 커서 위로 패닝된다
@@ -18,8 +19,20 @@ import { cameraError, cameraStream } from '../game/camera'
 const INTRO_MS = 6000
 const BTN = frameSize(FX.btnStart, { w: 663 })
 
-export function TitleScreen({ onStart }: { onStart: () => void }) {
+export function TitleScreen({
+  onStart,
+  onLogoutSite,
+  onLogoutPlayers,
+}: {
+  onStart: () => void
+  /** 기관 로그아웃 — 부스를 닫을 때. 개인 로그인도 함께 지워진다 */
+  onLogoutSite: () => void
+  /** 개인 로그아웃 — 다음 팀을 받을 때 */
+  onLogoutPlayers: () => void
+}) {
   const [introDone, setIntroDone] = useState(false)
+  const site = siteAuth()
+  const players = playerAuth()
 
   // 손 커서는 App에서 전역으로 켠다(모든 화면에서 유효).
   // 인트로 중 주먹은 인트로 스킵으로 동작한다(배경 클릭과 같다).
@@ -113,6 +126,20 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
       >
         <Sprite frame={FX.btnStart} style={{ inset: 0 }} />
       </div>
+
+      {/* 로그인 상태 + 로그아웃 (진행요원용).
+          '홈으로'로 돌아온 다음 팀은 여기서 개인 로그아웃을 눌러 번호를 다시 받는다.
+          인트로 중에는 참가자가 잘못 누르지 않게 감춘다. */}
+      {introDone && (site || players) && (
+        <div className="auth-badge" onClick={e => e.stopPropagation()}>
+          <span className="pixel-text" style={{ fontSize: 22, color: '#e8e8e8' }}>
+            {site ? site.siteName : '기관 미로그인'}
+            {players ? ` · 1P ${players.p1} / 2P ${players.p2}` : ' · 참가자 미확인'}
+          </span>
+          {players && <button onClick={onLogoutPlayers}>개인 로그아웃</button>}
+          {site && <button onClick={onLogoutSite}>기관 로그아웃</button>}
+        </div>
+      )}
 
       {/* 카메라를 못 열었으면 진행요원이 알 수 있게 알린다 (마우스로는 계속 진행 가능) */}
       {introDone && camFailed && (

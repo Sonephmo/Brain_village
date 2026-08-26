@@ -158,3 +158,52 @@ export const PLACES: Place[] = [
   { key: 'bank', label: '은행 (준비중)', x: 904, y: 237, w: 289, h: 311, active: false },
   { key: 'health', label: '보건소 (준비중)', x: 328, y: 329, w: 401, h: 297, active: false },
 ]
+
+// ─── 결과(리포트) 화면 ───
+//
+// 피그마 Result 프레임(121:497)에 놓인 이미지들. 노드마다 이미지 채움이 **손으로 크롭**되어
+// 있고 일부는 가로·세로 배율이 서로 달라(다시하기 버튼이 9% 정도) 단순 축소로는 맞지 않는다.
+// 그래서 크롭 비율을 자연 픽셀 사각형으로 환산해 두었다. Sprite가 rect를 컨테이너 크기에
+// 늘려 그리므로 피그마 화면과 동일하게 보인다.
+const RESULT_BTN_SHEET: [number, number] = [2172, 724]
+const F = (name: string, sheet: [number, number], rect: [number, number, number, number]): Frame => ({
+  src: A(name),
+  sheet,
+  rect,
+})
+
+export const RESULT: Record<'banner' | 'scorePanel' | 'feedbackPanel' | 'btnRetry' | 'btnYes' | 'btnHome', Frame> = {
+  banner: F('result_banner.png', RESULT_BTN_SHEET, [50, 75, 2073, 568]),
+  scorePanel: F('result_score_panel.png', [1536, 1024], [27, 168, 1482, 640]),
+  feedbackPanel: F('result_feedback_panel.png', [1448, 1086], [23, 157, 1402, 728]),
+  btnRetry: F('btn_retry.png', RESULT_BTN_SHEET, [163, 95, 1846, 534]),
+  btnYes: F('btn_yes.png', RESULT_BTN_SHEET, [287, 122, 1597, 426]),
+  btnHome: F('btn_home.png', RESULT_BTN_SHEET, [202, 68, 1768, 546]),
+}
+
+// 상품 원본은 5장 모두 1254x1254 정사각이고 구도도 같다.
+// 크롭은 Result 프레임에 실제로 놓인 80score 노드 것을 5장에 공통으로 쓴다
+// (구간별 낱장 프레임에는 designer가 느슨하게 잡은 크롭이 각각 달라 슬롯에 넣으면 비율이 깨진다).
+const PRIZE_SHEET: [number, number] = [1254, 1254]
+const PRIZE_RECT: [number, number, number, number] = [46, 8, 1162, 1152]
+
+export interface Prize {
+  /** 이 점수 이상이면 이 상품 */
+  min: number
+  name: string
+  frame: Frame
+}
+
+/** 높은 점수부터. 90점은 마을 오버레이 내러티브(1등팀 89점)와 맞물린다. */
+export const PRIZES: Prize[] = [
+  { min: 90, name: '제주도 여행권', frame: F('prize_90.png', PRIZE_SHEET, PRIZE_RECT) },
+  { min: 80, name: '고급 한우 선물 세트', frame: F('prize_80.png', PRIZE_SHEET, PRIZE_RECT) },
+  { min: 60, name: '홍삼 선물 세트', frame: F('prize_60.png', PRIZE_SHEET, PRIZE_RECT) },
+  { min: 40, name: '과일 선물 세트', frame: F('prize_40.png', PRIZE_SHEET, PRIZE_RECT) },
+  // 20점 미만도 참가상으로 수건 세트를 준다 (디자인에 20 아래 구간 그림이 없다)
+  { min: 0, name: '수건 세트', frame: F('prize_20.png', PRIZE_SHEET, PRIZE_RECT) },
+]
+
+export function prizeFor(score: number): Prize {
+  return PRIZES.find(p => score >= p.min) ?? PRIZES[PRIZES.length - 1]
+}
