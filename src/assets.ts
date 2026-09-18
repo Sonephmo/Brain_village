@@ -151,7 +151,7 @@ export interface Place {
 export const PLACES: Place[] = [
   { key: 'school', label: '초등학교 — 오락가락 청기백기', x: 1400, y: 675, w: 487, h: 388, active: true },
   { key: 'cafe', label: '카페 (준비중)', x: 1212, y: 248, w: 220, h: 237, active: false },
-  { key: 'mountain', label: '전망대 (준비중)', x: 186, y: 106, w: 351, h: 188, active: false },
+  { key: 'mountain', label: '전망대 — 펄럭펄럭 불피우기', x: 186, y: 106, w: 351, h: 188, active: true },
   { key: 'hospital', label: '병원 (준비중)', x: 868, y: 660, w: 454, h: 326, active: false },
   { key: 'mart', label: '마트 (준비중)', x: 1458, y: 211, w: 445, h: 348, active: false },
   { key: 'pharmacy', label: '약국 (준비중)', x: 597, y: 759, w: 297, h: 267, active: false },

@@ -3,6 +3,8 @@ import { TitleScreen } from './screens/TitleScreen'
 import { VillageScreen } from './screens/VillageScreen'
 import { TutorialScreen, type AvatarPick } from './screens/TutorialScreen'
 import { GameScreen } from './screens/GameScreen'
+import { GameBScreen, type GameBResult } from './screens/GameBScreen'
+import { GameBResultScreen } from './screens/GameBResultScreen'
 import { ResultScreen } from './screens/ResultScreen'
 import { SiteLoginScreen } from './screens/SiteLoginScreen'
 import { PlayerLoginScreen } from './screens/PlayerLoginScreen'
@@ -24,6 +26,8 @@ function firstScreen(): Screen {
 // 기관 로그인은 수동으로 끄지 않는 이상 유지되므로, 두 번째 실행부터는 개인 로그인이 첫 화면이다.
 export default function App() {
   const [screen, setScreen] = useState<Screen>(firstScreen)
+  const [selectedGame, setSelectedGame] = useState<'flag' | 'campfire'>('flag')
+  const [campfireResult, setCampfireResult] = useState<GameBResult | null>(null)
   const [avatars, setAvatars] = useState<{ p1: AvatarPick; p2: AvatarPick }>({ p1: 'grandma', p2: 'grandfa' })
   const [result, setResult] = useState<{ logs: CommandLog[]; score: number }>({ logs: [], score: 0 })
   // 결과의 '다시하기'는 튜토리얼을 다시 거치지 않고 본게임만 새로 시작한다.
@@ -75,9 +79,13 @@ export default function App() {
             }}
           />
         )}
-        {screen === 'village' && <VillageScreen onEnterGame={() => setScreen('tutorial')} />}
+        {screen === 'village' && <VillageScreen onEnterGame={game => {
+          setSelectedGame(game)
+          setScreen('tutorial')
+        }} />}
         {screen === 'tutorial' && (
           <TutorialScreen
+            game={selectedGame}
             onDone={picked => {
               setAvatars(picked)
               setSkipPractice(false)
@@ -85,7 +93,12 @@ export default function App() {
             }}
           />
         )}
-        {screen === 'game' && (
+        {screen === 'game' && selectedGame === 'campfire' && (
+          <GameBScreen key={runId} avatars={avatars} skipPractice={skipPractice}
+            onExit={() => setScreen('village')}
+            onFinish={data => { setCampfireResult(data); setScreen('result') }} />
+        )}
+        {screen === 'game' && selectedGame === 'flag' && (
           <GameScreen
             key={runId}
             avatars={avatars}
@@ -96,7 +109,12 @@ export default function App() {
             }}
           />
         )}
-        {screen === 'result' && (
+        {screen === 'result' && selectedGame === 'campfire' && campfireResult && (
+          <GameBResultScreen result={campfireResult} avatars={avatars}
+            onReplay={() => { setSkipPractice(true); setRunId(n => n + 1); setScreen('game') }}
+            onVillage={() => setScreen('village')} onTitle={() => setScreen('title')} />
+        )}
+        {screen === 'result' && selectedGame === 'flag' && (
           <ResultScreen
             logs={result.logs}
             score={result.score}

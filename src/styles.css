@@ -154,6 +154,12 @@ button.pixel-btn.secondary { background: #e8e8e8; box-shadow: 0 6px 0 #9a9a9a; }
 .fade-in { animation: fadeIn 0.35s ease-out; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+/* 연습 → 암전 → 본게임. 밝아지는 애니메이션 완료 후 카운트다운을 시작한다. */
+.game-fade-out { animation: gameFadeOut 0.8s ease-in-out forwards; }
+.game-fade-in { animation: gameFadeIn 1s ease-in-out forwards; }
+@keyframes gameFadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes gameFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
 .pop { animation: pop 0.3s ease-out; }
 @keyframes pop {
   0% { transform: scale(0.4); opacity: 0; }
@@ -251,3 +257,27 @@ button.pixel-btn.secondary { background: #e8e8e8; box-shadow: 0 6px 0 #9a9a9a; }
   border: 3px solid #222;
   border-radius: 8px;
 }
+
+/* Game B: Figma 201:18 / 172:60 / 172:19, 1920×1080 */
+.game-b-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 32px; color: #fff; font-size: 54px; background: #15222c; }
+.game-b-title, .game-b-guide { position: absolute; left: 32px; width: 1855px; text-align: center; white-space: nowrap; line-height: 1.5; }
+.game-b-title { top: 42px; font-size: 96px; color: #7e7e7e; text-shadow: 0 4px 4px #0004; letter-spacing: -1.056px; }
+.game-b-guide { top: 210px; font-size: 70px; color: #000; letter-spacing: -0.77px; }
+.game-b-timer, .game-b-score { position: absolute; left: 760px; width: 400px; text-align: center; line-height: 1.5; -webkit-text-stroke: 3px #000; paint-order: stroke fill; text-shadow: 0 5px 0 #000; }
+.game-b-timer { top: -6px; font-size: 128px; color: #ffd528; }
+.game-b-score { top: 122px; font-size: 140px; color: #83ff67; letter-spacing: 12.6px; }
+.game-b-event { position: absolute; left: 380px; top: 330px; width: 1160px; text-align: center; font-size: 46px; color: #fff; text-shadow: 0 3px 3px #000; z-index: 2; }
+.game-b-waves { position: absolute; top: 600px; width: 267px; text-align: center; color: #38673d; font-size: 54px; }
+.game-b-portrait { position: absolute; top: 270px; width: 500px; height: 213px; overflow: hidden; }
+.game-b-player-label { position: absolute; left: 25px; top: 15px; width: 80px; height: 54px; text-align: center; font-size: 46px; line-height: 54px; color: white; }
+.game-b-player-label.player-1 { background: #218adb; }
+.game-b-player-label.player-2 { background: #ef505d; }
+.game-b-rating { position: absolute; top: 590px; width: 290px; display: flex; justify-content: center; gap: 8px; }
+.game-b-rating-flame { position: relative; width: 45px; height: 58px; overflow: hidden; }
+.game-b-rating-flame img { width: 100%; height: 100%; object-fit: contain; }
+.game-b-rating-flame img.lit { position: absolute; width: 217.79%; height: 127.12%; left: -59.53%; top: -24.15%; }
+.game-b-result-feedback { position: absolute; top: 672px; width: 564px; text-align: center; font-size: 52px; line-height: 1.25; color: #111; }
+.game-b-result-detail { margin-top: 8px; font-size: 34px; }
+.game-b-result-status { margin-top: 4px; font-size: 24px; }
+.game-b-result-button { position: absolute; top: 922px; width: 320px; height: 101px; background: transparent; border: 0; transition: transform .14s, filter .14s; }
+.game-b-result-button:hover, .game-b-result-button:focus-visible { transform: scale(1.04); filter: brightness(1.12); }

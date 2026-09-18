@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { FX, IMG, TUT_CHAR, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
+import { GameBAvatar } from '../components/GameBAvatar'
 import { poseEngine } from '../game/pose'
 import { cameraStream } from '../game/camera'
 import { playNarration, playSfx, stopNarration, type NarrationKey } from '../game/audio'
@@ -31,7 +32,9 @@ function faceInZone(pid: 1 | 2, screenX: number | null, noseY: number | null): b
 // 연습 구령은 GameScreen의 practice 단계에서 진행
 export function TutorialScreen({
   onDone,
+  game = 'flag',
 }: {
+  game?: 'flag' | 'campfire'
   onDone: (avatars: { p1: AvatarPick; p2: AvatarPick }) => void
 }) {
   const [step, setStep] = useState<Step>('position')
@@ -56,9 +59,13 @@ export function TutorialScreen({
   }, [])
 
   useEffect(() => {
-    if (videoRef.current && cameraStream()) {
-      videoRef.current.srcObject = cameraStream()
-      void videoRef.current.play().catch(() => undefined)
+    const video = videoRef.current
+    const stream = cameraStream()
+    // 카메라가 늦게 준비되는 경우에도 연결하되, 100ms UI 갱신마다
+    // 같은 소스를 재설정해 영상 재생이 깜빡이지 않도록 한다.
+    if (video && stream && video.srcObject !== stream) {
+      video.srcObject = stream
+      void video.play().catch(() => undefined)
     }
   })
 
@@ -262,7 +269,9 @@ export function TutorialScreen({
                           borderRadius: 12,
                         }}
                       >
-                        <Sprite frame={TUT_CHAR[o.id]} style={{ inset: 0 }} />
+                        {game === 'campfire'
+                          ? <GameBAvatar avatar={o.id} pose="tutorial" width={470 / .75} left={size.width / 2} top={0} />
+                          : <Sprite frame={TUT_CHAR[o.id]} style={{ inset: 0 }} />}
                       </div>
                       <p
                         className="pixel-text"

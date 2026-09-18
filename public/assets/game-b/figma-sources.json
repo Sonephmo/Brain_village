@@ -1,0 +1,270 @@
+[
+  {
+    "name": "fire_start_01.png",
+    "node": "194:13",
+    "url": "http://localhost:3845/assets/ff43b00fd035645ecf49d75288c48e7938833a17.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_start_02.png",
+    "node": "194:12",
+    "url": "http://localhost:3845/assets/8d37e5628f3b49d56f9e2171a10ba634c1c7b0ee.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_start_03.png",
+    "node": "194:11",
+    "url": "http://localhost:3845/assets/01646d93d7664cc2b100999ecfa9e0e870c01af9.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_start_04.png",
+    "node": "194:10",
+    "url": "http://localhost:3845/assets/e0c78569ac05d7725368868a4e24aeb4becb1bed.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_stand_01.png",
+    "node": "194:6",
+    "url": "http://localhost:3845/assets/04259e2c3f8f6d003331e3d486e2f3b20b14f11d.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_stand_02.png",
+    "node": "194:7",
+    "url": "http://localhost:3845/assets/d49858c7df33eb0e3c608a91e6c2f6011f457f78.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_stand_03.png",
+    "node": "194:8",
+    "url": "http://localhost:3845/assets/2f9085dd98afc184583b8a2407fd0a93ca182e71.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_stand_04.png",
+    "node": "194:9",
+    "url": "http://localhost:3845/assets/76cacc37390b826e6ab3bd20d7a2ca56d24e0e38.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_left_01.png",
+    "node": "194:18",
+    "url": "http://localhost:3845/assets/f0b5c588b513a4f39d72835e2f3970d6f0237655.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_left_02.png",
+    "node": "194:19",
+    "url": "http://localhost:3845/assets/1dcfed7f44945c31d6bc5a74fab74634c4b8f6d4.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_left_03.png",
+    "node": "194:20",
+    "url": "http://localhost:3845/assets/c42574af8a0bd4a3d67aabd2a95649fe53019466.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_left_04.png",
+    "node": "194:21",
+    "url": "http://localhost:3845/assets/ded0129183a56837f1e38c8c1a5d4048a41d0176.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_right_01.png",
+    "node": "194:22",
+    "url": "http://localhost:3845/assets/f0b5c588b513a4f39d72835e2f3970d6f0237655.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_right_02.png",
+    "node": "194:23",
+    "url": "http://localhost:3845/assets/1dcfed7f44945c31d6bc5a74fab74634c4b8f6d4.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_right_03.png",
+    "node": "194:24",
+    "url": "http://localhost:3845/assets/c42574af8a0bd4a3d67aabd2a95649fe53019466.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_right_04.png",
+    "node": "194:25",
+    "url": "http://localhost:3845/assets/ded0129183a56837f1e38c8c1a5d4048a41d0176.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_big_01.png",
+    "node": "194:14",
+    "url": "http://localhost:3845/assets/89e93954270ae0788c4d3e1b475063b61542076a.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_big_02.png",
+    "node": "194:15",
+    "url": "http://localhost:3845/assets/1bbbfb8388ee4bd21af0e14f125ee351534a53ad.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_big_03.png",
+    "node": "194:16",
+    "url": "http://localhost:3845/assets/bdef9d221cae7b55573b4112ff05f189f472ce11.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_big_04.png",
+    "node": "194:17",
+    "url": "http://localhost:3845/assets/f8e989ed4adcff11ea4963a9a3726d7eb31aebab.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_big_05.png",
+    "node": "202:121",
+    "url": "http://localhost:3845/assets/0b9acbe7c4e46f7af74c31b0a156df910099531a.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_big_06.png",
+    "node": "202:123",
+    "url": "http://localhost:3845/assets/f30fd3fae1aba2b08e8ba171bfcdda70e230bfdc.png",
+    "mirror": false
+  },
+  {
+    "name": "fire_big_07.png",
+    "node": "202:125",
+    "url": "http://localhost:3845/assets/260b8273e2c58eda845eda23a88002306a49fe0e.png",
+    "mirror": false
+  },
+  {
+    "name": "background.png",
+    "node": "199:4",
+    "url": "http://localhost:3845/assets/46185fd2a665bdbd3214171df48cb195dccfaaa0.png"
+  },
+  {
+    "name": "firewood.png",
+    "node": "194:29",
+    "url": "http://localhost:3845/assets/d3c2ef51785ce018731c9df1885904d88e25d88b.png"
+  },
+  {
+    "name": "tutorial-background.png",
+    "node": "201:19",
+    "url": "http://localhost:3845/assets/65461af089e4b923a627d3e5d4311d0e83f1de28.png"
+  },
+  {
+    "name": "result-background.png",
+    "node": "172:20",
+    "url": "http://localhost:3845/assets/6b7b4462688a118f7d27bc5efc67c9b7225c8c1c.png"
+  },
+  {
+    "name": "family-dog.png",
+    "node": "172:4",
+    "url": "http://localhost:3845/assets/125aa108823589e4a1bd4486cb8b262a01d60da9.png"
+  },
+  {
+    "name": "family-cat.png",
+    "node": "172:7",
+    "url": "http://localhost:3845/assets/54ab4291bb81972527ebb0336acb87bd547653b0.png"
+  },
+  {
+    "name": "family-boy.png",
+    "node": "172:10",
+    "url": "http://localhost:3845/assets/c47204d6965f53342d28797e94d9d48430ab7d3d.png"
+  },
+  {
+    "name": "family-girl.png",
+    "node": "172:16",
+    "url": "http://localhost:3845/assets/e9e43647b70db4b312502bcf9f915e04238a4c5b.png"
+  },
+  {
+    "name": "heart.png",
+    "node": "172:39",
+    "url": "http://localhost:3845/assets/65f7a08421feefed970192dc0c1f7ff669f554a7.png"
+  },
+  {
+    "name": "girl_up.png",
+    "url": "http://localhost:3845/assets/775530a1bd22b0e9534c787588c3ec9ad4679d45.png",
+    "node": "226:5"
+  },
+  {
+    "name": "girl_down.png",
+    "url": "http://localhost:3845/assets/d2049ed81fe88789bd3b48b57a2c8aea6f9ec636.png",
+    "node": "226:6"
+  },
+  {
+    "name": "girl_tutorial.png",
+    "url": "http://localhost:3845/assets/2ef073c88ed1f1822946f5276d4384124e07e3a4.png",
+    "node": "226:7"
+  },
+  {
+    "name": "girl_stand.png",
+    "url": "http://localhost:3845/assets/e57e3506213d3fe85f0abafd36eeef66f3869e6a.png",
+    "node": "226:8"
+  },
+  {
+    "name": "boy_up.png",
+    "url": "http://localhost:3845/assets/8982c9dc5fa83c7088c6b068f9025f71a258caa0.png",
+    "node": "226:9"
+  },
+  {
+    "name": "boy_down.png",
+    "url": "http://localhost:3845/assets/952b365d618fa0f3d54edc3dcbdf4f85264f4bd4.png",
+    "node": "226:10"
+  },
+  {
+    "name": "boy_tutorial.png",
+    "url": "http://localhost:3845/assets/9b2a192b3c9906455942a09529f47257117478fa.png",
+    "node": "226:11"
+  },
+  {
+    "name": "boy_stand.png",
+    "url": "http://localhost:3845/assets/ccf92b985bbeaf7e28bfe1ee19ccb895708b969a.png",
+    "node": "226:12"
+  },
+  {
+    "name": "face_down.png",
+    "url": "http://localhost:3845/assets/939e5fbac061bac34fd0493f2ed9285abc935b5f.png",
+    "node": "226:13"
+  },
+  {
+    "name": "face_stand.png",
+    "url": "http://localhost:3845/assets/eade21ed45f4851ab4c6030622ceb578724cb0fa.png",
+    "node": "226:14"
+  },
+  {
+    "name": "face_up.png",
+    "url": "http://localhost:3845/assets/c7daad694f8de129177a4c646f2c546e9bce7484.png",
+    "node": "226:15"
+  },
+  {
+    "name": "report-background.png",
+    "url": "http://localhost:3845/assets/cbe36f13f9788326d6b94fc05542581b1b69a51c.png",
+    "node": "205:2"
+  },
+  {
+    "name": "report-p1-panel.png",
+    "url": "http://localhost:3845/assets/a4b058b27ae189cb289d76aefb6c6b648adb816c.png",
+    "node": "205:2"
+  },
+  {
+    "name": "report-p2-panel.png",
+    "url": "http://localhost:3845/assets/6a70951edfc43763185380584d3e73cb9e9477ff.png",
+    "node": "205:2"
+  },
+  {
+    "name": "report-p1-card.png",
+    "url": "http://localhost:3845/assets/e071ba54d196b588f1a97812d1f70116d3b86e79.png",
+    "node": "205:2"
+  },
+  {
+    "name": "report-p2-card.png",
+    "url": "http://localhost:3845/assets/dd9666eedca089ba4b42c6976af615ee2e14d8de.png",
+    "node": "205:2"
+  },
+  {
+    "name": "report-flame-empty.png",
+    "url": "http://localhost:3845/assets/eba6f18723b84b45c66510d8807db843b13adb14.png",
+    "node": "205:2"
+  }
+]

@@ -15,7 +15,7 @@ import { motionSampler } from '../game/motion'
 import { APP_VERSION } from '../game/logging'
 import type { AvatarPick } from './TutorialScreen'
 
-type Stage = 'practice' | 'countdown' | 'main' | 'end'
+type Stage = 'practice' | 'fadeOut' | 'fadeIn' | 'countdown' | 'main' | 'end'
 
 const COUNT_IMGS = [IMG.count3, IMG.count2, IMG.count1, IMG.countStart]
 
@@ -29,7 +29,7 @@ export function GameScreen({
   skipPractice?: boolean
   onFinish: (logs: CommandLog[], score: number) => void
 }) {
-  const [stage, setStage] = useState<Stage>(skipPractice ? 'countdown' : 'practice')
+  const [stage, setStage] = useState<Stage>(skipPractice ? 'fadeIn' : 'practice')
   const [snap, setSnap] = useState<Snapshot | null>(null)
   const [countIdx, setCountIdx] = useState(-1)
   // 중단은 세션을 끝내는 동작이라 오클릭을 막기 위해 두 번 눌러야 실행된다
@@ -56,8 +56,7 @@ export function GameScreen({
       waitForSuccess: true,
       onSnapshot: setSnap,
       onFinish: () => {
-        setSnap(null)
-        setStage('countdown')
+        setStage('fadeOut')
       },
     })
     runnerRef.current = runner
@@ -178,7 +177,8 @@ export function GameScreen({
     if (stage !== 'practice') stopNarration()
   }, [stage])
 
-  const isPractice = stage === 'practice'
+  const isPractice = stage === 'practice' || stage === 'fadeOut'
+  const isTransitioning = stage === 'fadeOut' || stage === 'fadeIn'
   const cmdIndex = snap?.cmdIndex ?? 0
   const flags = isPractice ? { p1: 'blue' as const, p2: 'white' as const } : flagsForCommand(cmdIndex)
   const cmd = snap?.command ?? null
@@ -214,8 +214,21 @@ export function GameScreen({
   const nCorrect = judged ? (judged.p1.correct ? 1 : 0) + (judged.p2.correct ? 1 : 0) : 0
 
   return (
-    <div className="fill fade-in">
-      <img src={bg} alt="" className="fill" style={{ objectFit: 'cover', filter: stage === 'countdown' ? 'blur(5px)' : 'none' }} />
+    <div
+      className={`fill ${stage === 'fadeOut' ? 'game-fade-out' : stage === 'fadeIn' ? 'game-fade-in' : stage === 'practice' ? 'fade-in' : ''}`}
+      style={{ pointerEvents: isTransitioning ? 'none' : undefined }}
+      onAnimationEnd={event => {
+        // 자식 요소의 효과는 무시하고 화면 전체의 opacity 전환 완료를 기다린다.
+        if (event.target !== event.currentTarget) return
+        if (stage === 'fadeOut' && event.animationName === 'gameFadeOut') {
+          setSnap(null)
+          setStage('fadeIn')
+        } else if (stage === 'fadeIn' && event.animationName === 'gameFadeIn') {
+          setStage('countdown')
+        }
+      }}
+    >
+      <img src={bg} alt="" className="fill" style={{ objectFit: 'cover', filter: stage === 'countdown' || stage === 'fadeIn' ? 'blur(5px)' : 'none' }} />
       <div className="divider-line" style={{ top: 212 }} />
 
       {/* 아바타 (디자인 A Game play 좌표의 가로 중심 기준) */}
