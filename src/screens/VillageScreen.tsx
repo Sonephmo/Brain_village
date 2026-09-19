@@ -7,7 +7,7 @@ import { beep } from '../game/audio'
 // 건물 그림은 map_bg 배경에 통째로 그려져 있어 개별 건물만 채도를 조절할 수 없다.
 // 그래서 지도를 두 겹으로 깔고, 아래는 채도를 낮춘 사본 / 위는 원색 사본을 호버한
 // 건물 주변만 원형으로 clip 해서 남긴다 → 나머지가 흐려지는 스포트라이트가 된다.
-export function VillageScreen({ onEnterGame }: { onEnterGame: (game: 'flag' | 'campfire') => void }) {
+export function VillageScreen({ onEnterGame }: { onEnterGame: (game: 'flag' | 'campfire' | 'ricecake') => void }) {
   const [hover, setHover] = useState<Place | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
@@ -53,15 +53,17 @@ export function VillageScreen({ onEnterGame }: { onEnterGame: (game: 'flag' | 'c
       />
 
       {PLACES.map(p => (
-        <div
+        <button
+          type="button"
           key={p.key}
+          aria-label={p.label}
           className="hotspot"
           style={{ left: p.x, top: p.y, width: p.w, height: p.h }}
           onMouseEnter={() => setHover(p)}
           onFocus={() => setHover(p)}
           onClick={() => {
             beep(700, 80)
-            if (p.active) onEnterGame(p.key === 'mountain' ? 'campfire' : 'flag')
+            if (p.active) onEnterGame(p.key === 'ricecake' ? 'ricecake' : p.key === 'mountain' ? 'campfire' : 'flag')
             else showToast('준비중입니다!')
           }}
         >
@@ -80,7 +82,7 @@ export function VillageScreen({ onEnterGame }: { onEnterGame: (game: 'flag' | 'c
               transform: hover?.key === p.key ? 'scale(1)' : 'scale(0.9)',
             }}
           />
-        </div>
+        </button>
       ))}
 
       {/* 호버한 곳의 설명 — 크게 */}
@@ -137,7 +139,7 @@ const DESC: Record<string, Desc> = {
   mountain: { place: '전망대 · 캠핑장', game: '펄럭펄럭 불피우기', body: '가을을 맞아 캠핑장에 온 가족이 모였어요\n캠핑의 꽃은 바로 캠프파이어!\n강한 불은 강한 부채질에서 나오죠?\n그럼 부탁드립니다~~!!', active: true },
   hospital: { place: '병원', body: '건강을 돌보는 곳', active: false },
   mart: { place: '마트', body: '장보기 한판 승부', active: false },
-  pharmacy: { place: '약국', body: '약봉지를 잘 챙겨야죠', active: false },
+  ricecake: { place: '보름달 떡집', game: '쿵떡쿵떡 떡방아', body: '달토끼와 함께 떡을 만들어요\n한 사람은 떡방아를 찧고, 다른 사람은 떡을 정리해요\n서로 역할을 바꿔 맛있는 떡을 완성해보세요!', active: true },
   bank: { place: '은행', body: '숫자와 기억력 놀이', active: false },
   health: { place: '보건소', body: '몸을 움직이는 시간', active: false },
 }

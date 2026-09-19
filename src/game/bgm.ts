@@ -7,7 +7,7 @@
 export type BgmName = 'opening' | 'tutorial' | 'report'
 
 const FILE: Record<BgmName, string> = {
-  opening: '오프닝',
+  opening: 'Title',
   tutorial: '튜토리얼',
   report: '리포트페이지',
 }

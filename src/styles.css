@@ -80,7 +80,8 @@ button.pixel-btn {
 button.pixel-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #b9962f; }
 button.pixel-btn.secondary { background: #e8e8e8; box-shadow: 0 6px 0 #9a9a9a; }
 
-.hotspot { position: absolute; }
+.hotspot { position: absolute; border: 0; padding: 0; background: transparent; }
+.hotspot:focus-visible { outline: 4px solid #37ff83; outline-offset: 4px; }
 /* 켜고 끄는 것은 React 상태가 한다(손 커서의 합성 이벤트로는 CSS :hover가 안 되므로).
    여기서는 전환 효과만 담당한다. */
 .hotspot .glow {
@@ -159,6 +160,16 @@ button.pixel-btn.secondary { background: #e8e8e8; box-shadow: 0 6px 0 #9a9a9a; }
 .game-fade-in { animation: gameFadeIn 1s ease-in-out forwards; }
 @keyframes gameFadeOut { from { opacity: 1; } to { opacity: 0; } }
 @keyframes gameFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* All results show just the loaded background for two seconds, then dissolve the UI. */
+.result-reveal-screen { background: #000; }
+.result-reveal-ui { opacity: 1; }
+.result-reveal-ui[aria-hidden='true'] { pointer-events: none; }
+.scene-ui-dissolve { animation: sceneUiDissolve 0.6s ease-in-out both; }
+@keyframes sceneUiDissolve { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .scene-ui-dissolve { animation-duration: 1ms; }
+}
 
 .pop { animation: pop 0.3s ease-out; }
 @keyframes pop {

@@ -22,12 +22,12 @@ export const IMG = {
   count3: A('count3.png'),
   countStart: A('count_start.png'),
   end: A('end.png'),
-  mapBg: A('map_bg.png'),
+  mapBg: A('map_youngchavill.png'),
   tutBg: A('tut_bg.png'),
   gameBg: A('game_bg.png'),
   faceZone: A('face_zone.png'),
   titleMain: A('title_main.jpg'),
-  titleLogo: A('title_logo.png'),
+  titleLogo: A('title_youngchavill.png'),
 }
 
 const SHEET_FX: [number, number] = [1920, 1080]
@@ -154,7 +154,7 @@ export const PLACES: Place[] = [
   { key: 'mountain', label: '전망대 — 펄럭펄럭 불피우기', x: 186, y: 106, w: 351, h: 188, active: true },
   { key: 'hospital', label: '병원 (준비중)', x: 868, y: 660, w: 454, h: 326, active: false },
   { key: 'mart', label: '마트 (준비중)', x: 1458, y: 211, w: 445, h: 348, active: false },
-  { key: 'pharmacy', label: '약국 (준비중)', x: 597, y: 759, w: 297, h: 267, active: false },
+  { key: 'ricecake', label: '보름달 떡집 — 달토끼 쿵떡쿵떡 떡방아', x: 560, y: 716, w: 337, h: 257, active: true },
   { key: 'bank', label: '은행 (준비중)', x: 904, y: 237, w: 289, h: 311, active: false },
   { key: 'health', label: '보건소 (준비중)', x: 328, y: 329, w: 401, h: 297, active: false },
 ]

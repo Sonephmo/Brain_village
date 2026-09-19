@@ -5,6 +5,9 @@ import { TutorialScreen, type AvatarPick } from './screens/TutorialScreen'
 import { GameScreen } from './screens/GameScreen'
 import { GameBScreen, type GameBResult } from './screens/GameBScreen'
 import { GameBResultScreen } from './screens/GameBResultScreen'
+import { GameCScreen } from './screens/GameCScreen'
+import { GameCResultScreen } from './screens/GameCResultScreen'
+import type { GameCResult, Rabbits } from './game/gameC'
 import { ResultScreen } from './screens/ResultScreen'
 import { SiteLoginScreen } from './screens/SiteLoginScreen'
 import { PlayerLoginScreen } from './screens/PlayerLoginScreen'
@@ -26,7 +29,8 @@ function firstScreen(): Screen {
 // 기관 로그인은 수동으로 끄지 않는 이상 유지되므로, 두 번째 실행부터는 개인 로그인이 첫 화면이다.
 export default function App() {
   const [screen, setScreen] = useState<Screen>(firstScreen)
-  const [selectedGame, setSelectedGame] = useState<'flag' | 'campfire'>('flag')
+  const [selectedGame, setSelectedGame] = useState<'flag' | 'campfire' | 'ricecake'>('flag')
+  const [riceResult, setRiceResult] = useState<GameCResult | null>(null)
   const [campfireResult, setCampfireResult] = useState<GameBResult | null>(null)
   const [avatars, setAvatars] = useState<{ p1: AvatarPick; p2: AvatarPick }>({ p1: 'grandma', p2: 'grandfa' })
   const [result, setResult] = useState<{ logs: CommandLog[]; score: number }>({ logs: [], score: 0 })
@@ -35,6 +39,7 @@ export default function App() {
   const [runId, setRunId] = useState(0)
   const [skipPractice, setSkipPractice] = useState(false)
   const [scale, setScale] = useState(1)
+  const rabbits: Rabbits = { p1: avatars.p1 === 'grandma' ? 'pink' : 'brown', p2: avatars.p2 === 'grandma' ? 'pink' : 'brown' }
 
   useEffect(() => {
     const onResize = () =>
@@ -59,7 +64,7 @@ export default function App() {
   //  - 본게임: 참가자가 구령에 맞춰 손을 드는 중이라 주먹이 섞여 들어온다
   //  - 기관 로그인: 텍스트 입력 화면이라 오클릭이 곤란하다 (진행요원이 키보드로 한다)
   // 개인 로그인은 큰 키패드라 손으로도 누를 수 있게 켜 둔다.
-  useHandControl(screen !== 'game' && screen !== 'siteLogin', 1000)
+  useHandControl(screen !== 'game' && screen !== 'siteLogin' && !(screen === 'tutorial' && selectedGame === 'ricecake'), 1000)
 
   return (
     <div className="stage-wrap">
@@ -98,6 +103,11 @@ export default function App() {
             onExit={() => setScreen('village')}
             onFinish={data => { setCampfireResult(data); setScreen('result') }} />
         )}
+        {screen === 'game' && selectedGame === 'ricecake' && (
+          <GameCScreen key={runId} rabbits={rabbits} skipPractice={skipPractice}
+            onExit={() => setScreen('village')}
+            onFinish={data => { setRiceResult(data); setScreen('result') }} />
+        )}
         {screen === 'game' && selectedGame === 'flag' && (
           <GameScreen
             key={runId}
@@ -111,6 +121,11 @@ export default function App() {
         )}
         {screen === 'result' && selectedGame === 'campfire' && campfireResult && (
           <GameBResultScreen result={campfireResult} avatars={avatars}
+            onReplay={() => { setSkipPractice(true); setRunId(n => n + 1); setScreen('game') }}
+            onVillage={() => setScreen('village')} onTitle={() => setScreen('title')} />
+        )}
+        {screen === 'result' && selectedGame === 'ricecake' && riceResult && (
+          <GameCResultScreen result={riceResult} rabbits={rabbits}
             onReplay={() => { setSkipPractice(true); setRunId(n => n + 1); setScreen('game') }}
             onVillage={() => setScreen('village')} onTitle={() => setScreen('title')} />
         )}

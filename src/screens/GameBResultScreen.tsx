@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { RESULT, type Avatar } from '../assets'
 import { Sprite } from '../components/Sprite'
+import { ResultReveal } from '../components/ResultReveal'
 import { GameBAvatar } from '../components/GameBAvatar'
 import { FIRE_FRAMES, GAME_B_REPORT } from '../game/gameBAssets'
 import { playBgm, stopBgm } from '../game/bgm'
@@ -12,8 +13,7 @@ export function GameBResultScreen({ result, avatars, onReplay, onVillage, onTitl
   onReplay: () => void; onVillage: () => void; onTitle: () => void
 }) {
   useEffect(() => { playBgm('report'); return () => stopBgm() }, [])
-  return <div className="fill fade-in game-b-result">
-    <img className="fill" src={GAME_B_REPORT.background} alt="" style={{ objectFit: 'cover' }} />
+  return <ResultReveal background={GAME_B_REPORT.background} className="game-b-result">
     <Sprite frame={RESULT.banner} style={{ left: 710, top: 51, width: 500, height: 137 }} />
     {([0, 1] as const).map(i => {
       const success = result.events.filter(e => e.players[i]).length
@@ -46,5 +46,5 @@ export function GameBResultScreen({ result, avatars, onReplay, onVillage, onTitl
       <Sprite frame={RESULT[key]} style={{ inset: 0, width: '100%', height: '100%' }} />
     </button>)}
     <button className="pixel-btn secondary staff-skip" style={{ top: 18, bottom: 'auto' }} onClick={() => downloadJson({ game: '펄럭펄럭 불피우기', ...result }, `brainvillage_gameB_${Date.now()}.json`)}>결과 JSON (초안)</button>
-  </div>
+  </ResultReveal>
 }

@@ -8,7 +8,7 @@ import { playerAuth, siteAuth } from '../game/auth'
 
 // 피그마 1_MainTitle 프레임. 좌표·크기는 디자인 CSS 값 그대로.
 //   Image_Main          1920x2075  (0, -23)   ← 프레임보다 커서 위로 패닝된다
-//   Title_BrainVillage  1292x727   (314, -23)
+//   Title_YoungChavill  1292x727   (314, -23)
 //   Button_Start        663x228    (629, 752)
 //
 // 인트로는 디자인의 6초 타임라인(1회 재생)을 그대로 재현한다.
@@ -88,7 +88,7 @@ export function TitleScreen({
       />
       <img
         src={IMG.titleLogo}
-        alt="브레인빌리지"
+        alt="영차마을"
         className={introDone ? undefined : 'intro-logo'}
         style={{
           position: 'absolute',

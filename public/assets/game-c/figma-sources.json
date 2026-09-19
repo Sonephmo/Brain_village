@@ -1,0 +1,184 @@
+{
+  "exportedAt": "2026-09-19",
+  "assets": [
+    { "format": "png", "source": "original-image-fill", "nodeId": "315:3", "file": "play-background-original.png", "exposure": 0 },
+    { "format": "png", "source": "design-context-adjusted-image", "nodeId": "315:3", "file": "play-background.png", "exposure": -0.4 },
+    { "format": "png", "source": "design-context-image", "nodeId": "306:78", "file": "play-speech-bubble.png" },
+    { "format": "png", "source": "original-image-fill", "nodeId": "306:81", "file": "pound-feedback-sheet.png" },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "266:46",
+      "file": "pink-up.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "266:47",
+      "file": "pink-down.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "266:48",
+      "file": "brown-up.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "266:49",
+      "file": "brown-down.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "271:50",
+      "file": "brown-squeeze-1.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "271:51",
+      "file": "brown-squeeze-2.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "271:52",
+      "file": "brown-idle.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "271:54",
+      "file": "pink-squeeze-1.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "273:56",
+      "file": "pink-squeeze-2.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "271:55",
+      "file": "pink-idle.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "294:122",
+      "file": "dough-1.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "294:121",
+      "file": "dough-2.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "294:120",
+      "file": "dough-3.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "294:119",
+      "file": "dough-4.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "294:132",
+      "file": "rabbit-select-sheet.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "277:57",
+      "file": "rice-cake-sheet.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "279:82",
+      "file": "wood-plate.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "288:148",
+      "file": "speech-bubble.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "288:38",
+      "file": "tutorial-background.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "314:49",
+      "file": "score-moon.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "300:135",
+      "file": "result-under50.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "300:137",
+      "file": "result-over50.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "298:119",
+      "file": "report-p1-card.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "298:107",
+      "file": "report-p2-card.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "298:118",
+      "file": "report-p1-panel.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "298:106",
+      "file": "report-p2-panel.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "298:121",
+      "file": "rating-full.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "298:125",
+      "file": "rating-empty.png"
+    },
+    {
+      "format": "png",
+      "source": "original-image-fill",
+      "nodeId": "249:46",
+      "file": "hand-zone.png"
+    }
+  ],
+  "fileKey": "CBa2GjaZh7Mn2fLDupSY32"
+}

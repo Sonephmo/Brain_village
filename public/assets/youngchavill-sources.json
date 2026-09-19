@@ -1,0 +1,9 @@
+{
+  "fileKey": "CBa2GjaZh7Mn2fLDupSY32",
+  "exportedAt": "2026-09-19",
+  "assets": [
+    { "file": "title_youngchavill.png", "nodeId": "212:25", "name": "Title_YoungChavill", "source": "design-context", "width": 2584, "height": 1454 },
+    { "file": "map_youngchavill.png", "nodeId": "1:16", "name": "2_GameMap", "source": "frame-export", "width": 1920, "height": 1080 }
+  ],
+  "gameCHotspot": { "nodeId": "313:2", "name": "Place_Pharmacy", "label": "보름달 떡집", "x": 560, "y": 716, "width": 337, "height": 257 }
+}

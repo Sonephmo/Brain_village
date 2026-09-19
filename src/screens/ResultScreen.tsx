@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { IMG, RESULT, prizeFor, type Frame } from '../assets'
 import { Sprite } from '../components/Sprite'
+import { ResultReveal } from '../components/ResultReveal'
 import type { CommandLog } from '../game/types'
 import { buildSessionLog, downloadJson, isCompleted } from '../game/logging'
 import { playBgm, stopBgm } from '../game/bgm'
@@ -76,9 +77,7 @@ export function ResultScreen({
   }, [])
 
   return (
-    <div className="fill fade-in">
-      {/* 배경은 인게임과 같은 운동장 사진에 블러만 걸린다 (디자인 BG 노드: blur 5.55px) */}
-      <img src={IMG.gameBg} alt="" className="fill" style={{ objectFit: 'cover', filter: 'blur(5.55px)' }} />
+    <ResultReveal background={IMG.gameBg} backgroundStyle={{ filter: 'blur(5.55px)' }}>
 
       <Sprite frame={RESULT.banner} style={{ ...LAYOUT.banner }} />
       <Sprite frame={RESULT.scorePanel} style={{ ...LAYOUT.scorePanel }} />
@@ -86,7 +85,7 @@ export function ResultScreen({
       {/* 총점 — 위(#FBF620)에서 아래(#FAA404)로 흐르는 그라디언트에 검은 외곽선.
           그라디언트는 background-clip:text로 채우고, 외곽선은 뒤에 한 겹 더 깔아 낸다
           (한 요소에 text-stroke와 background-clip을 같이 주면 선이 채움을 파먹는다). */}
-      <div className="pop" style={{ position: 'absolute', ...LAYOUT.scoreText }}>
+      <div style={{ position: 'absolute', ...LAYOUT.scoreText }}>
         <p className="pixel-text" style={{ ...SCORE_TEXT, ...SCORE_OUTLINE }}>
           {score}
         </p>
@@ -127,7 +126,7 @@ export function ResultScreen({
       </div>
 
       {/* 점수 구간 상품. 리본에 상품명이 그려져 있어 별도 글자를 얹지 않는다. */}
-      <Sprite key={prize.name} frame={prize.frame} className="pop" style={{ ...LAYOUT.prize }} />
+      <Sprite key={prize.name} frame={prize.frame} style={{ ...LAYOUT.prize }} />
 
       <ResultButton frame={RESULT.btnRetry} box={LAYOUT.btnRetry} label="다시하기" onClick={onReplay} />
       <ResultButton frame={RESULT.btnYes} box={LAYOUT.btnYes} label="확인" onClick={onRestart} />
@@ -141,7 +140,7 @@ export function ResultScreen({
       >
         결과 JSON
       </button>
-    </div>
+    </ResultReveal>
   )
 }
 

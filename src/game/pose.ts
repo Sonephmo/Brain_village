@@ -120,6 +120,11 @@ class PoseEngine {
   private lastDetectTs: [number, number] = [0, 0]
   private fps = 0
   private pose: Record<PlayerId, PlayerPose> = { 1: emptyPose(), 2: emptyPose() }
+  // C needs visible wrists and a full overhead movement, not just raised booleans.
+  private riceSamples: Record<PlayerId, { at: number; tracked: boolean; aboveHead: boolean; leftX: number; rightX: number; leftY: number; rightY: number }> = {
+    1: { at: 0, tracked: false, aboveHead: false, leftX: 0, rightX: 0, leftY: 0, rightY: 0 },
+    2: { at: 0, tracked: false, aboveHead: false, leftX: 0, rightX: 0, leftY: 0, rightY: 0 },
+  }
   private calib: Record<PlayerId, Calib> = { 1: freshCalib(), 2: freshCalib() }
   private calibrating = false
   /** 히스테리시스용 현재 상태 + 손목 유실 카운터 */
@@ -336,6 +341,10 @@ class PoseEngine {
   private applyResult(pid: PlayerId, lm: Landmark[] | null) {
     const p = this.pose[pid]
     const vis = (i: number) => lm?.[i]?.visibility ?? 0
+    const sample = this.riceSamples[pid]
+    sample.at = performance.now()
+    sample.tracked = false
+    sample.aboveHead = false
 
     // 사람이 있는지: 코 + 양어깨 신뢰도로 판단.
     // 랜드마크는 사람이 없어도 항상 33개가 오므로 이 게이트가 없으면 유령 입력이 생긴다.
@@ -395,6 +404,29 @@ class PoseEngine {
 
     p.leftRaised = this.raised[pid].left
     p.rightRaised = this.raised[pid].right
+    if (vis(L_WRIST) >= VIS_MIN && vis(R_WRIST) >= VIS_MIN && vis(NOSE) >= VIS_MIN) {
+      sample.tracked = true
+      sample.leftX = 1 - lm[L_WRIST].x
+      sample.rightX = 1 - lm[R_WRIST].x
+      sample.leftY = lm[L_WRIST].y
+      sample.rightY = lm[R_WRIST].y
+      // Face-relative margin: hand-raising calibration alone does not mean overhead.
+      const headLine = nose.y - Math.max(0.035, Math.abs(shoulderY - nose.y) * 0.45)
+      sample.aboveHead = lm[L_WRIST].y < headLine && lm[R_WRIST].y < headLine
+    }
+  }
+
+  getCBody(pid: PlayerId) {
+    const k = this.keys[pid]
+    const s = this.riceSamples[pid]
+    if ((this.ready && !this.cameraOk) || k.left || k.right) {
+      return { tracked: true, left: k.left, right: k.right, aboveHead: k.left && k.right,
+        leftX: 0.25, rightX: 0.735, leftY: 0.69, rightY: 0.69 }
+    }
+    const p = this.pose[pid]
+    const tracked = p.present && s.tracked && performance.now() - s.at < 400
+    return { ...s, tracked, left: tracked && p.leftRaised, right: tracked && p.rightRaised,
+      aboveHead: tracked && s.aboveHead }
   }
 
   getPose(pid: PlayerId): PlayerPose {

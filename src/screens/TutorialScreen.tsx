@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { FX, IMG, TUT_CHAR, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { GameBAvatar } from '../components/GameBAvatar'
+import { RabbitPortrait } from '../components/GameCRabbit'
+import { GAME_C_IMAGES } from '../game/gameCAssets'
 import { poseEngine } from '../game/pose'
 import { cameraStream } from '../game/camera'
 import { playNarration, playSfx, stopNarration, type NarrationKey } from '../game/audio'
@@ -9,7 +11,7 @@ import { playBgm } from '../game/bgm'
 
 import type { Avatar as AvatarId } from '../assets'
 
-type Step = 'position' | 'calibration' | 'gender'
+type Step = 'position' | 'rest' | 'calibration' | 'gender'
 export type AvatarPick = AvatarId
 
 // 얼굴 원의 위치·크기 (디자인 A_1 game tut 1의 P1/P2_Face zone, 1920x1080 기준)
@@ -34,7 +36,7 @@ export function TutorialScreen({
   onDone,
   game = 'flag',
 }: {
-  game?: 'flag' | 'campfire'
+  game?: 'flag' | 'campfire' | 'ricecake'
   onDone: (avatars: { p1: AvatarPick; p2: AvatarPick }) => void
 }) {
   const [step, setStep] = useState<Step>('position')
@@ -71,14 +73,15 @@ export function TutorialScreen({
 
   // 단계 안내 나레이션 (사람 녹음). 화면 텍스트와 같은 문장이어야 한다.
   useEffect(() => {
-    const key: Record<Step, NarrationKey> = {
+    if (step === 'rest' || (step === 'gender' && game === 'ricecake')) return
+    const key: Record<Exclude<Step, 'rest'>, NarrationKey> = {
       position: 'facePosition',
       calibration: 'stretch',
       gender: 'genderSelect',
     }
     playNarration(key[step])
     return () => stopNarration()
-  }, [step])
+  }, [step, game])
 
   // 100ms 폴링으로 단계 진행 체크 (판정용이 아니라 UI 진행용)
   useEffect(() => {
@@ -106,13 +109,34 @@ export function TutorialScreen({
           playSfx('whistleShort')
           holdRef.current = { p1: 0, p2: 0 }
           setOk({ p1: false, p2: false })
+          setStep(game === 'ricecake' ? 'rest' : 'calibration')
+        }
+      }
+
+      if (step === 'rest') {
+        const matches = ([1, 2] as const).map(pid => {
+          const p = poseEngine.getCBody(pid)
+          const key = pid === 1 ? 'p1' : 'p2'
+          const inZone = p.tracked && !p.left && !p.right &&
+            Math.abs(p.leftX - 0.25) < 0.15 && Math.abs(p.rightX - 0.735) < 0.15 &&
+            Math.abs(p.leftY - 0.69) < 0.13 && Math.abs(p.rightY - 0.69) < 0.13
+          if (!inZone) holdRef.current[key] = 0
+          else if (!holdRef.current[key]) holdRef.current[key] = now
+          return inZone && now - holdRef.current[key] >= 1000
+        })
+        setOk({ p1: matches[0], p2: matches[1] })
+        if (matches.every(Boolean)) {
+          holdRef.current = { p1: 0, p2: 0 }
+          setOk({ p1: false, p2: false })
           setStep('calibration')
         }
       }
 
       if (step === 'calibration') {
         const kb = !poseEngine.cameraOk && poseEngine.ready
-        const bothUp = kb
+        const bothUp = game === 'ricecake'
+          ? poseEngine.getCBody(1).aboveHead && poseEngine.getCBody(2).aboveHead
+          : kb
           ? poseEngine.getPose(1).leftRaised && poseEngine.getPose(2).leftRaised
           : poseEngine.bothHandsUpRaw(1) && poseEngine.bothHandsUpRaw(2)
         if (bothUp) {
@@ -154,7 +178,7 @@ export function TutorialScreen({
       }
     }, 100)
     return () => window.clearInterval(iv)
-  }, [step, picks])
+  }, [step, picks, game])
 
   // 둘 다 선택 완료 → 연습으로
   useEffect(() => {
@@ -171,7 +195,8 @@ export function TutorialScreen({
 
   /** 진행요원용: 현재 단계를 건너뛴다 (버튼과 키보드 1번이 공유) */
   const skipStep = () => {
-    if (step === 'position') setStep('calibration')
+    if (step === 'position') setStep(game === 'ricecake' ? 'rest' : 'calibration')
+    else if (step === 'rest') setStep('calibration')
     else if (step === 'calibration') {
       poseEngine.finishCalibration()
       setStep('gender')
@@ -188,11 +213,12 @@ export function TutorialScreen({
   })
 
   return (
-    <div className="fill fade-in">
-      <img src={IMG.tutBg} alt="" className="fill" style={{ objectFit: 'cover' }} />
+    <div className={`fill fade-in ${game === 'ricecake' ? 'game-c-tutorial' : ''}`} data-tutorial-step={step}>
+      <img src={game === 'ricecake' ? GAME_C_IMAGES.tutorial : IMG.tutBg} alt="" className="fill" style={{ objectFit: 'cover' }} />
+      {game === 'ricecake' && step === 'gender' && <div className="fill" style={{ background: '#fff' }} />}
 
       {/* 위치잡기/캘리브레이션은 카메라 강제 ON: 전체 화면 카메라 레이어 */}
-      {(step === 'position' || step === 'calibration') && cameraStream() && (
+      {(step === 'position' || step === 'rest' || step === 'calibration') && cameraStream() && (
         <video
           ref={videoRef}
           muted
@@ -202,6 +228,15 @@ export function TutorialScreen({
         />
       )}
       <div className="divider-line" />
+
+      {step === 'rest' && <>
+        <p className="game-c-title">기본자세</p>
+        <p className="game-c-setup-guide">양손을 원 안에 위치시켜 주세요</p>
+        {[128, 594, 1060, 1526].map(x => <img key={x} src={GAME_C_IMAGES.handZone} alt="손 위치"
+          style={{ position: 'absolute', left: x, top: 619, width: 225, height: 248 }} />)}
+        {ok.p1 && <Sprite frame={FX.ok} style={{ left: 310, top: 360, width: 266, height: 161 }} />}
+        {ok.p2 && <Sprite frame={FX.ok} style={{ left: 1380, top: 360, width: 266, height: 161 }} />}
+      </>}
 
       {step === 'position' && (
         <>
@@ -238,10 +273,10 @@ export function TutorialScreen({
       {step === 'gender' && (
         <>
           <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 18, fontSize: 88, textAlign: 'center', color: '#111', textShadow: '0 3px 0 rgba(255,255,255,0.7)' }}>
-            성별선택
+            {game === 'ricecake' ? '토끼 선택' : '성별선택'}
           </p>
           <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 162, fontSize: 56, textAlign: 'center', color: '#111', textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}>
-            당신의 성별을 선택해주세요
+            {game === 'ricecake' ? '원하는 토끼를 선택해주세요' : '당신의 성별을 선택해주세요'}
           </p>
           {([1, 2] as const).map(pid => {
             const key = pid === 1 ? 'p1' : 'p2'
@@ -255,27 +290,32 @@ export function TutorialScreen({
             return (
               <div key={pid}>
                 {opts.map(o => {
-                  const size = frameSize(TUT_CHAR[o.id], { h: 470 })
+                  const size = game === 'ricecake' ? { width: 388, height: 654 } : frameSize(TUT_CHAR[o.id], { h: 470 })
                   return (
                     <div key={o.id}>
-                      <div
+                      <button
+                        type="button"
+                        aria-label={`${pid}P ${game === 'ricecake' ? o.id === 'grandma' ? '분홍 토끼' : '갈색 토끼' : o.id === 'grandma' ? '할머니' : '할아버지'}`}
                         onClick={() => pickByClick(key, o.id)}
                         style={{
+                          border: 0, background: 'transparent', padding: 0,
                           position: 'absolute',
                           left: o.cx - size.width / 2,
-                          top: 430,
+                          top: game === 'ricecake' ? 315 : 430,
                           ...size,
                           outline: picked === o.id ? '8px solid #37ff83' : 'none',
                           borderRadius: 12,
                         }}
                       >
-                        {game === 'campfire'
+                        {game === 'ricecake'
+                          ? <RabbitPortrait rabbit={o.id === 'grandma' ? 'pink' : 'brown'} style={{ width: 388, height: 654 }} />
+                          : game === 'campfire'
                           ? <GameBAvatar avatar={o.id} pose="tutorial" width={470 / .75} left={size.width / 2} top={0} />
                           : <Sprite frame={TUT_CHAR[o.id]} style={{ inset: 0 }} />}
-                      </div>
+                      </button>
                       <p
                         className="pixel-text"
-                        style={{ position: 'absolute', left: o.cx - 180, top: 916, width: 360, fontSize: 42, textAlign: 'center', color: '#111', textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}
+                        style={{ position: 'absolute', left: o.cx - 180, top: game === 'ricecake' ? 949 : 916, width: 360, fontSize: 42, textAlign: 'center', color: '#111', textShadow: '0 2px 0 rgba(255,255,255,0.7)' }}
                       >
                         {o.hand}
                       </p>
@@ -283,7 +323,7 @@ export function TutorialScreen({
                         <Sprite
                           frame={FX.ok}
                           className="pop"
-                          style={{ ...frameSize(FX.ok, { w: 240 }), left: o.cx - 120, top: 300 }}
+                          style={{ ...frameSize(FX.ok, { w: 240 }), left: o.cx - 120, top: game === 'ricecake' ? 180 : 300 }}
                         />
                       )}
                     </div>
