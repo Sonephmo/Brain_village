@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { GameBAvatar } from '../components/GameBAvatar'
 import { Sprite } from '../components/Sprite'
+import { GameTimer } from '../components/GameTimer'
 import { FX, IMG, type Avatar as AvatarPick } from '../assets'
 import { FIRE_FRAMES, GAME_B_IMAGES, preloadGameB, fireFrameIndex, type FireKind } from '../game/gameBAssets'
 import { FanCounter, FIRE_GUIDES, GAME_B_EVENTS, GAME_B_RULES, taskSucceeded, playerTaskResults, type FireTask } from '../game/gameB'
@@ -204,7 +205,7 @@ export function GameBScreen({ avatars, skipPractice = false, onFinish, onExit }:
       <p className="game-b-title">{welcome ? '잘 하셨어요' : guide.title}</p>
       <p className="game-b-guide">{welcome ? '이제 캠프파이어를 시작해볼까요?' : guide.guide}</p>
     </> : <>
-      <p className="game-b-timer">{Math.ceil(remaining / 1000)}</p>
+      <GameTimer value={Math.ceil(remaining / 1000)} />
       <p className="game-b-score">{String(score).padStart(2, '0')}</p>
       {stage === 'main' && <p className="game-b-event">{task === 'big' ? guide.guide : task === 'stand' ? '함께 부채질해요!' : guide.title}</p>}
     </>}

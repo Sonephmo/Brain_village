@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { FX, IMG } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { GameCRabbit, RiceCake } from '../components/GameCRabbit'
+import { GameCEffect } from '../components/GameCEffect'
+import { GameTimer } from '../components/GameTimer'
+import { GameCMoonScore } from '../components/GameCMoonScore'
 import { GAME_C_IMAGES, preloadGameC, type RabbitPose } from '../game/gameCAssets'
-import { GAME_C_RULES, RICE_CUES, RICE_GUIDES, RICE_PRACTICE, RiceActionTracker, RiceFinishTracker,
-  freshRiceResult, type GameCResult, type Grip, type Rabbits, type RiceInput } from '../game/gameC'
+import { GAME_C_RULES, RICE_CUES, RICE_CUE_MS, RICE_TOTAL_MS, RICE_GUIDES, RICE_PRACTICE, RICE_MOTION_REST, RiceActionTracker, RiceFinishTracker, RiceMotion, ricePoundPose,
+  freshRiceResult, ricePlayerStats, type GameCResult, type Grip, type Rabbits, type RiceFeedback, type RiceInput } from '../game/gameC'
 import { riceGripEngine } from '../game/gameCGrip'
 import { poseEngine } from '../game/pose'
 import { playBgm, stopBgm } from '../game/bgm'
@@ -24,12 +27,17 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
   const [attempt, setAttempt] = useState(0)
   const [practiceIndex, setPracticeIndex] = useState(0)
   const [cueIndex, setCueIndex] = useState(0)
-  const [remaining, setRemaining] = useState(60)
+  const [remaining, setRemaining] = useState(RICE_TOTAL_MS / 1000)
   const [score, setScore] = useState(0)
   const [countdown, setCountdown] = useState(-1)
   const [live, setLive] = useState<[RiceInput, RiceInput]>([emptyInput(), emptyInput()])
   const [squeezes, setSqueezes] = useState(0)
   const [matched, setMatched] = useState(false)
+  const [effect, setEffect] = useState<{ id: number; kind: RiceFeedback } | null>(null)
+  const effectId = useRef(0)
+  const motion = useRef(new RiceMotion())
+  const [motionFrame, setMotionFrame] = useState(RICE_MOTION_REST)
+  const reducedMotion = useRef(false)
   const [finishProgress, setFinishProgress] = useState(0)
   const [armed, setArmed] = useState(false)
   const [help, setHelp] = useState(false)
@@ -67,6 +75,14 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
   useEffect(() => () => { stopBgm(); riceGripEngine.reset(); window.clearTimeout(armTimer.current) }, [])
 
   useEffect(() => {
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => { reducedMotion.current = preference.matches }
+    update()
+    preference.addEventListener('change', update)
+    return () => preference.removeEventListener('change', update)
+  }, [])
+
+  useEffect(() => {
     const down = (event: KeyboardEvent) => keys.current.add(event.key.toLowerCase())
     const up = (event: KeyboardEvent) => keys.current.delete(event.key.toLowerCase())
     const clear = () => keys.current.clear()
@@ -77,13 +93,22 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
   }, [])
 
   useEffect(() => {
-    if (stage !== 'practice' && stage !== 'play' && stage !== 'finish') return
+    if (stage === 'loading') return
+    const accepting = stage === 'practice' || stage === 'play'
+    const showingFeedback = stage === 'practiceFeedback' || stage === 'feedback'
     const started = performance.now()
     let counter = new RiceActionTracker(cue.action, started)
-    tracker.current = counter
+    tracker.current = accepting ? counter : null
     riceGripEngine.reset()
-    setSqueezes(0)
-    setMatched(false)
+    if (accepting) {
+      setSqueezes(0)
+      setMatched(false)
+    }
+    if (!showingFeedback) {
+      setEffect(null)
+      motion.current.reset()
+      setMotionFrame(RICE_MOTION_REST)
+    }
     let finishCounter = new RiceFinishTracker()
     let previousKeyboard = keyboardRef.current || (poseEngine.ready && !poseEngine.cameraOk) || Boolean(riceGripEngine.error)
     const timer = window.setInterval(() => {
@@ -94,8 +119,10 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
         // Switching input sources must not complete a movement started on the other source.
         previousKeyboard = kb
         counter = new RiceActionTracker(cue.action, started)
-        tracker.current = counter
+        tracker.current = accepting ? counter : null
         finishCounter = new RiceFinishTracker()
+        motion.current.reset()
+        setEffect(null)
       }
       const readInput = (pid: PlayerId): RiceInput => {
         const left = keys.current.has(pid === 1 ? 'q' : 'o')
@@ -104,11 +131,15 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
         const key = pid === 1 ? 'e' : 'i'
         let grip: Grip = 'unknown'
         if (kb) grip = keys.current.has(key) ? 'closed' : 'open'
-        else if (cue.action === 'squeeze' && cue.player === pid && stage !== 'finish') grip = riceGripEngine.sample(pid, now)
+        else if (accepting && cue.action === 'squeeze' && cue.player === pid) grip = riceGripEngine.sample(pid, now)
         return { ...body, tracked: body.tracked || kb, grip }
       }
       const inputs: [RiceInput, RiceInput] = [readInput(1), readInput(2)]
+      const performer = inputs[cue.player - 1]
       setLive(inputs)
+      // Missing tracking is never a strike or continuing kneading motion.
+      if (!performer.tracked || (accepting && cue.action === 'squeeze' && performer.grip === 'unknown')) motion.current.reset()
+      if (!accepting) setMotionFrame(motion.current.sample(now, reducedMotion.current))
       if (stage === 'finish') {
         const progress = finishCounter.update(inputs, now)
         setFinishProgress(progress)
@@ -119,8 +150,17 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
         }
         return
       }
+      // Keep hand-driven poses live during feedback/countdown without accepting actions.
+      if (!accepting) return
       // A late sample outside the response window cannot turn a miss into a success.
-      if (stage === 'practice' || elapsed <= GAME_C_RULES.responseMs) counter.update(inputs[cue.player - 1], now)
+      if (stage === 'practice' || elapsed <= GAME_C_RULES.responseMs) {
+        const previousMovement = counter.movementAt
+        const feedback = counter.update(performer, now)
+        if (cue.action !== 'pound' && counter.movementAt !== previousMovement) motion.current.assist(now)
+        if (feedback === 'star') motion.current.strike(now)
+        if (feedback) setEffect({ id: ++effectId.current, kind: feedback })
+      }
+      setMotionFrame(motion.current.sample(now, reducedMotion.current))
       setSqueezes(counter.count)
       setMatched(counter.complete)
       if (stage === 'practice' && counter.complete) {
@@ -128,7 +168,7 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
         playSfx('whistleShort')
         setStage('practiceFeedback')
       } else if (stage === 'play') {
-        setRemaining(Math.max(0, Math.ceil((60000 - cueIndex * 3000 - Math.min(elapsed, GAME_C_RULES.responseMs)) / 1000)))
+        setRemaining(Math.max(0, Math.ceil((RICE_TOTAL_MS - cueIndex * RICE_CUE_MS - Math.min(elapsed, GAME_C_RULES.responseMs)) / 1000)))
         if (elapsed >= GAME_C_RULES.responseMs) {
           window.clearInterval(timer)
           const trial = counter.result(cue)
@@ -154,7 +194,7 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
     if (stage === 'welcome') timer = window.setTimeout(() => setStage('fadeOut'), 2400)
     if (stage === 'backgroundHold') timer = window.setTimeout(() => setStage('backgroundFocus'), 3000)
     if (stage === 'feedback') timer = window.setTimeout(() => {
-      setRemaining(60 - (cueIndex + 1) * 3)
+      setRemaining(Math.max(0, Math.ceil((RICE_TOTAL_MS - (cueIndex + 1) * RICE_CUE_MS) / 1000)))
       if (cueIndex === RICE_CUES.length - 1) {
         result.current.completed = true
         setStage(result.current.score >= GAME_C_RULES.passScore ? 'finish' : 'end')
@@ -218,10 +258,8 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
   const showUi = practicing || !introducing || stage === 'uiReveal'
   const onLeft = cue.player === 1
   const rabbitPose = (pid: PlayerId): RabbitPose => {
-    const input = live[pid - 1]
-    if (pid === poundingPlayer) return (input.left && input.right) || swap || stage === 'uiReveal' || stage === 'countdown' || cue.action !== 'pound' ? 'up' : 'down'
-    if (cue.action === 'squeeze' && pid === cue.player) return input.grip === 'closed' ? 'squeeze-1' : 'squeeze-2'
-    return 'idle'
+    if (pid === poundingPlayer) return ricePoundPose(live[pid - 1])
+    return motionFrame.assistPose
   }
 
   return <div className={`fill game-c ${practicing ? 'fade-in' : 'game-c-main'}`} data-game-c-stage={stage} data-cue-index={cueIndex} data-practice-index={practiceIndex}>
@@ -240,7 +278,7 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
     {(practicing || swap || finishing) && <h1 className="game-c-title">{title}</h1>}
     {!finishing && <>
       <img src={GAME_C_IMAGES.wood} alt="" className="game-c-wood" />
-      <img src={GAME_C_IMAGES.dough[cue.action === 'left' ? 2 : cue.action === 'right' ? 1 : cue.action === 'squeeze' ? 0 : 3]} alt="" className={`game-c-dough ${matched && cue.action === 'right' ? 'flipped' : ''}`} />
+      <img src={GAME_C_IMAGES.dough[motionFrame.dough - 1]} alt="" className="game-c-dough" data-dough={motionFrame.dough} />
       <GameCRabbit rabbit={rabbits.p1} side={1} pose={rabbitPose(1)} style={{ left: swapped ? 442 : 398 }} />
       <GameCRabbit rabbit={rabbits.p2} side={2} pose={rabbitPose(2)} style={{ left: swapped ? 842 : 768 }} />
     </>}
@@ -249,28 +287,23 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
       <p>{guide.speech}</p>
     </div>}
     {showBubble && matched && <Sprite frame={FX.good} style={{ left: onLeft ? 604 : 1011, top: 186, width: 267, height: 148 }} />}
-    {!practicing && matched && cue.action === 'pound' && <div className="game-c-impact" aria-hidden="true">
-      {[[814, 369, .03], [794, 369, -87.53], [807, 360, -180.21], [802, 353, -275.13]].map(([left, top, crop], index) =>
-        <div key={index} style={{ left, top, animationDelay: `${index * 150}ms` }}>
-          <img src={GAME_C_IMAGES.poundFeedback} alt="" style={{ left: `${crop}%` }} />
-        </div>)}
-    </div>}
+    {showBubble && effect && <GameCEffect key={effect.id} kind={effect.kind} />}
     {showBubble && cue.action === 'squeeze' && <p className="game-c-count" style={{ left: onLeft ? 638 : 1055 }}>{Math.min(3, squeezes)} / 3</p>}
     {practicing && <p className="game-c-guide">{swap ? '이제 서로 역할을 바꿉니다\n오른쪽이 메질, 왼쪽이 떡 정리 역할입니다'
       : stage === 'welcome' || stage === 'fadeOut' ? '잘하셨습니다!\n이제 본격적으로 떡 만들기를 시작해볼까요?' : guide.guide}</p>}
     {swap && !practicing && <p className="game-c-guide">{'이제 서로 역할을 바꿉니다\n오른쪽이 메질, 왼쪽이 떡 정리 역할입니다'}</p>}
     {!practicing && !finishing && !swap && <>
-      <p className="game-c-timer" aria-label={`남은 시간 ${remaining}초`}>{remaining}</p>
-      <div className="game-c-score" aria-label={`팀 점수 ${score}점`}>
-        <div>{Array.from({ length: 5 }, (_, i) => <div key={i} className={`game-c-moon ${score >= (i + 1) * 20 ? 'filled' : ''}`}>
-          <img alt="" src={GAME_C_IMAGES.moon} /></div>)}</div>
-      </div>
+      <GameTimer value={remaining} />
+      {([1, 2] as const).map(player => {
+        const stats = ricePlayerStats(result.current, player)
+        return <GameCMoonScore key={player} player={player} score={stats.score} maxScore={stats.maxScore} />
+      })}
     </>}
     {stage === 'countdown' && countdown >= 0 && <img className="game-c-countdown pop"
       src={[IMG.count3, IMG.count2, IMG.count1, IMG.countStart][countdown]} alt={['3', '2', '1', '시작'][countdown]} />}
     {finishing && <>
       {riceComplete ? <RiceCake style={{ left: 710, top: 310, width: 500, height: 333 }} />
-        : <img src={GAME_C_IMAGES.dough[0]} alt="만들고 있던 떡 반죽" style={{ position: 'absolute', left: 710, top: 310, width: 500, height: 333, objectFit: 'contain' }} />}
+        : <img src={GAME_C_IMAGES.dough[3]} alt="만들고 있던 떡 반죽" style={{ position: 'absolute', left: 710, top: 310, width: 500, height: 333, objectFit: 'contain' }} />}
       <GameCRabbit rabbit={rabbits.p1} side={1} pose="idle" style={{ left: 180, top: 330, width: 580, height: 435 }} />
       <GameCRabbit rabbit={rabbits.p2} side={2} pose="idle" style={{ left: 1160, top: 330, width: 580, height: 435 }} />
       <p className="game-c-finish-score">{score}점</p>

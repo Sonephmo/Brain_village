@@ -1,6 +1,7 @@
 import type { PlayerId } from './types'
 
 export type RiceAction = 'pound' | 'left' | 'right' | 'squeeze'
+export type RiceFeedback = 'star' | 'mix'
 export type Rabbit = 'pink' | 'brown'
 export type Rabbits = { p1: Rabbit; p2: Rabbit }
 export interface RiceBody {
@@ -12,7 +13,7 @@ export interface RiceBody {
 export type Grip = 'open' | 'closed' | 'unknown'
 export interface RiceInput extends RiceBody { grip: Grip }
 export const GAME_C_RULES = {
-  version: 'flow-1', responseMs: 2000, feedbackMs: 1000,
+  version: 'flow-2', responseMs: 3000, feedbackMs: 1000,
   swapMs: 4000, holdMs: 120, finishHoldMs: 1000,
   points: 5, passScore: 50, maxScore: 100,
 } as const
@@ -27,6 +28,8 @@ const actions: RiceAction[] = ['pound', 'squeeze', 'pound', 'left', 'pound', 'ri
 export const RICE_CUES: RiceCue[] = ([1, 2] as const).flatMap(round =>
   actions.map(action => ({ action, round, player: (action === 'pound' ? round : 3 - round) as PlayerId })),
 )
+export const RICE_CUE_MS = GAME_C_RULES.responseMs + GAME_C_RULES.feedbackMs
+export const RICE_TOTAL_MS = RICE_CUES.length * RICE_CUE_MS
 export const RICE_PRACTICE: RiceCue[] = [
   { action: 'pound', player: 1, round: 1 }, { action: 'squeeze', player: 2, round: 1 },
   { action: 'pound', player: 1, round: 1 }, { action: 'right', player: 2, round: 1 },
@@ -56,6 +59,7 @@ export const freshRiceResult = (): GameCResult => ({
 export class RiceActionTracker {
   count = 0
   complete = false
+  movementAt: number | null = null
   reactionMs: number | null = null
   completionMs: number | null = null
   private phase: 'waiting' | 'ready' | 'active' = 'waiting'
@@ -65,7 +69,8 @@ export class RiceActionTracker {
   private started = 0
   constructor(readonly action: RiceAction, readonly openedAt: number) {}
 
-  update(input: RiceInput, now: number) {
+  /** Emits once per accepted movement, including each of the three kneading cycles. */
+  update(input: RiceInput, now: number): RiceFeedback | undefined {
     if (this.complete) return
     if (!input.tracked || (this.action === 'squeeze' && input.grip === 'unknown')) {
       this.phase = 'waiting'
@@ -86,19 +91,67 @@ export class RiceActionTracker {
     }
     if (this.phase === 'ready' && active) {
       this.phase = 'active'
+      this.movementAt = now
       this.started = this.since
       if (this.reactionMs == null) this.reactionMs = Math.round(this.started - this.openedAt)
-      if (this.action === 'left' || this.action === 'right') this.finish(now)
+      if (this.action === 'left' || this.action === 'right') {
+        this.finish(now)
+        return 'mix'
+      }
     } else if (this.phase === 'active' && neutral) {
       this.count++
+      this.movementAt = now
       this.phase = 'ready'
       if (this.count >= (this.action === 'squeeze' ? 3 : 1)) this.finish(now)
+      return this.action === 'pound' ? 'star' : 'mix'
     }
   }
   private finish(now: number) { this.complete = true; this.completionMs = Math.round(now - this.openedAt) }
   result(cue: RiceCue): RiceTrial {
     return { ...cue, outcome: this.complete ? 'correct' : this.moved ? 'wrong' : 'missed',
       reactionMs: this.complete ? this.reactionMs : null, completionMs: this.completionMs }
+  }
+}
+
+export interface RiceMotionFrame {
+  dough: 1 | 2 | 3 | 4
+  assistPose: 'idle' | 'squeeze-1' | 'squeeze-2'
+}
+export const RICE_MOTION_REST: RiceMotionFrame = { dough: 4, assistPose: 'idle' }
+export const RICE_MOTION_TIMING = { frameMs: 150, strikeMs: 300, assistMs: 750 } as const
+
+/** Displayed mallet position is independent of whether a full strike was accepted. */
+export function ricePoundPose(input: RiceBody): 'up' | 'down' {
+  return input.tracked && input.left && input.right ? 'up' : 'down'
+}
+
+/** Visual feedback never awards points or advances the movement tracker. */
+export class RiceMotion {
+  private kind: 'strike' | 'assist' | null = null
+  private startedAt = 0
+  private until = 0
+
+  reset() { this.kind = null; this.until = 0 }
+
+  strike(now: number) {
+    this.kind = 'strike'
+    this.startedAt = now
+    this.until = now + RICE_MOTION_TIMING.strikeMs
+  }
+
+  assist(now: number) {
+    // Continued kneading extends the loop without snapping back to its first frame.
+    if (this.kind !== 'assist' || now >= this.until) this.startedAt = now
+    this.kind = 'assist'
+    this.until = now + RICE_MOTION_TIMING.assistMs
+  }
+
+  sample(now: number, reducedMotion = false): RiceMotionFrame {
+    if (!this.kind || now >= this.until || reducedMotion) return RICE_MOTION_REST
+    if (this.kind === 'strike') return { dough: 1, assistPose: 'idle' }
+    const frame = Math.floor((now - this.startedAt) / RICE_MOTION_TIMING.frameMs)
+    // Loop 02 → 04 → 03 → 04 → 02 ... using the actual named assets, without mirroring.
+    return { dough: ([2, 4, 3, 4] as const)[frame % 4], assistPose: frame % 2 === 0 ? 'squeeze-1' : 'squeeze-2' }
   }
 }
 
@@ -123,5 +176,7 @@ export function ricePlayerStats(result: GameCResult, player: PlayerId) {
   const missed = trials.filter(t => t.outcome === 'missed').length
   // Each player has 10 scheduled actions. An aborted run never gets a full rating.
   const rating = Math.floor(correct / 2)
-  return { total: trials.length, correct, wrong, missed, rating }
+  const score = correct * GAME_C_RULES.points
+  const maxScore = RICE_CUES.filter(cue => cue.player === player).length * GAME_C_RULES.points
+  return { total: trials.length, correct, wrong, missed, rating, score, maxScore }
 }

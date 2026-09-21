@@ -6,6 +6,7 @@ export const GAME_C_IMAGES = {
   playBackground: asset('play-background'), playOriginal: asset('play-background-original'),
   playBubble: asset('play-speech-bubble'),
   poundFeedback: asset('pound-feedback-sheet'),
+  mixFeedback: asset('mix-feedback-sheet'),
   tutorial: asset('tutorial-background'), wood: asset('wood-plate'), bubble: asset('speech-bubble'),
   moon: asset('score-moon'), select: asset('rabbit-select-sheet'), cakes: asset('rice-cake-sheet'),
   handZone: asset('hand-zone'), backgrounds: [asset('result-under50'), asset('result-over50')],

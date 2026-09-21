@@ -1,10 +1,11 @@
 {
-  "exportedAt": "2026-09-19",
+  "exportedAt": "2026-09-20",
   "assets": [
     { "format": "png", "source": "original-image-fill", "nodeId": "315:3", "file": "play-background-original.png", "exposure": 0 },
     { "format": "png", "source": "design-context-adjusted-image", "nodeId": "315:3", "file": "play-background.png", "exposure": -0.4 },
     { "format": "png", "source": "design-context-image", "nodeId": "306:78", "file": "play-speech-bubble.png" },
     { "format": "png", "source": "original-image-fill", "nodeId": "306:81", "file": "pound-feedback-sheet.png" },
+    { "format": "png", "source": "original-image-fill", "nodeId": "306:13", "file": "mix-feedback-sheet.png" },
     {
       "format": "png",
       "source": "original-image-fill",

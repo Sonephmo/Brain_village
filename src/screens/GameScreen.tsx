@@ -3,6 +3,7 @@ import { FX, IMG, frameSize } from '../assets'
 import { Avatar, poseFromHands } from '../components/Avatar'
 import { CameraPanel } from '../components/CameraPanel'
 import { Sprite } from '../components/Sprite'
+import { GameTimer } from '../components/GameTimer'
 import { GameRunner, type Snapshot } from '../game/engine'
 import { COMMANDS, PRACTICE, PRACTICE_NARRATION, ROUND_SIZE, flagsForCommand } from '../game/commands'
 import type { CommandLog } from '../game/types'
@@ -245,7 +246,7 @@ export function GameScreen({
               position: 'absolute',
               left: 0,
               right: 0,
-              top: isPractice ? 42 : 118,
+              top: isPractice ? 42 : 190,
               fontSize: cmdFontSize(cmd.text, isPractice ? 96 : 140),
               textAlign: 'center',
               whiteSpace: 'nowrap',
@@ -261,7 +262,7 @@ export function GameScreen({
               style={{
                 position: 'absolute',
                 left: '50%',
-                top: isPractice ? 32 : 106,
+                top: isPractice ? 32 : 178,
                 transform: 'translateX(-50%)',
                 width: 1240,
                 height: isPractice ? 164 : 234,
@@ -281,9 +282,7 @@ export function GameScreen({
 
       {/* 반응 창 타이머 (노란 픽셀 숫자, 100ms 단위) */}
       {snap?.phase === 'window' && !isPractice && (
-        <p className="pixel-text" style={{ position: 'absolute', left: 0, right: 0, top: 4, fontSize: 90, textAlign: 'center', color: '#ffd83a', textShadow: '0 4px 0 rgba(0,0,0,0.6)' }}>
-          {(snap.windowRemainMs / 1000).toFixed(1)}
-        </p>
+        <GameTimer value={(snap.windowRemainMs / 1000).toFixed(1)} />
       )}
 
       {/* 팀 점수 (본 게임만, 팀 통합 점수 1개 — 스펙 §4.2) */}
