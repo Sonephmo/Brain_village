@@ -1,0 +1,9 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>장보기 · 가람 안내 음성</title>
+<style>body{max-width:950px;margin:40px auto;padding:0 20px;font-family:system-ui;background:#fff8e8;color:#342915}li{padding:16px 0;border-bottom:1px solid #ddcaa1}audio{display:block;width:100%;margin-top:10px}#status{font-weight:bold}</style>
+<h1>장보기 · 가람 안내 음성 10종</h1><p>클로바더빙 가람 · 속도와 높낮이 보통 · 내려받은 MP3 원본</p><p id="status">음원 확인 중…</p><ol id="clips"></ol><details><summary>디코딩 검사</summary><pre id="validation"></pre></details>
+<script type="module">
+const {clips}=await (await fetch('./shopping-audio-manifest.json')).json();
+const context=new AudioContext();const results=[];
+for(const clip of clips){const src='/'+clip.path.split('/').map(encodeURIComponent).join('/');const li=document.createElement('li');li.textContent=clip.text;const audio=document.createElement('audio');audio.controls=true;audio.src=src;li.append(audio);document.querySelector('#clips').append(li);try{const buf=await context.decodeAudioData(await (await fetch(src)).arrayBuffer());let peak=0;for(const value of buf.getChannelData(0))peak=Math.max(peak,Math.abs(value));results.push({key:clip.key,durationMs:Math.round(buf.duration*1000),channels:buf.numberOfChannels,peak,ok:buf.duration>0&&peak>0.01});}catch(e){results.push({key:clip.key,ok:false,error:String(e)});}}
+document.querySelector('#status').textContent=results.every(x=>x.ok)?'10개 음원 모두 디코딩 정상':'확인이 필요한 음원이 있어요';document.querySelector('#validation').textContent=JSON.stringify(results,null,2);await context.close();
+</script></html>

@@ -22,6 +22,7 @@ export interface PlayerJudge {
 }
 
 export interface CommandLog {
+  구령시작시각: string
   구령ID: number
   레벨: Level
   구령: string
@@ -32,6 +33,11 @@ export interface CommandLog {
   }
   획득점수: number
   발화길이ms: number
+}
+
+export interface FlagSessionMeta {
+  startedAt: string
+  inputMode: '포즈인식' | '키보드'
 }
 
 export interface SessionLog {
@@ -52,6 +58,8 @@ export interface SessionLog {
 // 포즈 엔진이 프레임마다 갱신하는 플레이어 상태
 export interface PlayerPose {
   present: boolean
+  /** 몸은 보여도 손목이 가려졌으면 정지/손 동작의 유효 관측이 아니다. */
+  handsTracked?: boolean
   noseX: number | null // 반쪽 프레임 내 정규화 좌표 (0~1, 원본 기준)
   noseY: number | null
   /** 거울 모드를 반영한 화면상 가로 위치 (= 1 - noseX). 화면 요소와 대조할 때 쓴다. */

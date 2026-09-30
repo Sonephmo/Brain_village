@@ -14,6 +14,7 @@
 import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision'
 import { cameraError, cameraStream, openCamera } from './camera'
 import type { PlayerId, PlayerPose, Hand } from './types'
+import { playerFrame } from './playerFrame'
 
 const NOSE = 0
 const L_SHOULDER = 11
@@ -70,6 +71,7 @@ interface Calib {
 function emptyPose(): PlayerPose {
   return {
     present: false,
+    handsTracked: false,
     noseX: null,
     noseY: null,
     screenX: null,
@@ -144,9 +146,24 @@ class PoseEngine {
   constructor() {
     window.addEventListener('keydown', e => this.onKey(e, true))
     window.addEventListener('keyup', e => this.onKey(e, false))
+    window.addEventListener('blur', () => this.resetKeys())
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this.resetKeys()
+    })
+  }
+
+  private keyboardPaused = false
+  setKeyboardPaused(paused: boolean) { this.keyboardPaused = paused; this.resetKeys() }
+
+  private resetKeys() {
+    this.keys = { 1: { left: false, right: false }, 2: { left: false, right: false } }
   }
 
   private onKey(e: KeyboardEvent, down: boolean) {
+    if (down && (this.keyboardPaused || e.repeat)) return
+    const target = e.target as HTMLElement | null
+    if (down && (e.ctrlKey || e.altKey || e.metaKey || target?.isContentEditable ||
+      ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName ?? ''))) return
     const map: Record<string, [PlayerId, Hand]> = {
       q: [1, 'left'],
       w: [1, 'right'],
@@ -277,12 +294,12 @@ class PoseEngine {
     }
 
     // 1P(화면 왼쪽) = 원본 오른쪽 절반, 2P = 원본 왼쪽 절반
-    const srcX: Record<PlayerId, number> = { 1: vw / 2, 2: 0 }
     for (const pid of [1, 2] as PlayerId[]) {
       const canvas = this.halves[pid - 1]
       const g = canvas.getContext('2d', { willReadFrequently: false })
       if (!g) continue
-      g.drawImage(v, srcX[pid], 0, vw / 2, vh, 0, 0, canvas.width, canvas.height)
+      const frame = playerFrame(vw, vh, pid)
+      g.drawImage(v, frame.x, frame.y, frame.width, frame.height, 0, 0, canvas.width, canvas.height)
       // 같은 landmarker에 같은(또는 더 이른) 타임스탬프를 주면 예외가 난다
       const ts = Math.max(now, this.lastDetectTs[pid - 1] + 1)
       this.lastDetectTs[pid - 1] = ts
@@ -334,6 +351,7 @@ class PoseEngine {
   setMode(mode: PoseMode) {
     if (this.mode === mode) return
     this.mode = mode
+    this.resetKeys()
     this.ptr.has = false
     this.wristLost = LOST_FRAMES
   }
@@ -433,9 +451,19 @@ class PoseEngine {
     // 키보드 입력은 항상 반영 (카메라 유무와 무관한 진행요원용 예비 입력)
     const p = { ...this.pose[pid] }
     const k = this.keys[pid]
+    const sample = this.riceSamples[pid]
+    p.handsTracked = sample.tracked && performance.now() - sample.at < 400
+    if (this.cameraOk && performance.now() - sample.at >= 400) {
+      p.present = false
+      p.leftRaised = p.rightRaised = false
+    }
+    // 카메라 초기화에 실패한 명시적 예비 모드에서는 키를 놓은 상태도 유효한 정지 입력이다.
+    if (this.ready && !this.cameraOk) {
+      return { ...emptyPose(), present: true, handsTracked: true, leftRaised: k.left, rightRaised: k.right }
+    }
     p.leftRaised = p.leftRaised || k.left
     p.rightRaised = p.rightRaised || k.right
-    if (k.left || k.right) p.present = true
+    if (k.left || k.right) { p.present = true; p.handsTracked = true }
     return p
   }
 
@@ -495,6 +523,7 @@ class PoseEngine {
   }
 
   destroy() {
+    this.resetKeys()
     cancelAnimationFrame(this.raf)
     window.clearInterval(this.watchdog)
     // 스트림은 camera.ts 소유이므로 여기서 멈추지 않는다 (다른 화면이 쓸 수 있다)

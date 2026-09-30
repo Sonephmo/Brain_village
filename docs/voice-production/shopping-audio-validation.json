@@ -1,0 +1,72 @@
+[
+  {
+    "key": "d_rules",
+    "durationMs": 7590,
+    "channels": 1,
+    "peak": 0.9131910800933838,
+    "ok": true
+  },
+  {
+    "key": "d_practice",
+    "durationMs": 7250,
+    "channels": 1,
+    "peak": 0.9134582281112671,
+    "ok": true
+  },
+  {
+    "key": "d_start",
+    "durationMs": 3840,
+    "channels": 1,
+    "peak": 0.9326541423797607,
+    "ok": true
+  },
+  {
+    "key": "d_correct",
+    "durationMs": 1540,
+    "channels": 1,
+    "peak": 0.9402110576629639,
+    "ok": true
+  },
+  {
+    "key": "d_empty",
+    "durationMs": 2710,
+    "channels": 1,
+    "peak": 0.8520835638046265,
+    "ok": true
+  },
+  {
+    "key": "d_wrong",
+    "durationMs": 4290,
+    "channels": 1,
+    "peak": 0.6660817861557007,
+    "ok": true
+  },
+  {
+    "key": "d_complete",
+    "durationMs": 2500,
+    "channels": 1,
+    "peak": 0.8800367712974548,
+    "ok": true
+  },
+  {
+    "key": "d_success",
+    "durationMs": 4040,
+    "channels": 1,
+    "peak": 0.8064626455307007,
+    "ok": true
+  },
+  {
+    "key": "d_timeout",
+    "durationMs": 3710,
+    "channels": 1,
+    "peak": 0.9381451606750488,
+    "ok": true
+  },
+  {
+    "key": "d_resume",
+    "durationMs": 5020,
+    "channels": 1,
+    "peak": 0.8728640675544739,
+    "ok": true
+  }
+]

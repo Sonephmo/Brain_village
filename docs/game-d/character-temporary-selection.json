@@ -1,0 +1,34 @@
+{
+  "revision": "selected-temporary-20260930",
+  "date": "2026-09-30",
+  "status": "temporary",
+  "activeManifest": "public/assets/game-d/characters/frames-active.json",
+  "selection": "Use the user-attached male profile unchanged and the existing matching female-profile-v3.png. Earlier visor/miser drafts remain archived, not active.",
+  "profiles": [
+    {
+      "file": "public/assets/game-d/characters/male-profile-selected.png",
+      "source": "C:/Users/USER/AppData/Local/Temp/codex-clipboard-8a58d296-b009-4658-949c-a715fdbec5a8.png",
+      "mode": "exact copy of user selection"
+    },
+    {
+      "file": "public/assets/game-d/characters/female-profile-v3.png",
+      "mode": "reuse existing matching companion profile"
+    }
+  ],
+  "generationMode": "built-in imagegen",
+  "intent": "identity-preserve",
+  "transparentBackground": true,
+  "sheets": [
+    {
+      "file": "public/assets/game-d/characters/male-jamjam-sheet-selected.png",
+      "reference": "public/assets/game-d/characters/male-profile-selected.png",
+      "prompt": "Use case: identity-preserve. Production transparent animation sprite sheet for a Korean pixel game. User has selected this reference character as the temporary design. Preserve this EXACT male character's face, black square pixel eyes, small friendly smile, peach cheeks, short dark side-parted hair and blue tracksuit, thin off-white sleeve and trouser stripes, stand collar zip jacket and simple white trainers. Do not redesign, age up or change personality. NO hat, NO visor, NO hood, NO gray-haired elderly face or wrinkles.\nGenerate ALL THREE animation poses TOGETHER in ONE horizontal 3:1 landscape sprite sheet. Three equal square cells in one row, full body in each. SAME CHARACTER, identical head size, hair, face, clothes, body, feet, shoulder and wrist locations. Only fingers change. All three bodies face RIGHT in clear side view, feet planted and torso upright; BOTH arms extend comfortably forward horizontally at chest height. Far forearm a little above near forearm so two hands are clearly visible.\nLEFT CELL: both hands fully OPEN, fingers extended and spread.\nCENTER CELL: both hands HALF CURLED, fingers make loose C shapes.\nRIGHT CELL: both hands fully CLOSED into fists, no fingers extended, thumbs outside.\nExact registration across cells: crown at 7% cell height and soles at 93%, same body center at 42% cell width, fingertips remain before 88%. Generous transparent margins. All characters same height, feet on identical baseline. No pose change except hands, no bouncing, torso rotation, walking, throwing or punch. No detached hands or duplicated limbs. Keep arms and sleeves the same length and position.\nMatch the reference's warm SIMPLE pixel illustration, stepped dark contours, modest pixel clusters, limited soft color shading, same chibi head/body proportion and face identity. No added details or exaggerated eyes. True transparent alpha background, no glow, floor, drop shadow, checkerboard, background scene, text, labels, cell borders, props, extra views or extra characters. Exactly THREE complete poses in ONE coherent sheet."
+    },
+    {
+      "file": "public/assets/game-d/characters/female-jamjam-sheet-selected.png",
+      "reference": "public/assets/game-d/characters/female-profile-v3.png",
+      "prompt": "Use case: identity-preserve. Production transparent animation sprite sheet for a Korean pixel game. User has selected this reference character as the temporary design. Preserve this EXACT female character's face, black square pixel eyes, small friendly smile, peach cheeks, short dark bob and pink tracksuit, thin off-white sleeve and trouser stripes, stand collar zip jacket and simple white trainers. Do not redesign, age up or change personality. NO hat, NO visor, NO hood, NO gray-haired elderly face or wrinkles.\nGenerate ALL THREE animation poses TOGETHER in ONE horizontal 3:1 landscape sprite sheet. Three equal square cells in one row, full body in each. SAME CHARACTER, identical head size, hair, face, clothes, body, feet, shoulder and wrist locations. Only fingers change. All three bodies face RIGHT in clear side view, feet planted and torso upright; BOTH arms extend comfortably forward horizontally at chest height. Far forearm a little above near forearm so two hands are clearly visible.\nLEFT CELL: both hands fully OPEN, fingers extended and spread.\nCENTER CELL: both hands HALF CURLED, fingers make loose C shapes.\nRIGHT CELL: both hands fully CLOSED into fists, no fingers extended, thumbs outside.\nExact registration across cells: crown at 7% cell height and soles at 93%, same body center at 42% cell width, fingertips remain before 88%. Generous transparent margins. All characters same height, feet on identical baseline. No pose change except hands, no bouncing, torso rotation, walking, throwing or punch. No detached hands or duplicated limbs. Keep arms and sleeves the same length and position.\nMatch the reference's warm SIMPLE pixel illustration, stepped dark contours, modest pixel clusters, limited soft color shading, same chibi head/body proportion and face identity. No added details or exaggerated eyes. True transparent alpha background, no glow, floor, drop shadow, checkerboard, background scene, text, labels, cell borders, props, extra views or extra characters. Exactly THREE complete poses in ONE coherent sheet."
+    }
+  ],
+  "rendering": "Original PNGs preserved without raster edits. Display frame crops align each character's feet across the three poses."
+}

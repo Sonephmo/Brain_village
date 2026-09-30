@@ -1,0 +1,129 @@
+{
+  "project": "https://clovadubbing.naver.com/project/5171722",
+  "archive": "C:\\Users\\USER\\Downloads\\영차마을_장보기_가람_안내음성_20260930.zip",
+  "clips": [
+    {
+      "key": "d_rules",
+      "text": "두 사람이 함께, 이 분 안에 목록의 물건을 담아 주세요. 물건이 초록 칸에 오면 양손을 쥐어 주세요.",
+      "source": "01_두_사람이_함께_이_분_안에_목록의_물건을_담아_주세요_물건이_초록_칸에_오면_양손을_.mp3",
+      "path": "assets/Sound/garam-guidance/d_rules.mp3",
+      "bytes": 123426,
+      "sha256": "84e61b7e4cac5e664a9a67b8b2afcc33d768106f61d285d048a6e514c83bf53a",
+      "durationMs": 7590,
+      "decodedChannels": 1,
+      "decodeStatus": "pass"
+    },
+    {
+      "key": "d_practice",
+      "text": "양팔을 앞으로 뻗고 손을 활짝 펴 주세요. 양손을 함께 쥐었다 펴는 동작을 두 번 연습해 볼까요?",
+      "source": "02_양팔을_앞으로_뻗고_손을_활짝_펴_주세요_양손을_함께_쥐었다_펴는_동작을_두_번_연습해_.mp3",
+      "path": "assets/Sound/garam-guidance/d_practice.mp3",
+      "bytes": 118050,
+      "sha256": "f4aaa871d8cc699c18b6f86ada039e2674f0c39c45ac2a00c0184fb9eb896dd1",
+      "durationMs": 7250,
+      "decodedChannels": 1,
+      "decodeStatus": "pass"
+    },
+    {
+      "key": "d_start",
+      "text": "잘하셨어요. 이제 장보기를 시작해 볼까요?",
+      "source": "03_잘하셨어요_이제_장보기를_시작해_볼까요.mp3",
+      "path": "assets/Sound/garam-guidance/d_start.mp3",
+      "bytes": 63138,
+      "sha256": "f4b041668e973d86ff9ddc1a7580f6ee0b255e2c645fd7cd0ffa0f5ac593c2f2",
+      "durationMs": 3840,
+      "decodedChannels": 1,
+      "decodeStatus": "pass"
+    },
+    {
+      "key": "d_correct",
+      "text": "잘 담았어요!",
+      "source": "04_잘_담았어요.mp3",
+      "path": "assets/Sound/garam-guidance/d_correct.mp3",
+      "bytes": 26658,
+      "sha256": "d4ba8cc45ac5d5894001c754b19be1cf324e689eeb0378f6af672b2de8d5ff3d",
+      "durationMs": 1540,
+      "decodedChannels": 1,
+      "decodeStatus": "pass"
+    },
+    {
+      "key": "d_empty",
+      "text": "물건이 초록 칸에 오면 담아 주세요.",
+      "source": "05_물건이_초록_칸에_오면_담아_주세요.mp3",
+      "path": "assets/Sound/garam-guidance/d_empty.mp3",
+      "bytes": 45090,
+      "sha256": "0c5da231fad4f2001fad9a3029660f64c0e8bf3da6acc83d743538c56efd6019",
+      "durationMs": 2710,
+      "decodedChannels": 1,
+      "decodeStatus": "pass"
+    },
+    {
+      "key": "d_wrong",
+      "text": "목록에 없는 물건이에요. 목록을 다시 확인해 주세요.",
+      "source": "06_목록에_없는_물건이에요_목록을_다시_확인해_주세요.mp3",
+      "path": "assets/Sound/garam-guidance/d_wrong.mp3",
+      "bytes": 70434,
+      "sha256": "d6e04de3e4ecde8efe451b2f427b243777d5fdec7072a0a8df77b6dca99b7e46",
+      "durationMs": 4290,
+      "decodedChannels": 1,
+      "decodeStatus": "pass"
+    },
+    {
+      "key": "d_complete",
+      "text": "이 물건은 이미 다 담았어요.",
+      "source": "07_이_물건은_이미_다_담았어요.mp3",
+      "path": "assets/Sound/garam-guidance/d_complete.mp3",
+      "bytes": 42018,
+      "sha256": "0055cefffac73dec1de1e76638f523c4a74cb86f0b7c3c891a06b5cc35926970",
+      "durationMs": 2500,
+      "decodedChannels": 1,
+      "decodeStatus": "pass"
+    },
+    {
+      "key": "d_success",
+      "text": "잘하셨어요! 목록의 물건을 모두 담았어요.",
+      "source": "08_잘하셨어요_목록의_물건을_모두_담았어요.mp3",
+      "path": "assets/Sound/garam-guidance/d_success.mp3",
+      "bytes": 66594,
+      "sha256": "000ab1d97063f714f149cb39a93b9ca25e6335fc6fc9f387fa1bf8c40c91fb94",
+      "durationMs": 4040,
+      "decodedChannels": 1,
+      "decodeStatus": "pass"
+    },
+    {
+      "key": "d_timeout",
+      "text": "장보기 시간이 끝났어요. 수고하셨어요.",
+      "source": "09_장보기_시간이_끝났어요_수고하셨어요.mp3",
+      "path": "assets/Sound/garam-guidance/d_timeout.mp3",
+      "bytes": 61218,
+      "sha256": "994a9220898407afbcf6cebcccbd0435dbf52acd3b52bfa61b6fe03783b1ffcd",
+      "durationMs": 3710,
+      "decodedChannels": 1,
+      "decodeStatus": "pass"
+    },
+    {
+      "key": "d_resume",
+      "text": "양팔을 앞으로 뻗고 양손을 활짝 펴 주세요. 다시 시작할게요.",
+      "source": "10_양팔을_앞으로_뻗고_양손을_활짝_펴_주세요_다시_시작할게요.mp3",
+      "path": "assets/Sound/garam-guidance/d_resume.mp3",
+      "bytes": 82338,
+      "sha256": "389cfeebdd14be409477f32ade33333785ba89aaa1342b51e2655a759bfa02c4",
+      "durationMs": 5020,
+      "decodedChannels": 1,
+      "decodeStatus": "pass"
+    }
+  ],
+  "voice": "가람",
+  "settings": {
+    "speed": "보통",
+    "pitch": "보통",
+    "ending": "보통",
+    "endingLength": "보통",
+    "volume": "보통",
+    "effect": "없음"
+  },
+  "runtimeConnected": true,
+  "originalBytesPreserved": true,
+  "totalDurationMs": 42490,
+  "totalBytes": 698964
+}

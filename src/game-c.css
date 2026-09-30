@@ -2,6 +2,7 @@
 .game-c-title { position: absolute; top: 42px; left: 420px; width: 1080px; text-align: center; font-size: 96px; line-height: 1.5; font-weight: 400; color: #7e7e7e; text-shadow: 0 4px 4px #0004; }
 .game-c-setup-guide { position: absolute; top: 186px; left: 155px; width: 1610px; text-align: center; font-size: 70px; line-height: 1.5; }
 .game-c-guide { position: absolute; left: 219px; top: 869px; width: 1482px; font-size: 64px; line-height: 1.5; text-align: center; white-space: pre-line; }
+.game-c .voice-status { top:210px;bottom:auto;left:620px;right:620px;padding:4px 12px;font-size:28px; }
 .game-c-rabbit { position: absolute; object-fit: contain; pointer-events: none; }
 .game-c-portrait { position: relative; overflow: hidden; }
 .game-c-wood { position: absolute; left: 738px; top: 496px; width: 444px; height: 444px; object-fit: cover; }
@@ -31,8 +32,6 @@
 .game-c-finish-progress { position: absolute; top: 805px; left: 660px; width: 600px; height: 28px; border-radius: 20px; overflow: hidden; background: #ded7c9; }
 .game-c-finish-progress > div { height: 100%; background: #68bb83; }
 .game-c-loading { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 34px; background: #f6f0de; color: #58482c; font-size: 56px; }
-.game-c-help-toggle { position: absolute; top: 18px; left: 20px; border: 0; background: #fffc; color: #5b554c; padding: 10px 16px; font: 24px 'NeoDunggeunmo', sans-serif; z-index: 5; }
-.game-c-input-help { position: absolute; z-index: 6; top: 76px; left: 20px; padding: 24px; border: 2px solid #b8aa8f; background: #fffdf5f5; color: #332b20; font-size: 27px; line-height: 1.6; box-shadow: 0 8px 30px #0002; }
 .game-c-result-portrait { position: absolute; top: 270px; width: 500px; height: 213px; overflow: hidden; }
 .game-c-result-portrait .game-c-portrait { position: absolute; }
 .game-c-result-summary { position: absolute; left: 400px; top: 202px; width: 1120px; text-align: center; color: #fff6d2; text-shadow: 3px 3px #271a1a; font-size: 42px; }
@@ -43,7 +42,6 @@
 .game-c-result-status { position: absolute; left: 410px; width: 1100px; top: 855px; text-align: center; color: #fff5df; text-shadow: 2px 2px #24170f; font-size: 30px; }
 .game-c-result-button { position: absolute; top: 922px; width: 320px; height: 101px; border: 0; background: transparent; padding: 0; }
 .game-c-result-button:hover, .game-c-result-button:focus-visible { outline: 5px solid #fff1af; outline-offset: 4px; border-radius: 15px; }
-.game-c .staff-skip, .game-c-tutorial .staff-skip { top: 18px; bottom: auto; font-size: 24px; padding: 8px 14px; }
 
 .game-c-main { background: #000; }
 .game-c-play-background { position: absolute; left: -60px; top: -35px; width: 2059px; height: 1159px; filter: blur(15px); }

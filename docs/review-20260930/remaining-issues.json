@@ -1,0 +1,20 @@
+{
+  "scope": "Isolated current-source reproduction; no server calls",
+  "campfirePartial": {
+    "completed": false,
+    "events": 1,
+    "ratings": [
+      "불꽃 5개 / 5개",
+      "불꽃 5개 / 5개"
+    ],
+    "detail": [
+      "1번 중 1번 성공",
+      "1번 중 1번 성공"
+    ]
+  },
+  "flagExport": {
+    "sameGameData": true,
+    "firstExportStart": "2026-09-30T00:00:00.000Z",
+    "secondExportStart": "2026-09-30T00:10:00.000Z"
+  }
+}

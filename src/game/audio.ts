@@ -1,3 +1,5 @@
+import { GameClock } from './gameClock'
+
 // 구령 음성: 녹음이 문장이 아니라 **단어 단위 7개**로 전달되어, 단어를 이어붙여 구령을 만든다.
 //   01_청기 · 02_백기 · 03_들어 · 04_올리지_말고 · 05_양손 · 06_왼손 · 07_오른손
 //
@@ -38,7 +40,28 @@ interface ClipPlan {
   total: number
 }
 
+const audioClock = new GameClock()
+let audioPaused = false
+let audioChange: Promise<void> = Promise.resolve()
 let ctx: AudioContext | null = null
+const syncAudioState = () => {
+  audioChange = audioChange.catch(() => undefined).then(async () => {
+    if (!ctx || ctx.state === 'closed') return
+    if (audioPaused) await ctx.suspend()
+    else await ctx.resume()
+  }).catch(() => undefined)
+  return audioChange
+}
+export function pauseGameAudio() {
+  audioPaused = true
+  audioClock.pause()
+  void syncAudioState()
+}
+export async function resumeGameAudio() {
+  audioPaused = false
+  await syncAudioState()
+  if (!audioPaused) audioClock.resume()
+}
 const buffers = new Map<ClipId, AudioBuffer>()
 const plans = new Map<ClipId, ClipPlan>()
 let countdownBuf: AudioBuffer | null = null
@@ -54,14 +77,14 @@ let loadPromise: Promise<void> | null = null
 
 function audioCtx(): AudioContext {
   if (!ctx) ctx = new AudioContext()
-  if (ctx.state === 'suspended') void ctx.resume()
+  if (!audioPaused && ctx.state === 'suspended') void ctx.resume().catch(() => undefined)
   return ctx
 }
 
 /** 사용자 제스처(시작 버튼 클릭) 시점에 호출해 오디오를 해금하고 클립을 미리 받아둔다. */
 export function initAudio(): Promise<void> {
-  if (loadPromise) return loadPromise
   const ac = audioCtx()
+  if (loadPromise) return loadPromise
   loadPromise = (async () => {
     await Promise.all(
       (Object.keys(CLIP_FILE) as ClipId[]).map(async id => {
@@ -88,12 +111,21 @@ export function initAudio(): Promise<void> {
 }
 
 /** 카운트다운 음원을 한 번 재생한다. 음원이 없으면 false를 돌려 호출부가 비프음으로 대체한다. */
+let countdownSource: AudioBufferSourceNode | null = null
+export function stopCountdown() {
+  countdownSource?.stop()
+  countdownSource?.disconnect()
+  countdownSource = null
+}
 export function playCountdown(): boolean {
+  stopCountdown()
   if (!countdownBuf) return false
   const ac = audioCtx()
   const src = ac.createBufferSource()
   src.buffer = countdownBuf
   src.connect(ac.destination)
+  countdownSource = src
+  src.onended = () => { src.disconnect(); if (countdownSource === src) countdownSource = null }
   src.start()
   return true
 }
@@ -178,7 +210,7 @@ function stopClips() {
     }
   })
   activeSources = []
-  window.clearTimeout(activeTimer)
+  audioClock.clearTimeout(activeTimer)
 }
 
 /**
@@ -196,7 +228,7 @@ export function speakCommand(
     // 클립 로드 실패 시의 대체 경로. TTS는 몰입을 깨뜨려 쓰지 않고,
     // 화면의 구령 텍스트를 읽을 시간만 무음으로 확보한 뒤 반응 창을 연다.
     const ms = Math.max(1200, text.length * 130)
-    activeTimer = window.setTimeout(() => onEnd(ms), ms)
+    activeTimer = audioClock.setTimeout(() => onEnd(ms), ms)
     return
   }
   const ac = audioCtx()
@@ -226,10 +258,10 @@ export function speakCommand(
     })
     if (!lastWord) cursor += GAP_MS / 1000
   })
-  const t0 = performance.now()
+  const t0 = audioClock.now()
   // 발화 종료 시점에 맞춰 콜백. AudioContext 시계 기준으로 남은 시간을 계산한다.
-  activeTimer = window.setTimeout(
-    () => onEnd(performance.now() - t0),
+  activeTimer = audioClock.setTimeout(
+    () => onEnd(audioClock.now() - t0),
     Math.max(0, (cursor - ac.currentTime) * 1000),
   )
 }
@@ -291,8 +323,9 @@ export function playSfx(key: SfxKey) {
 // 단어 클립과 달리 **문장**이므로 내부 쉼을 압축하면 억양이 망가진다.
 // 앞뒤 무음만 잘라내고 음량만 맞춘다.
 
-export type NarrationKey =
+type LegacyNarrationKey =
   | 'facePosition' // 얼굴을 원 안에 위치시켜주세요
+  | 'handPosition' // 떡방아 기본자세: 양손을 원 안에 위치시켜 주세요
   | 'stretch' // 양팔을 3초간 머리 위로 들어주세요
   | 'genderSelect' // 당신의 성별을 선택해주세요
   | 'guideBlue' // 청기를 들고 있는 사람이 양손을 위로 들어주세요
@@ -301,8 +334,9 @@ export type NarrationKey =
   | 'guideBoth' // 두 사람 모두 양손을 들어주세요
 
 const NARRATION_DIR = '브레인빌리지v_03_튜토리얼_02가람이'
-const NARRATION_FILE: Record<NarrationKey, string> = {
+const NARRATION_FILE: Record<LegacyNarrationKey, string> = {
   facePosition: '01_얼굴을_원_안에_위치시켜주세요',
+  handPosition: '02_양손을_원_안에_위치시켜_주세요',
   stretch: '03_양팔을_3초간_머리_위로_들어주세요',
   genderSelect: '04_당신의_성별을_선택해주세요',
   guideBlue: '05_청기를_들고_있는_사람이_양손을_위로_들어주세요',
@@ -310,8 +344,22 @@ const NARRATION_FILE: Record<NarrationKey, string> = {
   guideRight: '08_두_사람_모두_오른손을_들어주세요',
   guideBoth: '09_두_사람_모두_양손을_들어주세요',
 }
-// 미사용: 02_양손을_원_안에_위치시켜_주세요 (대응 단계 없음)
-//         07_두_사람_모두_한손을_들어주세요 (구령은 '왼손'이라 문구 불일치)
+// 원본 MP3의 실측 길이. 로드/재생 실패 시 화면 설명을 읽을 시간으로도 사용한다.
+const GUIDANCE_MS = {
+  a_practice_left: 2390, b_practice_both: 3580, b_practice_left: 6230,
+  b_practice_right: 6410, b_stop: 2490, b_start: 4100,
+  b_cue_both: 2430, b_cue_left: 2740, b_cue_right: 2750,
+  c_select: 2310, c_practice_pound: 3240, c_practice_squeeze: 3920,
+  c_practice_left: 2500, c_practice_right: 2640, c_cue_pound: 1850,
+  c_cue_squeeze: 2200, c_cue_left: 2280, c_cue_right: 2320,
+  c_swap: 2520, c_finish: 2940, common_result: 4130,
+  d_rules: 7590, d_practice: 7250, d_start: 3840, d_correct: 1540,
+  d_empty: 2710, d_wrong: 4290, d_complete: 2500,
+  d_success: 4040, d_timeout: 3710, d_resume: 5020,
+} as const
+export type GuidanceKey = keyof typeof GUIDANCE_MS
+export type NarrationKey = LegacyNarrationKey | GuidanceKey
+// 미사용: 07_두_사람_모두_한손을_들어주세요 (구령은 '왼손'이라 문구 불일치)
 
 interface NarrPlan {
   buf: AudioBuffer
@@ -321,6 +369,7 @@ interface NarrPlan {
 }
 const narrations = new Map<NarrationKey, NarrPlan>()
 let narrSource: AudioBufferSourceNode | null = null
+let cancelNarration: (() => void) | null = null
 
 function analyzeNarration(buf: AudioBuffer, targetPeak = TARGET_PEAK): NarrPlan {
   const d = buf.getChannelData(0)
@@ -347,12 +396,17 @@ function analyzeNarration(buf: AudioBuffer, targetPeak = TARGET_PEAK): NarrPlan 
 
 async function loadNarrations(ac: AudioContext) {
   await Promise.all(
-    (Object.keys(NARRATION_FILE) as NarrationKey[]).map(async key => {
+    ([...Object.keys(NARRATION_FILE), ...Object.keys(GUIDANCE_MS)] as NarrationKey[]).map(async key => {
       try {
-        const url = `${import.meta.env.BASE_URL}assets/Sound/${encodeURIComponent(NARRATION_DIR)}/${encodeURIComponent(NARRATION_FILE[key])}.mp3`
+        const guidance = key in GUIDANCE_MS
+        const directory = guidance ? 'garam-guidance' : NARRATION_DIR
+        const file = guidance ? key : NARRATION_FILE[key as LegacyNarrationKey]
+        const url = `${import.meta.env.BASE_URL}assets/Sound/${encodeURIComponent(directory)}/${encodeURIComponent(file)}.mp3`
         const res = await fetch(url)
         if (!res.ok) return
-        narrations.set(key, analyzeNarration(await ac.decodeAudioData(await res.arrayBuffer())))
+        const buf = await ac.decodeAudioData(await res.arrayBuffer())
+        // 새 가람 안내는 자르거나 속도/피치/음량을 바꾸지 않고 원본 전체를 재생한다.
+        narrations.set(key, guidance ? { buf, start: 0, dur: buf.duration, gain: 1 } : analyzeNarration(buf))
       } catch {
         /* 개별 나레이션 실패는 화면 텍스트로 대체된다 */
       }
@@ -361,21 +415,25 @@ async function loadNarrations(ac: AudioContext) {
 }
 
 export function stopNarration() {
+  cancelNarration?.()
+  cancelNarration = null
   if (narrSource) {
+    narrSource.onended = null
     try {
       narrSource.stop()
     } catch {
       /* 이미 정지 */
     }
+    narrSource.disconnect()
     narrSource = null
   }
 }
 
 /** 나레이션을 재생한다. 이미 재생 중인 것은 멈춘다. 재생 길이(ms)를 돌려준다. */
 export function playNarration(key: NarrationKey): number {
+  stopNarration()
   const plan = narrations.get(key)
   if (!plan) return 0
-  stopNarration()
   const ac = audioCtx()
   const src = ac.createBufferSource()
   src.buffer = plan.buf
@@ -384,7 +442,74 @@ export function playNarration(key: NarrationKey): number {
   src.connect(g).connect(ac.destination)
   src.start(ac.currentTime, plan.start, plan.dur)
   narrSource = src
+  src.onended = () => { src.disconnect(); g.disconnect(); if (narrSource === src) narrSource = null }
   return Math.round(plan.dur * 1000)
+}
+
+/** 화면 안내 1회. 실제 음성 종료 뒤 진행하며, 취소된 화면의 늦은 로드는 재생하지 않는다. */
+export function runNarration(key: NarrationKey, onEnd: () => void = () => {}, minimumMs = 0): () => void {
+  stopNarration()
+  let cancelled = false
+  let started = false
+  let source: AudioBufferSourceNode | null = null
+  let gain: GainNode | null = null
+  const timers: number[] = []
+  const cancel = () => {
+    if (cancelled) return
+    cancelled = true
+    timers.forEach(audioClock.clearTimeout)
+    if (source) { source.onended = null; source.stop(); source.disconnect() }
+    gain?.disconnect()
+    if (narrSource === source) narrSource = null
+    if (cancelNarration === cancel) cancelNarration = null
+  }
+  cancelNarration = cancel
+  const start = () => {
+    if (cancelled || started) return
+    if (audioPaused) { timers.push(audioClock.setTimeout(start, 0)); return }
+    started = true
+    timers.forEach(audioClock.clearTimeout)
+    const plan = narrations.get(key)
+    const fallbackMs = key in GUIDANCE_MS ? GUIDANCE_MS[key as GuidanceKey]
+      : Math.max(1500, NARRATION_FILE[key as LegacyNarrationKey].length * 130)
+    let speechDone = false
+    let minimumDone = minimumMs <= 0
+    const complete = () => {
+      if (cancelled || !speechDone || !minimumDone) return
+      // A browser may deliver an already queued onended event just after blur.
+      if (audioPaused) { timers.push(audioClock.setTimeout(complete, 0)); return }
+      cancel()
+      onEnd()
+    }
+    const ended = () => { speechDone = true; complete() }
+    if (!minimumDone) timers.push(audioClock.setTimeout(() => { minimumDone = true; complete() }, minimumMs))
+    try {
+      const ac = audioCtx()
+      if (!plan || ac.state !== 'running') throw new Error('Narration unavailable')
+      source = ac.createBufferSource()
+      source.buffer = plan.buf
+      gain = ac.createGain()
+      gain.gain.value = plan.gain
+      source.connect(gain).connect(ac.destination)
+      narrSource = source
+      source.onended = ended
+      source.start(ac.currentTime, plan.start, plan.dur)
+      // 백그라운드 전환으로 음성 시계만 멈춰도 화면을 영구 대기시키지 않는다.
+      timers.push(audioClock.setTimeout(() => {
+        if (!speechDone && source) { source.onended = null; source.stop() }
+        ended()
+      }, plan.dur * 1000 + 1500))
+    } catch {
+      // 음성을 못 들은 경우에도 같은 설명이 화면에 남을 시간을 보장한다.
+      if (source) { source.onended = null; source.disconnect(); if (narrSource === source) narrSource = null; source = null }
+      gain?.disconnect()
+      timers.push(audioClock.setTimeout(ended, fallbackMs))
+    }
+  }
+  // 느린 네트워크나 오디오 해금 실패가 게임 진행을 막지 않도록 제한한다.
+  timers.push(audioClock.setTimeout(start, 4000))
+  try { void initAudio().then(start, start) } catch { start() }
+  return cancel
 }
 
 // ─── 효과음 ───
@@ -407,13 +532,13 @@ export function beep(freq = 880, durMs = 120, gainV = 0.15) {
 
 export function goodChime() {
   beep(784, 90)
-  setTimeout(() => beep(1046, 140), 100)
+  audioClock.setTimeout(() => beep(1046, 140), 100)
 }
 
 export function greatChime() {
   beep(784, 80)
-  setTimeout(() => beep(988, 80), 90)
-  setTimeout(() => beep(1319, 180), 180)
+  audioClock.setTimeout(() => beep(988, 80), 90)
+  audioClock.setTimeout(() => beep(1319, 180), 180)
 }
 
 export function neutralTick() {
@@ -427,6 +552,6 @@ export function neutralTick() {
  */
 export function transitionChime() {
   beep(659, 140, 0.13)
-  setTimeout(() => beep(523, 140, 0.13), 150)
-  setTimeout(() => beep(784, 260, 0.13), 300)
+  audioClock.setTimeout(() => beep(523, 140, 0.13), 150)
+  audioClock.setTimeout(() => beep(784, 260, 0.13), 300)
 }

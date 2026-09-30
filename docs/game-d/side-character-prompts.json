@@ -1,0 +1,31 @@
+{
+  "mode": "built-in imagegen",
+  "transparent": true,
+  "reference": "Revised A/B-style profile and original campfire sprites",
+  "prompts": [
+    {
+      "asset": "male-open.png",
+      "prompt": "Use case: identity-preserve. Create a side-view in-game sprite from reference 1, the male tracksuit character just created. Reference 2 is the existing campfire sprite and is the style anchor. Preserve the character's exact middle-aged face, hairstyle, blue/pink tracksuit with white stripes, short stocky chibi proportions, square pixel eyes, stepped pixel outlines and very simple shading. Change only the viewing angle and pose: ONE full-body character in strict side profile facing RIGHT. Feet on floor, upright relaxed body. BOTH arms extend forward horizontally at comfortable chest height, shoulders relaxed; both hands fully open, fingers extended and slightly spread, ready to do a fist-open 'jamjam' gesture. Draw the farther arm a little above the near arm so TWO forearms and TWO open hands are clearly distinguishable in profile. Hands empty. No reaching overhead, no prop, no throw. Square canvas 1280x1280; crown y=100, feet baseline y=1175; body centered about x=500 and fingertips about x=1030 leaving margin. Head/body scale and pixel density should match reference 1. Actual transparent alpha background. No floor, shadows, checkerboard, labels or other poses. Complete single sprite, no cropping."
+    },
+    {
+      "asset": "female-open.png",
+      "prompt": "Use case: identity-preserve. Create a side-view in-game sprite from reference 1, the female tracksuit character just created. Reference 2 is the existing campfire sprite and is the style anchor. Preserve the character's exact middle-aged face, hairstyle, blue/pink tracksuit with white stripes, short stocky chibi proportions, square pixel eyes, stepped pixel outlines and very simple shading. Change only the viewing angle and pose: ONE full-body character in strict side profile facing RIGHT. Feet on floor, upright relaxed body. BOTH arms extend forward horizontally at comfortable chest height, shoulders relaxed; both hands fully open, fingers extended and slightly spread, ready to do a fist-open 'jamjam' gesture. Draw the farther arm a little above the near arm so TWO forearms and TWO open hands are clearly distinguishable in profile. Hands empty. No reaching overhead, no prop, no throw. Square canvas 1280x1280; crown y=100, feet baseline y=1175; body centered about x=500 and fingertips about x=1030 leaving margin. Head/body scale and pixel density should match reference 1. Actual transparent alpha background. No floor, shadows, checkerboard, labels or other poses. Complete single sprite, no cropping."
+    },
+    {
+      "asset": "male-closing.png",
+      "prompt": "Use case: precise-object-edit. Edit this exact male side-view game sprite to produce a single animation frame. Preserve every pixel of the canvas, head, face, hair, tracksuit, both arms, wrists, legs, shoes, position, scale and transparent background as closely as possible. Change ONLY the TWO hands at the ends of the forward-stretched arms. Half-close both hands: fingers curl inward halfway, thumb partly tucked, making a rounded C shape between the fully spread hand and a fist. This is the in-between frame of an open-close-open squeeze. Keep wrist positions exactly fixed, do not bend or move elbows or body. Same strict right-facing side profile, stepped pixel contour, chunky simple pixel art with no extra details. Same square canvas and alpha. No text, ground, shadow, backdrop, extra limb or prop."
+    },
+    {
+      "asset": "male-closed.png",
+      "prompt": "Use case: precise-object-edit. Edit this exact male side-view game sprite to produce a single animation frame. Preserve every pixel of the canvas, head, face, hair, tracksuit, both arms, wrists, legs, shoes, position, scale and transparent background as closely as possible. Change ONLY the TWO hands at the ends of the forward-stretched arms. Close both hands into compact fists, fingers tucked completely inside, thumbs resting over fingers. Both fists must clearly read closed, no extended fingers. Keep wrist positions exactly fixed, do not bend or move elbows or body. Same strict right-facing side profile, stepped pixel contour, chunky simple pixel art with no extra details. Same square canvas and alpha. No text, ground, shadow, backdrop, extra limb or prop."
+    },
+    {
+      "asset": "female-closing.png",
+      "prompt": "Use case: precise-object-edit. Edit this exact female side-view game sprite to produce a single animation frame. Preserve every pixel of the canvas, head, face, hair, tracksuit, both arms, wrists, legs, shoes, position, scale and transparent background as closely as possible. Change ONLY the TWO hands at the ends of the forward-stretched arms. Half-close both hands: fingers curl inward halfway, thumb partly tucked, making a rounded C shape between the fully spread hand and a fist. This is the in-between frame of an open-close-open squeeze. Keep wrist positions exactly fixed, do not bend or move elbows or body. Same strict right-facing side profile, stepped pixel contour, chunky simple pixel art with no extra details. Same square canvas and alpha. No text, ground, shadow, backdrop, extra limb or prop."
+    },
+    {
+      "asset": "female-closed.png",
+      "prompt": "Use case: precise-object-edit. Edit this exact female side-view game sprite to produce a single animation frame. Preserve every pixel of the canvas, head, face, hair, tracksuit, both arms, wrists, legs, shoes, position, scale and transparent background as closely as possible. Change ONLY the TWO hands at the ends of the forward-stretched arms. Close both hands into compact fists, fingers tucked completely inside, thumbs resting over fingers. Both fists must clearly read closed, no extended fingers. Keep wrist positions exactly fixed, do not bend or move elbows or body. Same strict right-facing side profile, stepped pixel contour, chunky simple pixel art with no extra details. Same square canvas and alpha. No text, ground, shadow, backdrop, extra limb or prop."
+    }
+  ]
+}

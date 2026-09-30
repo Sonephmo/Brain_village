@@ -1,0 +1,177 @@
+{
+  "fileKey": "CBa2GjaZh7Mn2fLDupSY32",
+  "exportedAt": "2026-09-30",
+  "assets": [
+    {
+      "name": "apple",
+      "nodeId": "390:3",
+      "path": "assets/game-d/apple.png"
+    },
+    {
+      "name": "fish",
+      "nodeId": "390:2",
+      "path": "assets/game-d/fish.png"
+    },
+    {
+      "name": "snack",
+      "nodeId": "402:19",
+      "path": "assets/game-d/snack.png"
+    },
+    {
+      "name": "cookie",
+      "nodeId": "402:17",
+      "path": "assets/game-d/cookie.png"
+    },
+    {
+      "name": "shrimp",
+      "nodeId": "402:11",
+      "path": "assets/game-d/shrimp.png"
+    },
+    {
+      "name": "squid",
+      "nodeId": "402:9",
+      "path": "assets/game-d/squid.png"
+    },
+    {
+      "name": "milk",
+      "nodeId": "402:47",
+      "path": "assets/game-d/milk.png"
+    },
+    {
+      "name": "juice",
+      "nodeId": "402:41",
+      "path": "assets/game-d/juice.png"
+    },
+    {
+      "name": "tomato",
+      "nodeId": "402:33",
+      "path": "assets/game-d/tomato.png"
+    },
+    {
+      "name": "onion",
+      "nodeId": "402:31",
+      "path": "assets/game-d/onion.png"
+    },
+    {
+      "name": "cabbage",
+      "nodeId": "402:29",
+      "path": "assets/game-d/cabbage.png"
+    },
+    {
+      "name": "carrot",
+      "nodeId": "402:27",
+      "path": "assets/game-d/carrot.png"
+    },
+    {
+      "name": "grape",
+      "nodeId": "402:25",
+      "path": "assets/game-d/grape.png"
+    },
+    {
+      "name": "orange",
+      "nodeId": "402:23",
+      "path": "assets/game-d/orange.png"
+    },
+    {
+      "name": "banana",
+      "nodeId": "402:21",
+      "path": "assets/game-d/banana.png"
+    },
+    {
+      "name": "book",
+      "nodeId": "402:45",
+      "path": "assets/game-d/book.png"
+    },
+    {
+      "name": "towel",
+      "nodeId": "402:43",
+      "path": "assets/game-d/towel.png"
+    },
+    {
+      "name": "pencil",
+      "nodeId": "390:7",
+      "path": "assets/game-d/pencil.png"
+    },
+    {
+      "name": "scissors",
+      "nodeId": "402:53",
+      "path": "assets/game-d/scissors.png"
+    },
+    {
+      "name": "note",
+      "nodeId": "402:51",
+      "path": "assets/game-d/note.png"
+    },
+    {
+      "name": "eraser",
+      "nodeId": "402:49",
+      "path": "assets/game-d/eraser.png"
+    },
+    {
+      "name": "beef",
+      "nodeId": "402:15",
+      "path": "assets/game-d/beef.png"
+    },
+    {
+      "name": "chicken",
+      "nodeId": "402:13",
+      "path": "assets/game-d/chicken.png"
+    },
+    {
+      "name": "pork",
+      "nodeId": "402:7",
+      "path": "assets/game-d/pork.png"
+    },
+    {
+      "name": "tissue",
+      "nodeId": "390:6",
+      "path": "assets/game-d/tissue.png"
+    },
+    {
+      "name": "wettissue",
+      "nodeId": "402:39",
+      "path": "assets/game-d/wettissue.png"
+    },
+    {
+      "name": "kleenex",
+      "nodeId": "402:37",
+      "path": "assets/game-d/kleenex.png"
+    },
+    {
+      "name": "shampoo",
+      "nodeId": "402:35",
+      "path": "assets/game-d/shampoo.png"
+    },
+    {
+      "name": "conveyor",
+      "nodeId": "393:10",
+      "path": "assets/game-d/conveyor.png"
+    },
+    {
+      "name": "belt",
+      "nodeId": "393:9",
+      "path": "assets/game-d/belt.png"
+    },
+    {
+      "name": "list",
+      "nodeId": "393:11",
+      "path": "assets/game-d/list.png"
+    },
+    {
+      "name": "basket-back",
+      "nodeId": "405:23",
+      "path": "assets/game-d/basket-back.png"
+    },
+    {
+      "name": "basket-front",
+      "nodeId": "405:29",
+      "path": "assets/game-d/basket-front.png"
+    },
+    {
+      "name": "background",
+      "nodeId": "390:5",
+      "path": "assets/game-d/background.png",
+      "source": "get_design_context raw image"
+    }
+  ]
+}

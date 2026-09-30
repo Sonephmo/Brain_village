@@ -85,6 +85,7 @@ export const PRACTICE: Command[] = [
 export const PRACTICE_NARRATION: Record<number, NarrationKey> = {
   101: 'guideBlue',
   102: 'guideWhite',
+  103: 'a_practice_left',
   104: 'guideRight',
   105: 'guideBoth',
 }

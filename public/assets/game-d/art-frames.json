@@ -1,0 +1,468 @@
+{
+  "fileKey": "CBa2GjaZh7Mn2fLDupSY32",
+  "source": "get_design_context 393:14 and 400:2; original transparent PNGs, display crops only",
+  "frames": {
+    "conveyor": {
+      "file": "source/conveyor.png",
+      "sheet": [
+        1374,
+        1145
+      ],
+      "rect": [
+        763.9853,
+        0,
+        359.9969,
+        1145
+      ],
+      "nodeId": "393:10"
+    },
+    "belt": {
+      "file": "source/belt.png",
+      "sheet": [
+        1374,
+        1145
+      ],
+      "rect": [
+        214.94,
+        408,
+        360,
+        300
+      ],
+      "nodeId": "402:57"
+    },
+    "list": {
+      "file": "source/list.png",
+      "sheet": [
+        1678,
+        937
+      ],
+      "rect": [
+        127.1385,
+        78.0767,
+        599.9928,
+        799.9658
+      ],
+      "nodeId": "393:11"
+    },
+    "basket-front": {
+      "file": "source/list.png",
+      "sheet": [
+        1678,
+        937
+      ],
+      "rect": [
+        748.0978,
+        268.9743,
+        900.0215,
+        599.9872
+      ],
+      "nodeId": "393:12"
+    },
+    "fish": {
+      "file": "source/food-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        487.44,
+        443.16,
+        400,
+        400
+      ],
+      "nodeId": "390:2"
+    },
+    "snack": {
+      "file": "source/food-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        34.04,
+        82.52,
+        400,
+        400
+      ],
+      "nodeId": "402:19"
+    },
+    "cookie": {
+      "file": "source/food-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        456.52,
+        97.96,
+        400,
+        400
+      ],
+      "nodeId": "402:17"
+    },
+    "beef": {
+      "file": "source/food-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        886.88,
+        92.84,
+        400,
+        400
+      ],
+      "nodeId": "402:15"
+    },
+    "chicken": {
+      "file": "source/food-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        1342.64,
+        77.36,
+        400,
+        400
+      ],
+      "nodeId": "402:13"
+    },
+    "shrimp": {
+      "file": "source/food-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        1342.64,
+        443.6,
+        400,
+        400
+      ],
+      "nodeId": "402:11"
+    },
+    "squid": {
+      "file": "source/food-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        886.6,
+        443.56,
+        400,
+        400
+      ],
+      "nodeId": "402:9"
+    },
+    "pork": {
+      "file": "source/food-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        47.24,
+        443.64,
+        400,
+        400
+      ],
+      "nodeId": "402:7"
+    },
+    "apple": {
+      "file": "source/produce-sheet.png",
+      "sheet": [
+        1672,
+        941
+      ],
+      "rect": [
+        84.36,
+        70.76,
+        400,
+        400
+      ],
+      "nodeId": "390:3"
+    },
+    "tomato": {
+      "file": "source/produce-sheet.png",
+      "sheet": [
+        1672,
+        941
+      ],
+      "rect": [
+        1201.68,
+        470.12,
+        400,
+        400
+      ],
+      "nodeId": "402:33"
+    },
+    "onion": {
+      "file": "source/produce-sheet.png",
+      "sheet": [
+        1672,
+        941
+      ],
+      "rect": [
+        816.24,
+        470.44,
+        400,
+        400
+      ],
+      "nodeId": "402:31"
+    },
+    "cabbage": {
+      "file": "source/produce-sheet.png",
+      "sheet": [
+        1672,
+        941
+      ],
+      "rect": [
+        436.24,
+        470.88,
+        400,
+        400
+      ],
+      "nodeId": "402:29"
+    },
+    "carrot": {
+      "file": "source/produce-sheet.png",
+      "sheet": [
+        1672,
+        941
+      ],
+      "rect": [
+        73.32,
+        470.92,
+        400,
+        400
+      ],
+      "nodeId": "402:27"
+    },
+    "grape": {
+      "file": "source/produce-sheet.png",
+      "sheet": [
+        1672,
+        941
+      ],
+      "rect": [
+        1196.12,
+        70.16,
+        400,
+        400
+      ],
+      "nodeId": "402:25"
+    },
+    "orange": {
+      "file": "source/produce-sheet.png",
+      "sheet": [
+        1672,
+        941
+      ],
+      "rect": [
+        811.24,
+        93.24,
+        400,
+        400
+      ],
+      "nodeId": "402:23"
+    },
+    "banana": {
+      "file": "source/produce-sheet.png",
+      "sheet": [
+        1672,
+        941
+      ],
+      "rect": [
+        459.36,
+        70.76,
+        400,
+        400
+      ],
+      "nodeId": "402:21"
+    },
+    "tissue": {
+      "file": "source/milk-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        55,
+        64.32,
+        400,
+        400
+      ],
+      "nodeId": "390:6"
+    },
+    "milk": {
+      "file": "source/milk-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        1338.28,
+        443.64,
+        400,
+        400
+      ],
+      "nodeId": "402:47"
+    },
+    "book": {
+      "file": "source/milk-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        887.28,
+        444,
+        400,
+        400
+      ],
+      "nodeId": "402:45"
+    },
+    "towel": {
+      "file": "source/milk-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        465.64,
+        464,
+        400,
+        400
+      ],
+      "nodeId": "402:43"
+    },
+    "juice": {
+      "file": "source/milk-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        29.32,
+        444,
+        400,
+        400
+      ],
+      "nodeId": "402:41"
+    },
+    "wettissue": {
+      "file": "source/milk-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        1312.6,
+        68,
+        400,
+        400
+      ],
+      "nodeId": "402:39"
+    },
+    "kleenex": {
+      "file": "source/milk-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        886.64,
+        90,
+        400,
+        400
+      ],
+      "nodeId": "402:37"
+    },
+    "shampoo": {
+      "file": "source/milk-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        465.64,
+        64.32,
+        400,
+        400
+      ],
+      "nodeId": "402:35"
+    },
+    "pencil": {
+      "file": "source/stationery-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        53.32,
+        443.4,
+        400,
+        400
+      ],
+      "nodeId": "390:7"
+    },
+    "scissors": {
+      "file": "source/stationery-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        1319.12,
+        443.76,
+        400,
+        400
+      ],
+      "nodeId": "402:53"
+    },
+    "note": {
+      "file": "source/stationery-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        887.44,
+        443.4,
+        400,
+        400
+      ],
+      "nodeId": "402:51"
+    },
+    "eraser": {
+      "file": "source/stationery-sheet.png",
+      "sheet": [
+        1774,
+        887
+      ],
+      "rect": [
+        457.64,
+        443.4,
+        400,
+        400
+      ],
+      "nodeId": "402:49"
+    },
+    "basket-back": {
+      "file": "source/basket-back.png",
+      "sheet": [
+        744,
+        515
+      ],
+      "rect": [
+        0,
+        0,
+        744,
+        515
+      ],
+      "nodeId": "405:23"
+    }
+  }
+}

@@ -1,3 +1,5 @@
+import { useGamePause } from '../game/useGamePause'
+import { GamePause } from '../components/GamePause'
 import { useEffect, useRef, useState } from 'react'
 import { FX, IMG } from '../assets'
 import { Sprite } from '../components/Sprite'
@@ -11,18 +13,21 @@ import { GAME_C_RULES, RICE_CUES, RICE_CUE_MS, RICE_TOTAL_MS, RICE_GUIDES, RICE_
 import { riceGripEngine } from '../game/gameCGrip'
 import { poseEngine } from '../game/pose'
 import { playBgm, stopBgm } from '../game/bgm'
-import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, playCountdown, playSfx } from '../game/audio'
+import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, playCountdown, playSfx, runNarration, stopCountdown, type NarrationKey } from '../game/audio'
 import type { PlayerId } from '../game/types'
 
 type Stage = 'loading' | 'practice' | 'practiceFeedback' | 'practiceSwap' | 'welcome' |
   'fadeOut' | 'fadeIn' | 'backgroundHold' | 'backgroundFocus' | 'uiReveal' |
   'countdown' | 'play' | 'feedback' | 'swap' | 'finish' | 'end'
 const emptyInput = (): RiceInput => ({ tracked: false, left: false, right: false, aboveHead: false, grip: 'unknown' })
+const PRACTICE_VOICE: Record<string, NarrationKey> = { pound: 'c_practice_pound', squeeze: 'c_practice_squeeze', left: 'c_practice_left', right: 'c_practice_right' }
+const CUE_VOICE: Record<string, NarrationKey> = { pound: 'c_cue_pound', squeeze: 'c_cue_squeeze', left: 'c_cue_left', right: 'c_cue_right' }
 
 export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }: {
   rabbits: Rabbits; skipPractice?: boolean; onFinish: (result: GameCResult) => void; onExit: () => void
 }) {
   const [stage, setStage] = useState<Stage>('loading')
+  const { clock, paused, pause, resume } = useGamePause(stage !== 'loading' && stage !== 'end')
   const [loadError, setLoadError] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const [practiceIndex, setPracticeIndex] = useState(0)
@@ -30,6 +35,7 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
   const [remaining, setRemaining] = useState(RICE_TOTAL_MS / 1000)
   const [score, setScore] = useState(0)
   const [countdown, setCountdown] = useState(-1)
+  const [responseOpen, setResponseOpen] = useState(false)
   const [live, setLive] = useState<[RiceInput, RiceInput]>([emptyInput(), emptyInput()])
   const [squeezes, setSqueezes] = useState(0)
   const [matched, setMatched] = useState(false)
@@ -40,7 +46,6 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
   const reducedMotion = useRef(false)
   const [finishProgress, setFinishProgress] = useState(0)
   const [armed, setArmed] = useState(false)
-  const [help, setHelp] = useState(false)
   const [forceKeyboard, setForceKeyboard] = useState(false)
   const keyboardRef = useRef(false)
   keyboardRef.current = forceKeyboard
@@ -69,10 +74,10 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
     return () => { cancelled = true }
   }, [attempt, skipPractice])
   useEffect(() => {
-    if (practicing) playBgm('tutorial')
+    if (practicing) playBgm('tutorial', 0.22)
     else stopBgm()
   }, [practicing])
-  useEffect(() => () => { stopBgm(); riceGripEngine.reset(); window.clearTimeout(armTimer.current) }, [])
+  useEffect(() => () => { stopBgm(); riceGripEngine.reset(); clock.clearTimeout(armTimer.current) }, [])
 
   useEffect(() => {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -83,20 +88,24 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
   }, [])
 
   useEffect(() => {
-    const down = (event: KeyboardEvent) => keys.current.add(event.key.toLowerCase())
+    const down = (event: KeyboardEvent) => { if (!clock.paused && !event.repeat) keys.current.add(event.key.toLowerCase()) }
     const up = (event: KeyboardEvent) => keys.current.delete(event.key.toLowerCase())
     const clear = () => keys.current.clear()
+    const removePause = clock.onPause(clear)
+    const removeResume = clock.onResume(clear)
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
     window.addEventListener('blur', clear)
-    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); window.removeEventListener('blur', clear) }
+    return () => { removePause(); removeResume(); window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); window.removeEventListener('blur', clear) }
   }, [])
 
   useEffect(() => {
     if (stage === 'loading') return
     const accepting = stage === 'practice' || stage === 'play'
     const showingFeedback = stage === 'practiceFeedback' || stage === 'feedback'
-    const started = performance.now()
+    let started = clock.now()
+    let ready = !accepting && stage !== 'finish'
+    setResponseOpen(false)
     let counter = new RiceActionTracker(cue.action, started)
     tracker.current = accepting ? counter : null
     riceGripEngine.reset()
@@ -110,11 +119,42 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
       setMotionFrame(RICE_MOTION_REST)
     }
     let finishCounter = new RiceFinishTracker()
+    const removeResume = clock.onResume(() => {
+      counter.resetPartial()
+      finishCounter = new RiceFinishTracker()
+      riceGripEngine.reset()
+      if (stage === 'finish') setFinishProgress(0)
+    })
+    if (stage === 'finish') setFinishProgress(0)
+    const cancelVoice = accepting || stage === 'finish' ? runNarration(
+      stage === 'finish' ? 'c_finish' : (stage === 'practice' ? PRACTICE_VOICE : CUE_VOICE)[cue.action],
+      () => {
+        started = clock.now()
+        counter = new RiceActionTracker(cue.action, started)
+        tracker.current = accepting ? counter : null
+        finishCounter = new RiceFinishTracker()
+        riceGripEngine.reset()
+        ready = true
+        setResponseOpen(true)
+      },
+    ) : () => {}
     let previousKeyboard = keyboardRef.current || (poseEngine.ready && !poseEngine.cameraOk) || Boolean(riceGripEngine.error)
-    const timer = window.setInterval(() => {
-      const now = performance.now()
-      const elapsed = now - started
+    let waitingForHands = false
+    const timer = clock.setInterval(() => {
+      const now = clock.now()
+      if (poseEngine.cameraOk && !riceGripEngine.ready && !riceGripEngine.error) void riceGripEngine.init()
       const kb = keyboardRef.current || (poseEngine.ready && !poseEngine.cameraOk) || Boolean(riceGripEngine.error)
+      if (ready && accepting && cue.action === 'squeeze' && !kb && !riceGripEngine.ready) {
+        waitingForHands = true
+        started = now
+      } else if (waitingForHands) {
+        // Response and reaction clocks start only once finger inference is available.
+        waitingForHands = false
+        started = now
+        counter = new RiceActionTracker(cue.action, started)
+        tracker.current = counter
+      }
+      const elapsed = now - started
       if (kb !== previousKeyboard) {
         // Switching input sources must not complete a movement started on the other source.
         previousKeyboard = kb
@@ -131,8 +171,11 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
         const key = pid === 1 ? 'e' : 'i'
         let grip: Grip = 'unknown'
         if (kb) grip = keys.current.has(key) ? 'closed' : 'open'
-        else if (accepting && cue.action === 'squeeze' && cue.player === pid) grip = riceGripEngine.sample(pid, now)
-        return { ...body, tracked: body.tracked || kb, grip }
+        else if (accepting && cue.action === 'squeeze' && cue.player === pid) grip = riceGripEngine.sample(pid, performance.now())
+        // Finger landmarks already establish the two hands. Foreshortened wrists in
+        // the separate body model must not veto a valid hand gesture.
+        const squeezing = accepting && cue.action === 'squeeze' && cue.player === pid
+        return { ...body, tracked: kb || (squeezing ? grip !== 'unknown' && poseEngine.getPose(pid).present : body.tracked), grip }
       }
       const inputs: [RiceInput, RiceInput] = [readInput(1), readInput(2)]
       const performer = inputs[cue.player - 1]
@@ -140,12 +183,13 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
       // Missing tracking is never a strike or continuing kneading motion.
       if (!performer.tracked || (accepting && cue.action === 'squeeze' && performer.grip === 'unknown')) motion.current.reset()
       if (!accepting) setMotionFrame(motion.current.sample(now, reducedMotion.current))
+      if (!ready) return
       if (stage === 'finish') {
         const progress = finishCounter.update(inputs, now)
         setFinishProgress(progress)
         if (progress >= 1) {
           result.current.finishPoseCompleted = true
-          window.clearInterval(timer)
+          clock.clearInterval(timer)
           setStage('end')
         }
         return
@@ -164,13 +208,13 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
       setSqueezes(counter.count)
       setMatched(counter.complete)
       if (stage === 'practice' && counter.complete) {
-        window.clearInterval(timer)
+        clock.clearInterval(timer)
         playSfx('whistleShort')
         setStage('practiceFeedback')
       } else if (stage === 'play') {
         setRemaining(Math.max(0, Math.ceil((RICE_TOTAL_MS - cueIndex * RICE_CUE_MS - Math.min(elapsed, GAME_C_RULES.responseMs)) / 1000)))
         if (elapsed >= GAME_C_RULES.responseMs) {
-          window.clearInterval(timer)
+          clock.clearInterval(timer)
           const trial = counter.result(cue)
           result.current.trials.push(trial)
           if (trial.outcome === 'correct') { result.current.score += GAME_C_RULES.points; playSfx('whistleShort') }
@@ -179,7 +223,7 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
         }
       }
     }, 50)
-    return () => { window.clearInterval(timer); tracker.current = null }
+    return () => { removeResume(); clock.clearInterval(timer); tracker.current = null; cancelVoice() }
   }, [stage, practiceIndex, cueIndex])
 
   const afterPractice = () => {
@@ -189,11 +233,11 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
   }
   useEffect(() => {
     let timer = 0
-    if (stage === 'practiceFeedback') timer = window.setTimeout(afterPractice, 900)
-    if (stage === 'practiceSwap') timer = window.setTimeout(() => { setPracticeIndex(5); setStage('practice') }, GAME_C_RULES.swapMs)
-    if (stage === 'welcome') timer = window.setTimeout(() => setStage('fadeOut'), 2400)
-    if (stage === 'backgroundHold') timer = window.setTimeout(() => setStage('backgroundFocus'), 3000)
-    if (stage === 'feedback') timer = window.setTimeout(() => {
+    if (stage === 'practiceFeedback') timer = clock.setTimeout(afterPractice, 900)
+    if (stage === 'practiceSwap') return runNarration('c_swap', () => { setPracticeIndex(5); setStage('practice') }, GAME_C_RULES.swapMs)
+    if (stage === 'welcome') timer = clock.setTimeout(() => setStage('fadeOut'), 2400)
+    if (stage === 'backgroundHold') timer = clock.setTimeout(() => setStage('backgroundFocus'), 3000)
+    if (stage === 'feedback') timer = clock.setTimeout(() => {
       setRemaining(Math.max(0, Math.ceil((RICE_TOTAL_MS - (cueIndex + 1) * RICE_CUE_MS) / 1000)))
       if (cueIndex === RICE_CUES.length - 1) {
         result.current.completed = true
@@ -201,41 +245,43 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
       } else if (cueIndex === 9) setStage('swap')
       else { setCueIndex(n => n + 1); setStage('play') }
     }, GAME_C_RULES.feedbackMs)
-    if (stage === 'swap') timer = window.setTimeout(() => { setCueIndex(10); setStage('play') }, GAME_C_RULES.swapMs)
+    if (stage === 'swap') return runNarration('c_swap', () => { setCueIndex(10); setStage('play') }, GAME_C_RULES.swapMs)
     if (stage === 'end') {
       playSfx('whistleLong')
-      timer = window.setTimeout(() => finishRef.current({ ...result.current, trials: [...result.current.trials] }), 1600)
+      timer = clock.setTimeout(() => finishRef.current({ ...result.current, trials: [...result.current.trials] }), 1600)
     }
-    return () => window.clearTimeout(timer)
+    return () => clock.clearTimeout(timer)
   }, [stage, practiceIndex, cueIndex])
 
   useEffect(() => {
     if (stage !== 'countdown') return
     setCueIndex(0)
     playCountdown()
-    const timers = COUNTDOWN_CUES.map((at, index) => window.setTimeout(() => setCountdown(index), at))
-    timers.push(window.setTimeout(() => {
+    const timers = COUNTDOWN_CUES.map((at, index) => clock.setTimeout(() => setCountdown(index), at))
+    timers.push(clock.setTimeout(() => {
       result.current = { ...freshRiceResult(), startedAt: new Date().toISOString() }
       setCountdown(-1)
       setStage('play')
     }, COUNTDOWN_TOTAL_MS))
-    return () => timers.forEach(window.clearTimeout)
+    return () => { timers.forEach(clock.clearTimeout); stopCountdown() }
   }, [stage])
 
   const skip = () => {
+    if (clock.paused) return
     if (stage === 'practice') afterPractice()
     else if (stage === 'practiceSwap') { setPracticeIndex(5); setStage('practice') }
     else if (stage === 'welcome') setStage('fadeOut')
     else if (stage === 'finish') setStage('end') // Never claims the final pose was performed.
   }
   const abort = () => {
+    if (clock.paused) return
     if (!['play', 'feedback', 'swap', 'finish'].includes(stage)) return
-    if (armed) { window.clearTimeout(armTimer.current); setStage('end') }
-    else { setArmed(true); armTimer.current = window.setTimeout(() => setArmed(false), 4000) }
+    if (armed) { clock.clearTimeout(armTimer.current); setStage('end') }
+    else { setArmed(true); armTimer.current = clock.setTimeout(() => setArmed(false), 4000) }
   }
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
-      if (event.repeat) return
+      if (clock.paused || event.repeat) return
       if (event.key === '1') skip()
       if (event.key === '2') abort()
     }
@@ -262,9 +308,10 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
     return motionFrame.assistPose
   }
 
-  return <div className={`fill game-c ${practicing ? 'fade-in' : 'game-c-main'}`} data-game-c-stage={stage} data-cue-index={cueIndex} data-practice-index={practiceIndex}>
+  return <div className={`fill game-c ${practicing ? 'fade-in' : 'game-c-main'}`} data-game-paused={paused} data-game-c-stage={stage} data-cue-index={cueIndex} data-practice-index={practiceIndex} data-response-open={responseOpen}>
     {practicing && <img src={GAME_C_IMAGES.tutorial} alt="" className="fill" />}
     {!practicing && <div className="game-c-play-background" onAnimationEnd={event => {
+      if (clock.paused) return
       if (event.target === event.currentTarget && event.animationName === 'gameCBackgroundFocus' && stage === 'backgroundFocus') setStage('uiReveal')
     }}>
       <img src={GAME_C_IMAGES.playOriginal} alt="" />
@@ -273,6 +320,7 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
     {showUi && <div className={`fill game-c-ui ${stage === 'uiReveal' ? 'scene-ui-dissolve' : ''}`}
       aria-hidden={introducing} ref={element => { if (element) element.inert = introducing }}
       onAnimationEnd={event => {
+      if (clock.paused) return
         if (event.target === event.currentTarget && event.animationName === 'sceneUiDissolve' && stage === 'uiReveal') setStage('countdown')
       }}>
     {(practicing || swap || finishing) && <h1 className="game-c-title">{title}</h1>}
@@ -310,10 +358,16 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
       <p className="game-c-guide">{stage === 'finish' ? '두 사람 모두 양팔을\n머리 위로 들어주세요' : '함께 만든 결과를 확인해볼까요?'}</p>
       {stage === 'finish' && <div className="game-c-finish-progress"><div style={{ width: `${finishProgress * 100}%` }} /></div>}
     </>}
-    {(practicing || stage === 'finish') && stage !== 'practiceFeedback' && !introducing && <button className="pixel-btn secondary staff-skip" onClick={skip}>건너뛰기 ▸ (1)</button>}
-    {['play', 'feedback', 'swap'].includes(stage) && <button className="pixel-btn secondary staff-skip" onClick={abort}>{armed ? '한 번 더 누르면 중단 (2)' : '중단하기 ▸ (2)'}</button>}
-    <button className="game-c-help-toggle" onClick={() => setHelp(v => !v)} aria-expanded={help}>입력 안내</button>
-    {help && <div className="game-c-input-help">
+    {['practice', 'play', 'finish'].includes(stage) && <p className="voice-status" role="status">{responseOpen ? '지금 동작해 주세요' : '안내를 듣고 준비해 주세요'}</p>}
+    {armed && <p className="game-staff-notice" role="status">중단하려면 2를 한 번 더 눌러 주세요</p>}
+    </div>}
+    {(stage === 'fadeOut' || stage === 'fadeIn') && <div key={stage} className={`fill game-c-blackout ${stage}`} onAnimationEnd={event => {
+      if (clock.paused) return
+      if (event.target !== event.currentTarget) return
+      if (stage === 'fadeOut' && event.animationName === 'gameCToBlack') { setStage('fadeIn') }
+      if (stage === 'fadeIn' && event.animationName === 'gameCFromBlack') setStage('backgroundHold')
+    }} />}
+    {stage !== 'end' && <GamePause paused={paused} onPause={pause} onResume={() => void resume()}>
       <p>{keyboardOnly ? '키보드 모드' : '카메라 모드'}</p>
       {poseEngine.cameraOk && !riceGripEngine.error && <button className="pixel-btn secondary" onClick={() => {
         keys.current.clear()
@@ -325,12 +379,6 @@ export function GameCScreen({ rabbits, skipPractice = false, onFinish, onExit }:
       <p>잼잼: 키를 눌렀다 놓기 × 3</p>
       <p>1 연습 건너뛰기 · 2 두 번 눌러 중단</p>
       {riceGripEngine.error && <p>손가락 인식을 시작하지 못해 키보드 모드로 전환했습니다.</p>}
-    </div>}
-    </div>}
-    {(stage === 'fadeOut' || stage === 'fadeIn') && <div key={stage} className={`fill game-c-blackout ${stage}`} onAnimationEnd={event => {
-      if (event.target !== event.currentTarget) return
-      if (stage === 'fadeOut' && event.animationName === 'gameCToBlack') { setHelp(false); setStage('fadeIn') }
-      if (stage === 'fadeIn' && event.animationName === 'gameCFromBlack') setStage('backgroundHold')
-    }} />}
+    </GamePause>}
   </div>
 }

@@ -1,0 +1,239 @@
+{
+  "checkedAt": "2026-09-29T14:53:43.118Z",
+  "decoder": "Browser Web Audio API, 24000 Hz requested",
+  "passed": 21,
+  "failed": 0,
+  "results": [
+    {
+      "file": "a_practice_left.mp3",
+      "status": "pass",
+      "durationSeconds": 2.39,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 57360,
+      "peak": 0.816524863243103,
+      "rms": 0.10498591901787273,
+      "bytes": 40092
+    },
+    {
+      "file": "b_practice_both.mp3",
+      "status": "pass",
+      "durationSeconds": 3.58,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 85920,
+      "peak": 0.7280871272087097,
+      "rms": 0.11296661999657165,
+      "bytes": 59292
+    },
+    {
+      "file": "b_practice_left.mp3",
+      "status": "pass",
+      "durationSeconds": 6.23,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 149520,
+      "peak": 0.9106630086898804,
+      "rms": 0.0979028857099699,
+      "bytes": 101532
+    },
+    {
+      "file": "b_practice_right.mp3",
+      "status": "pass",
+      "durationSeconds": 6.41,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 153840,
+      "peak": 0.7469094395637512,
+      "rms": 0.09008934397440901,
+      "bytes": 104604
+    },
+    {
+      "file": "b_stop.mp3",
+      "status": "pass",
+      "durationSeconds": 2.49,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 59760,
+      "peak": 0.8144369125366211,
+      "rms": 0.11488605614692926,
+      "bytes": 41628
+    },
+    {
+      "file": "b_start.mp3",
+      "status": "pass",
+      "durationSeconds": 4.1,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 98400,
+      "peak": 0.9282175302505493,
+      "rms": 0.11457860615135854,
+      "bytes": 67356
+    },
+    {
+      "file": "b_cue_both.mp3",
+      "status": "pass",
+      "durationSeconds": 2.43,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 58320,
+      "peak": 0.5998479723930359,
+      "rms": 0.09600656285202727,
+      "bytes": 40860
+    },
+    {
+      "file": "b_cue_left.mp3",
+      "status": "pass",
+      "durationSeconds": 2.74,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 65760,
+      "peak": 0.8675865530967712,
+      "rms": 0.09946090176982512,
+      "bytes": 45852
+    },
+    {
+      "file": "b_cue_right.mp3",
+      "status": "pass",
+      "durationSeconds": 2.75,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 66000,
+      "peak": 0.7989508509635925,
+      "rms": 0.10342466767003632,
+      "bytes": 45852
+    },
+    {
+      "file": "c_select.mp3",
+      "status": "pass",
+      "durationSeconds": 2.31,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 55440,
+      "peak": 0.7975422143936157,
+      "rms": 0.10060626540831266,
+      "bytes": 38940
+    },
+    {
+      "file": "c_practice_pound.mp3",
+      "status": "pass",
+      "durationSeconds": 3.24,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 77760,
+      "peak": 0.7242043018341064,
+      "rms": 0.10096293883816246,
+      "bytes": 53532
+    },
+    {
+      "file": "c_practice_squeeze.mp3",
+      "status": "pass",
+      "durationSeconds": 3.92,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 94080,
+      "peak": 0.901248037815094,
+      "rms": 0.09558309393062248,
+      "bytes": 64668
+    },
+    {
+      "file": "c_practice_left.mp3",
+      "status": "pass",
+      "durationSeconds": 2.5,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 60000,
+      "peak": 0.560979425907135,
+      "rms": 0.08910206389184322,
+      "bytes": 42012
+    },
+    {
+      "file": "c_practice_right.mp3",
+      "status": "pass",
+      "durationSeconds": 2.64,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 63360,
+      "peak": 0.672722339630127,
+      "rms": 0.08847248747923886,
+      "bytes": 43932
+    },
+    {
+      "file": "c_cue_pound.mp3",
+      "status": "pass",
+      "durationSeconds": 1.85,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 44400,
+      "peak": 0.9325942397117615,
+      "rms": 0.12207575307180281,
+      "bytes": 31644
+    },
+    {
+      "file": "c_cue_squeeze.mp3",
+      "status": "pass",
+      "durationSeconds": 2.2,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 52800,
+      "peak": 0.9190649390220642,
+      "rms": 0.10207095542460001,
+      "bytes": 37020
+    },
+    {
+      "file": "c_cue_left.mp3",
+      "status": "pass",
+      "durationSeconds": 2.28,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 54720,
+      "peak": 0.8365406394004822,
+      "rms": 0.09908401165241791,
+      "bytes": 38172
+    },
+    {
+      "file": "c_cue_right.mp3",
+      "status": "pass",
+      "durationSeconds": 2.32,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 55680,
+      "peak": 0.7901675701141357,
+      "rms": 0.10265002808081564,
+      "bytes": 38940
+    },
+    {
+      "file": "c_swap.mp3",
+      "status": "pass",
+      "durationSeconds": 2.52,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 60480,
+      "peak": 0.5665684342384338,
+      "rms": 0.09550072110391257,
+      "bytes": 42012
+    },
+    {
+      "file": "c_finish.mp3",
+      "status": "pass",
+      "durationSeconds": 2.94,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 70560,
+      "peak": 0.8495112061500549,
+      "rms": 0.11172900092471326,
+      "bytes": 48924
+    },
+    {
+      "file": "common_result.mp3",
+      "status": "pass",
+      "durationSeconds": 4.13,
+      "sampleRate": 24000,
+      "channels": 1,
+      "decodedFrames": 99120,
+      "peak": 0.9278938174247742,
+      "rms": 0.11364708958973735,
+      "bytes": 68124
+    }
+  ]
+}

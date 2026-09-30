@@ -1,0 +1,6 @@
+164.35s {"tutorialStep":"position","responseOpen":"false"}
+166.30s {"tutorialStep":"position","responseOpen":"true"}
+166.40s {"tutorialStep":"rest","responseOpen":"false"}
+168.37s {"tutorialStep":"rest","responseOpen":"true"}
+169.60s {"tutorialStep":"calibration","responseOpen":"false"}
+171.90s {"tutorialStep":"calibration","responseOpen":"true"}

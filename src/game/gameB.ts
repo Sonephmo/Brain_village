@@ -19,6 +19,7 @@ export const FIRE_GUIDES: Record<FireTask, { title: string; guide: string }> = {
 }
 export interface FanPose {
   present: boolean
+  handsTracked?: boolean
   leftRaised: boolean
   rightRaised: boolean
   leftWristY: number | null
@@ -29,13 +30,23 @@ export interface FanPose {
 export class FanCounter {
   count = 0
   stillSince: number | null = null
+  restViolated = false
   private candidate = ''
   private since = 0
   private phase: 'waiting' | 'down' | 'up' = 'waiting'
   private previous: FanPose | null = null
 
+  /** Keep completed repetitions and violations; discard a movement spanning a pause. */
+  resetPartial() {
+    this.candidate = ''
+    this.phase = 'waiting'
+    this.previous = null
+    this.stillSince = null
+  }
+
   update(pose: FanPose, now: number) {
-    if (!pose.present) {
+    if (!pose.present || pose.handsTracked === false) {
+      this.restViolated = true
       this.candidate = ''
       this.phase = 'waiting'
       this.stillSince = null
@@ -46,6 +57,7 @@ export class FanCounter {
     const moved = !before || before.leftRaised !== pose.leftRaised || before.rightRaised !== pose.rightRaised ||
       (before.leftWristY != null && pose.leftWristY != null && Math.abs(before.leftWristY - pose.leftWristY) > 0.018) ||
       (before.rightWristY != null && pose.rightWristY != null && Math.abs(before.rightWristY - pose.rightWristY) > 0.018)
+    if ((before && moved) || pose.leftRaised || pose.rightRaised) this.restViolated = true
     if (moved || this.stillSince == null) this.stillSince = now
     if (moved) this.previous = { ...pose }
     const next = pose.leftRaised && pose.rightRaised ? 'up' : !pose.leftRaised && !pose.rightRaised ? 'down' : 'mixed'
@@ -66,7 +78,9 @@ export function playerTaskResults(task: FireTask, counters: [FanCounter, FanCoun
   return counters.map((p, i) => {
     if (p.stillSince == null) return false
     if (task === 'big') return now - p.stillSince >= GAME_B_RULES.stillMs
-    if ((task === 'left' && i === 1) || (task === 'right' && i === 0)) return p.count === 0
+    if ((task === 'left' && i === 1) || (task === 'right' && i === 0)) {
+      return !p.restViolated && p.count === 0 && now - p.stillSince >= GAME_B_RULES.stillMs
+    }
     return p.count >= target
   }) as [boolean, boolean]
 }

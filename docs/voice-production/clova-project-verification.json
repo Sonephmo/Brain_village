@@ -1,0 +1,114 @@
+{
+  "projectUrl": "https://clovadubbing.naver.com/project/5171378",
+  "voice": "가람",
+  "settings": "All displayed voice options: 보통; special effect: 없음",
+  "durationDisplayed": "01:07.97",
+  "rows": [
+    {
+      "order": "1",
+      "text": "두 사람 모두 왼손을 들어 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "2",
+      "text": "두 사람 모두 양손을 위아래로 다섯 번 흔들어 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "3",
+      "text": "왼쪽 분만 양손을 위아래로 다섯 번 흔들어 주세요.   오른쪽 분은 잠시 멈춰 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "4",
+      "text": "오른쪽 분만 양손을 위아래로 다섯 번 흔들어 주세요.   왼쪽 분은 잠시 멈춰 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "5",
+      "text": "두 사람 모두 동작을 멈춰 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "6",
+      "text": "잘하셨어요.   이제 캠프파이어를 시작해 볼까요?",
+      "voice": "가람"
+    },
+    {
+      "order": "7",
+      "text": "함께 두 번 부채질해 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "8",
+      "text": "왼쪽 분만 두 번 부채질해 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "9",
+      "text": "오른쪽 분만 두 번 부채질해 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "10",
+      "text": "원하는 토끼를 선택해 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "11",
+      "text": "떡메를 든 분은 양손을 들었다 내려 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "12",
+      "text": "맨손인 분은 양손을 오므렸다 펴는 동작을 세 번 해 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "13",
+      "text": "맨손인 분은 왼손을 들어 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "14",
+      "text": "맨손인 분은 오른손을 들어 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "15",
+      "text": "떡방아를 찧어 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "16",
+      "text": "양손을 세 번 주물러 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "17",
+      "text": "떡을 왼쪽으로 뒤집어 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "18",
+      "text": "떡을 오른쪽으로 뒤집어 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "19",
+      "text": "이번에는 역할을 바꿔 볼까요?",
+      "voice": "가람"
+    },
+    {
+      "order": "20",
+      "text": "두 사람 모두 양팔을 머리 위로 들어 주세요.",
+      "voice": "가람"
+    },
+    {
+      "order": "21",
+      "text": "수고하셨어요.   함께 만든 결과를 확인해 볼까요?",
+      "voice": "가람"
+    }
+  ],
+  "downloadStatus": "User supplied all 21 MP3 files. Imported unchanged and verified successfully; see audio-manifest.json and audio-validation.json."
+}

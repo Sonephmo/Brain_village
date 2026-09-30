@@ -1,0 +1,8 @@
+81.00s {"game":"shopping","stage":"starting","paused":"false","responseOpen":"false"}
+84.85s {"game":"shopping","stage":"countdown","paused":"false","responseOpen":"true"}
+87.85s {"game":"shopping","stage":"play","paused":"false","responseOpen":"true"}
+110.71s {"game":"shopping","stage":"play","paused":"true","responseOpen":"false"}
+117.13s {"game":"shopping","stage":"play","paused":"false","responseOpen":"false"}
+122.15s {"game":"shopping","stage":"play","paused":"false","responseOpen":"true"}
+138.18s {"game":"shopping","stage":"ready","paused":"false","responseOpen":"false"}
+145.75s {"game":"shopping","stage":"ready","paused":"false","responseOpen":"true"}

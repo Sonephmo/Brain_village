@@ -13,11 +13,10 @@
 import { FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision'
 import { cameraReady, cameraVideo, openCamera } from './camera'
 import { poseEngine } from './pose'
+import { inspectHand, type HandPoint } from './handGrip'
 
 /** 제스처를 몇 프레임마다 확인할지 (fps가 낮으면 3~4로 올린다) */
 const GESTURE_EVERY = 2
-/** 이 점수 미만의 주먹 판정은 무시한다 (오탐 방지) */
-const FIST_SCORE_MIN = 0.5
 
 export interface HandState {
   tracking: boolean
@@ -36,6 +35,8 @@ class HandEngine {
   private canvas: HTMLCanvasElement | null = null
   private raf = 0
   private running = false
+  private generation = 0
+  private initialization: Promise<boolean> | null = null
   private lastTs = 0
   private gestureTs = 0
   private frame = 0
@@ -50,8 +51,23 @@ class HandEngine {
   private onDwell: ((x: number, y: number) => void) | null = null
 
   async start(holdMs: number, onDwell: (x: number, y: number) => void): Promise<boolean> {
+    const generation = ++this.generation
+    this.running = false
+    cancelAnimationFrame(this.raf)
+    // 화면 전환 중 겹친 요청은 같은 모델 초기화를 기다린다.
+    const initialization = this.initialization ??= this.initialize()
+    const ok = await initialization
+    if (!ok && this.initialization === initialization) this.initialization = null
+    if (!ok || generation !== this.generation) return false
     this.holdMs = holdMs
     this.onDwell = onDwell
+    this.reset()
+    this.running = true
+    this.loop()
+    return true
+  }
+
+  private async initialize(): Promise<boolean> {
     const video = await openCamera()
     if (!video) {
       this.error = 'camera'
@@ -92,19 +108,19 @@ class HandEngine {
           }
         }
         this.ready = true
+        this.error = null
       } catch (err) {
         this.error = err instanceof Error ? err.message : String(err)
         return false
       }
     }
-    this.reset()
-    this.running = true
-    this.loop()
     return true
   }
 
   stop() {
+    this.generation++
     this.running = false
+    this.onDwell = null
     cancelAnimationFrame(this.raf)
     this.reset()
   }
@@ -142,12 +158,14 @@ class HandEngine {
   }
 
   private applyGesture(
-    res: { gestures?: Array<Array<{ categoryName?: string; score?: number }>> },
+    res: { gestures?: Array<Array<{ categoryName?: string; score?: number }>>; landmarks?: HandPoint[][]; worldLandmarks?: HandPoint[][] },
     now: number,
   ) {
     const top = res.gestures?.[0]?.[0]
     this.gestureName = top?.categoryName ?? ''
-    const fistNow = this.gestureName === 'Closed_Fist' && (top?.score ?? 0) >= FIST_SCORE_MIN
+    const fistNow = inspectHand({ landmarks: res.landmarks?.[0] ?? [],
+      worldLandmarks: res.worldLandmarks?.[0], gesture: top,
+    }, this.canvas ? this.canvas.width / this.canvas.height : 1).grip === 'closed'
 
     if (fistNow && !this.fist) {
       this.fist = true

@@ -1,8 +1,9 @@
+import { GameTools } from '../components/GameTools'
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { IMG, RESULT, prizeFor, type Frame } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { ResultReveal } from '../components/ResultReveal'
-import type { CommandLog } from '../game/types'
+import type { CommandLog, FlagSessionMeta } from '../game/types'
 import { buildSessionLog, downloadJson, isCompleted } from '../game/logging'
 import { playBgm, stopBgm } from '../game/bgm'
 import { COMMANDS } from '../game/commands'
@@ -35,10 +36,12 @@ export function ResultScreen({
   logs,
   score,
   avatars,
+  session: sessionMeta,
   onReplay,
   onRestart,
   onTitle,
 }: {
+  session: FlagSessionMeta
   logs: CommandLog[]
   score: number
   avatars: { p1: AvatarPick; p2: AvatarPick }
@@ -49,7 +52,7 @@ export function ResultScreen({
   /** 홈으로: 타이틀로 완전 리셋 (다음 팀) */
   onTitle: () => void
 }) {
-  const session = useMemo(() => buildSessionLog(logs, score, avatars), [logs, score, avatars])
+  const session = useMemo(() => buildSessionLog(logs, score, avatars, sessionMeta), [logs, score, avatars, sessionMeta])
   // 진행요원이 중단한 세션은 20구령을 다 하지 않았으므로 '완주'라고 말하지 않는다
   const completed = isCompleted(logs)
   const bothCorrect = logs.filter(l => l.판정.P1.정답 && l.판정.P2.정답).length
@@ -132,14 +135,7 @@ export function ResultScreen({
       <ResultButton frame={RESULT.btnYes} box={LAYOUT.btnYes} label="확인" onClick={onRestart} />
       <ResultButton frame={RESULT.btnHome} box={LAYOUT.btnHome} label="홈으로" onClick={onTitle} />
 
-      {/* 진행요원용. 참가자 시선에서 벗어난 위치에 반투명으로 둔다. */}
-      <button
-        className="pixel-btn secondary"
-        style={{ position: 'absolute', right: 20, top: 20, fontSize: 26, opacity: 0.3 }}
-        onClick={() => downloadJson(session, `brainvillage_${Date.now()}.json`)}
-      >
-        결과 JSON
-      </button>
+      <GameTools><button className="pixel-btn secondary" onClick={() => downloadJson(session, `brainvillage_${Date.now()}.json`)}>기록 내려받기</button></GameTools>
     </ResultReveal>
   )
 }

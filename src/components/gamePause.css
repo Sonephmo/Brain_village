@@ -1,0 +1,26 @@
+[data-game-paused="true"],
+[data-game-paused="true"] *,
+[data-game-paused="true"] *::before,
+[data-game-paused="true"] *::after { animation-play-state: paused !important; }
+[data-game-paused="true"] { opacity: 1 !important; }
+[data-game-paused="true"] button:not(.game-pause-overlay button) { pointer-events: none; }
+.game-pause-button, .game-tools>summary { position:absolute;top:22px;right:22px;z-index:100;width:64px;height:60px;border:2px solid #80786166;border-radius:10px;background:#fff9;color:#554e41;font:32px 'NeoDunggeunmo',sans-serif;display:grid;place-items:center;cursor:pointer; }
+.game-pause-button:hover, .game-tools>summary:hover { background:#fff; }
+.game-pause-button:focus-visible, .game-tools>summary:focus-visible { outline:4px solid #38673d;outline-offset:4px; }
+.game-pause-overlay { position: absolute; inset: 0; z-index: 1000; display: grid; place-items: center; background: #20170ed9; }
+.game-pause-card { padding: 40px 64px; max-height:1000px;overflow:auto; min-width:760px; border: 6px solid #80552f; background: #fff4d9; color: #392816; text-align: center; box-shadow: 10px 10px 0 #170f0a; }
+.game-pause-card h2 { margin: 0 0 28px; font-size: 64px; }
+.game-pause-card p { font-size: 34px; line-height: 1.6; margin-bottom: 32px; }
+.game-pause-card button { font-size: 40px; }
+.game-pause-options { margin:28px auto 0;max-width:850px;text-align:left; }
+.game-pause-options summary { font-size:26px;cursor:pointer;color:#706149;text-align:center;margin-bottom:16px; }
+.game-pause-options p, .game-pause-options label { font-size:26px;line-height:1.5;margin:8px 0; }
+.game-pause-options .pixel-btn { font-size:26px;padding:10px 20px; }
+.game-pause-options .game-menu-note { color:#796e5b;font-size:22px;margin-top:20px; }
+.game-pause-options input { width:24px;height:24px;margin-right:12px; }
+.game-tools { position:absolute;inset:0;pointer-events:none;z-index:100; }
+.game-tools>summary { pointer-events:auto;list-style:none; }
+.game-tools>summary::-webkit-details-marker { display:none; }
+.game-tools-panel { position:absolute;right:22px;top:94px;pointer-events:auto;padding:22px;background:#fff7e5;border:2px solid #b8aa8f;box-shadow:0 8px 24px #0002; }
+.game-tools-panel button { font-size:26px;padding:12px 20px; }
+.game-staff-notice { position:absolute;top:24px;left:50%;transform:translateX(-50%);z-index:101;padding:16px 28px;background:#fff1d7;color:#79351b;font-size:28px; }

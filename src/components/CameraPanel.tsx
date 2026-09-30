@@ -5,14 +5,18 @@ import { cameraStream } from '../game/camera'
 export function CameraPanel({
   style,
   forceOn = false,
+  show,
+  hideToggle = false,
 }: {
   style?: CSSProperties
   forceOn?: boolean
+  show?: boolean
+  hideToggle?: boolean
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [on, setOn] = useState(true)
   const [hasStream, setHasStream] = useState(!!cameraStream())
-  const visible = forceOn || on
+  const visible = forceOn || (show ?? on)
 
   // 카메라 획득은 비동기라, 스트림이 생기면 뒤늦게라도 패널을 띄운다
   useEffect(() => {
@@ -34,7 +38,7 @@ export function CameraPanel({
   }, [visible, hasStream])
 
   // 카메라가 없으면(키보드 모드) 검은 박스로 화면을 가리지 않는다
-  if (!hasStream) return null
+  if (!hasStream || hideToggle && !visible) return null
 
   return (
     <div className="camera-panel" style={style}>
@@ -59,7 +63,7 @@ export function CameraPanel({
           카메라 꺼짐
         </div>
       )}
-      {!forceOn && (
+      {!forceOn && !hideToggle && (
         <button
           className="pixel-btn secondary"
           style={{ position: 'absolute', right: 8, top: 8, fontSize: 20, padding: '4px 12px', zIndex: 5 }}

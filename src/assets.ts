@@ -153,7 +153,7 @@ export const PLACES: Place[] = [
   { key: 'cafe', label: '카페 (준비중)', x: 1212, y: 248, w: 220, h: 237, active: false },
   { key: 'mountain', label: '전망대 — 펄럭펄럭 불피우기', x: 186, y: 106, w: 351, h: 188, active: true },
   { key: 'hospital', label: '병원 (준비중)', x: 868, y: 660, w: 454, h: 326, active: false },
-  { key: 'mart', label: '마트 (준비중)', x: 1458, y: 211, w: 445, h: 348, active: false },
+  { key: 'mart', label: '마트 — 협동 장보기', x: 1458, y: 211, w: 445, h: 348, active: true },
   { key: 'ricecake', label: '보름달 떡집 — 달토끼 쿵떡쿵떡 떡방아', x: 560, y: 716, w: 337, h: 257, active: true },
   { key: 'bank', label: '은행 (준비중)', x: 904, y: 237, w: 289, h: 311, active: false },
   { key: 'health', label: '보건소 (준비중)', x: 328, y: 329, w: 401, h: 297, active: false },

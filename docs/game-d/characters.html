@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>영차마을 · 장보기 임시 캐릭터</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f1e8;color:#30291f;font:16px/1.55 system-ui,sans-serif}main{max-width:1250px;margin:auto;padding:26px}h1{margin:0;font-size:29px}h2{font-size:21px;margin:28px 0 12px}p{margin:6px 0 18px}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}button{border:1px solid #655646;background:#fffaf0;padding:8px 15px;border-radius:7px;font:inherit;cursor:pointer}.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{margin:0;border:1px solid #d7cdbd;border-radius:9px;overflow:hidden;background:var(--preview,#fff)}.viewport{height:340px;display:flex;align-items:center;justify-content:center;padding:12px}.sprite{height:100%;flex-shrink:0;background-repeat:no-repeat;image-rendering:pixelated}.card figcaption{padding:9px 12px;background:#fffaf0;text-align:center}.sheet{margin:12px 0 20px}.sheet img{display:block;width:100%;height:auto;image-rendering:pixelated}.sequence{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;padding:8px 0;background:#fffaf0}.foot{font-size:14px;color:#675b4c;margin-top:24px}.error{color:#a12424}body.mint{--preview:#e6f5ee}body.dark{--preview:#29323d}@media(max-width:650px){main{padding:16px}.pair{gap:8px}.viewport{height:260px;padding:6px}h1{font-size:25px}.toolbar{font-size:14px}.sequence{font-size:12px}}
+</style>
+<main>
+<h1>장보기 임시 캐릭터</h1>
+<p>선택한 정면에 맞춘 파랑·분홍 츄리닝 캐릭터</p>
+<div class="toolbar"><button id="play" aria-pressed="true">동작 멈추기</button><button id="mirror" aria-pressed="false">반대 방향 보기</button><button id="background">배경색 바꾸기</button><span id="status" role="status">이미지 불러오는 중…</span></div>
+<h2>임시 적용 정면</h2><div class="pair" id="portraits"></div>
+<h2>잼잼 동작 미리보기</h2><div class="pair" id="demo"></div>
+<h2>남자 · 세 동작을 한 번에 만든 원본 시트</h2>
+<figure class="card sheet"><img id="sheet-male" alt="남자 손 펴기, 오므리기, 주먹 쥐기 3동작 스프라이트 시트"><figcaption class="sequence"><span>손 펴기</span><span>손 오므리기</span><span>주먹 쥐기</span></figcaption></figure>
+<h2>여자 · 세 동작을 한 번에 만든 원본 시트</h2>
+<figure class="card sheet"><img id="sheet-female" alt="여자 손 펴기, 오므리기, 주먹 쥐기 3동작 스프라이트 시트"><figcaption class="sequence"><span>손 펴기</span><span>손 오므리기</span><span>주먹 쥐기</span></figcaption></figure>
+<p class="foot">정면 2장 + 남녀 동작 시트 각 1장. 원본 투명 PNG를 그대로 사용하며, 재생 시 발 위치를 맞춰 표시합니다.<br>동작 순서: 손 펴기 → 오므리기 → 주먹 쥐기 → 오므리기 → 손 펴기.<br>협동 장보기에 연결했습니다. 제한 시간 120초, 양손을 쥐면 담기, 잘못 담은 물건은 오답만 기록합니다.</p>
+</main>
+<script type="module">
+const base='../../public/assets/game-d/characters/';
+const state={playing:!matchMedia('(prefers-reduced-motion: reduce)').matches,mirrored:false,bg:0,ready:false};
+const play=document.getElementById('play'),status=document.getElementById('status');
+function playLabel(){play.textContent=state.playing?'동작 멈추기':'동작 재생';play.setAttribute('aria-pressed',String(state.playing))}
+playLabel();play.onclick=()=>{state.playing=!state.playing;playLabel()};
+document.getElementById('mirror').onclick=e=>{state.mirrored=!state.mirrored;e.currentTarget.setAttribute('aria-pressed',String(state.mirrored));document.querySelectorAll('#demo .sprite').forEach(el=>el.style.transform=state.mirrored?'scaleX(-1)':'')};
+document.getElementById('background').onclick=()=>{state.bg=(state.bg+1)%3;document.body.className=['','mint','dark'][state.bg]};
+function draw(el,frame,pose){const [sw,sh]=frame.sheet,[x,y,w,h]=frame.rect;el.style.aspectRatio=w+'/'+h;el.style.backgroundImage='url("'+base+frame.file+'")';el.style.backgroundSize=sw/w*100+'% '+sh/h*100+'%';el.style.backgroundPosition=(sw===w?0:x/(sw-w)*100)+'% '+(sh===h?0:y/(sh-h)*100)+'%';el.dataset.pose=pose;}
+function card(sex,group,frame,pose){const figure=document.createElement('figure');figure.className='card';const box=document.createElement('div');box.className='viewport';const sprite=document.createElement('div');sprite.className='sprite';sprite.id=group+'-'+sex;sprite.setAttribute('role','img');sprite.setAttribute('aria-label',(sex==='male'?'남자':'여자')+(group==='portraits'?' 정면 임시 적용본':' 잼잼 동작'));draw(sprite,frame,pose);box.append(sprite);const caption=document.createElement('figcaption');caption.textContent=sex==='male'?'남자 · 파란 츄리닝':'여자 · 분홍 츄리닝';figure.append(box,caption);document.getElementById(group).append(figure);}
+try{
+ const response=await fetch(base+'frames-active.json',{cache:'no-store'});if(!response.ok)throw Error('프레임 정보 로드 실패');const data=await response.json(),frames=data.characters;
+ const files=[...new Set(Object.values(frames).flatMap(character=>Object.values(character).map(f=>f.file)))];
+ await Promise.all(files.map(file=>new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve();image.onerror=()=>reject(Error(file+' 로드 실패'));image.src=base+file})));
+ for(const sex of ['male','female']){card(sex,'portraits',frames[sex].profile,'profile');card(sex,'demo',frames[sex].open,'open');document.getElementById('sheet-'+sex).src=base+frames[sex].open.file}
+ state.ready=true;status.textContent='임시 적용 4장 · 8프레임 준비 완료';let tick=0,last='';
+ setInterval(()=>{if(!state.playing||!state.ready)return;const pose=['open','open','closing','closed','closed','closing','open','open'][tick++%8];if(pose===last)return;last=pose;for(const sex of ['male','female'])draw(document.getElementById('demo-'+sex),frames[sex][pose],pose)},180);
+}catch(error){status.textContent='이미지를 불러오지 못했습니다: '+error.message;status.className='error';play.disabled=true;}
+</script>
+</html>

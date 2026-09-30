@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "groups": 9,
+  "checks": [
+    "Narration: original audio, real end event, single callback and minimum role-swap time",
+    "Cleanup: replacement, stale cleanup, exit and countdown restart stop owned audio",
+    "Loading: cancelled or timed-out fetch cannot start late audio; offline progress remains possible",
+    "Fallback: missing file, blocked autoplay, unsupported audio and stalled audio clock terminate safely",
+    "A: practice waits for narration, avoids duplicate word clips, ignores stale callbacks and cancels skip",
+    "B: all ten cues retain six seconds after voice; narration freezes timer; abort and unmount cancel work",
+    "C: all twenty cues retain three seconds after voice; role swap is voiced; low score never adds finish pose",
+    "C practice: movements during voice are ignored; new complete movement succeeds; skip cancels old voice",
+    "C: perfect play still gives 100, reaction metrics start after voice, finish hold waits for finish narration"
+  ]
+}

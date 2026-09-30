@@ -1,0 +1,8 @@
+8.90s {"gameCStage":"play","cueIndex":"0","practiceIndex":"0","responseOpen":"false"}
+10.75s {"gameCStage":"play","cueIndex":"0","practiceIndex":"0","responseOpen":"true"}
+13.75s {"gameCStage":"feedback","cueIndex":"0","practiceIndex":"0","responseOpen":"false"}
+14.78s {"gameCStage":"play","cueIndex":"1","practiceIndex":"0","responseOpen":"false"}
+16.98s {"gameCStage":"play","cueIndex":"1","practiceIndex":"0","responseOpen":"true"}
+20.03s {"gameCStage":"feedback","cueIndex":"1","practiceIndex":"0","responseOpen":"false"}
+21.05s {"gameCStage":"play","cueIndex":"2","practiceIndex":"0","responseOpen":"false"}
+22.88s {"gameCStage":"play","cueIndex":"2","practiceIndex":"0","responseOpen":"true"}

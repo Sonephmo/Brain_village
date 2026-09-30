@@ -1,3 +1,4 @@
+import type { GameClock } from './gameClock'
 // 게임 루프: React 렌더 사이클과 분리된 rAF 기반 상태 머신 (스펙 §7).
 // [구령 발화(실측)] → [반응 창 2.0s] → [피드백 1.0s] 사이클.
 // UI 갱신은 스냅샷 콜백을 100ms 단위로 throttle.
@@ -26,6 +27,8 @@ interface HandTrack {
 interface PlayerTrack {
   left: HandTrack
   right: HandTrack
+  observed: boolean
+  inhibitionViolated: boolean
 }
 
 export interface Snapshot {
@@ -44,6 +47,7 @@ export interface Snapshot {
 }
 
 export interface RunnerOptions {
+  clock?: GameClock
   commands: Command[]
   scored: boolean
   /**
@@ -51,6 +55,8 @@ export interface RunnerOptions {
    * 시간 제한이 없으므로 조건을 만족하지 못하면 다음 구령으로 넘어가지 않는다.
    */
   waitForSuccess?: boolean
+  /** 연습 설명이 끝났을 때 반응 창을 열고, 건너뛰기/종료 시 설명도 취소한다. */
+  practiceNarration?: (command: Command, onEnd: (spokenMs: number) => void) => () => void
   roleSwapAfter?: number // 이 인덱스 완료 후 역할 교체 화면 (0-based, 예: 9)
   onSnapshot: (s: Snapshot) => void
   onFinish: (logs: CommandLog[], score: number) => void
@@ -87,6 +93,10 @@ export class GameRunner {
   private judged: { p1: PlayerJudge; p2: PlayerJudge } | null = null
   private lastEmit = 0
   private stopped = false
+  private cancelInstruction: (() => void) | null = null
+  private onsetAt = ''
+  private removeResume = () => {}
+  private now = () => this.opt.clock?.now() ?? performance.now()
   private matchStart = 0 // 연습: 두 사람이 자세를 맞추기 시작한 시각
 
   constructor(opt: RunnerOptions) {
@@ -95,19 +105,24 @@ export class GameRunner {
 
   start() {
     this.stopped = false
+    this.removeResume = this.opt.clock?.onResume(() => this.resetPartialInput()) ?? (() => {})
     this.nextCommand()
     this.raf = requestAnimationFrame(this.loop)
-    // rAF는 창이 가려지면 정지하므로 인터벌 워치독으로 이어받는다 (부스 안전장치)
-    this.watchdog = window.setInterval(() => {
-      if (performance.now() - this.lastTick > 200) this.tick()
+    // 낮은 프레임률을 보완하되 일시정지 중에는 시계와 판정을 함께 멈춘다.
+    this.watchdog = (this.opt.clock ?? window).setInterval(() => {
+      if (this.now() - this.lastTick > 200) this.tick()
     }, 200)
   }
 
   stop() {
     this.stopped = true
     cancelAnimationFrame(this.raf)
-    window.clearInterval(this.watchdog)
+    const clock = this.opt.clock ?? window
+    clock.clearInterval(this.watchdog)
+    this.removeResume()
     stopSpeech()
+    this.cancelInstruction?.()
+    this.cancelInstruction = null
   }
 
   private get command(): Command | null {
@@ -116,8 +131,11 @@ export class GameRunner {
 
   /** 진행요원용: 대기 중인 구령을 통과 처리한다 (연습에서 동작 인식이 안 될 때의 예비 수단) */
   skipCurrent() {
-    if (this.stopped || this.phase !== 'window') return
-    this.judge(performance.now())
+    if (this.stopped || this.opt.clock?.paused || (this.phase !== 'window' && !(this.opt.waitForSuccess && this.phase === 'speak'))) return
+    this.cancelInstruction?.()
+    this.cancelInstruction = null
+    stopSpeech()
+    this.judge(this.now())
   }
 
   /** 진행요원용: 지금까지의 기록으로 게임을 끝낸다 (참가자 이탈 등) */
@@ -133,6 +151,8 @@ export class GameRunner {
   }
 
   private nextCommand() {
+    this.cancelInstruction?.()
+    this.cancelInstruction = null
     this.cmdIndex += 1
     if (this.cmdIndex >= this.opt.commands.length) {
       this.phase = 'done'
@@ -140,27 +160,37 @@ export class GameRunner {
       this.opt.onFinish(this.logs, this.score)
       return
     }
-    const now = performance.now()
+    const now = this.now()
     this.judged = null
     this.matchStart = 0
     this.phase = 'speak'
+    this.onsetAt = new Date().toISOString()
     this.phaseStart = now
     // 구령 시작 시점 손 상태 기록 (이전 구령의 잔손은 재올림해야 인정)
     const p1 = poseEngine.getPose(1)
     const p2 = poseEngine.getPose(2)
     this.tracks = {
-      1: { left: newHand(now, p1.leftRaised), right: newHand(now, p1.rightRaised) },
-      2: { left: newHand(now, p2.leftRaised), right: newHand(now, p2.rightRaised) },
+      1: { left: newHand(now, p1.leftRaised), right: newHand(now, p1.rightRaised), observed: false, inhibitionViolated: false },
+      2: { left: newHand(now, p2.leftRaised), right: newHand(now, p2.rightRaised), observed: false, inhibitionViolated: false },
     }
     const cmd = this.command!
-    speakCommand(cmd.words, cmd.text, cmd.isFake, spokenMs => {
-      if (this.stopped || this.phase !== 'speak') return
+    const index = this.cmdIndex
+    const openWindow = (spokenMs: number) => {
+      if (this.stopped || this.phase !== 'speak' || this.cmdIndex !== index) return
       this.spokenMs = spokenMs
       this.phase = 'window'
-      this.windowOpenAt = performance.now()
+      this.windowOpenAt = this.now()
       this.phaseStart = this.windowOpenAt
+      for (const pid of [1, 2] as PlayerId[]) {
+        const p = poseEngine.getPose(pid)
+        this.tracks![pid].observed = p.present && p.handsTracked !== false
+        this.tracks![pid].inhibitionViolated = p.leftRaised || p.rightRaised
+      }
       this.emit(true)
-    })
+    }
+    if (this.opt.waitForSuccess && this.opt.practiceNarration) {
+      this.cancelInstruction = this.opt.practiceNarration(cmd, openWindow)
+    } else speakCommand(cmd.words, cmd.text, cmd.isFake, openWindow)
     this.emit(true)
   }
 
@@ -171,8 +201,8 @@ export class GameRunner {
   }
 
   private tick() {
-    if (this.stopped) return
-    const now = performance.now()
+    if (this.stopped || this.opt.clock?.paused) return
+    const now = this.now()
     this.lastTick = now
     this.trackHands(now)
 
@@ -199,10 +229,34 @@ export class GameRunner {
     this.emit(false)
   }
 
-  private trackHands(now: number) {
+  private resetPartialInput() {
+    this.matchStart = 0
     if (!this.tracks) return
     for (const pid of [1, 2] as PlayerId[]) {
       const pose = poseEngine.getPose(pid)
+      for (const hand of ['left', 'right'] as const) {
+        const before = this.tracks[pid][hand]
+        if (before.crossedAt !== null) continue
+        this.tracks[pid][hand] = { ...newHand(this.now(), hand === 'left' ? pose.leftRaised : pose.rightRaised), premature: before.premature }
+      }
+    }
+  }
+
+  private trackHands(now: number) {
+    if (!this.tracks) return
+    if (this.phase !== 'speak' && this.phase !== 'window') return
+    for (const pid of [1, 2] as PlayerId[]) {
+      const pose = poseEngine.getPose(pid)
+      const player = this.tracks[pid]
+      if (!pose.present || pose.handsTracked === false) {
+        if (this.phase === 'window') player.observed = false
+        for (const hand of ['left', 'right'] as const) {
+          player[hand].raised = false
+          player[hand].sustained = false
+        }
+        continue
+      }
+      if (this.phase === 'window' && (pose.leftRaised || pose.rightRaised)) player.inhibitionViolated = true
       const hands = { left: pose.leftRaised, right: pose.rightRaised }
       for (const hand of ['left', 'right'] as const) {
         const t = this.tracks[pid][hand]
@@ -211,10 +265,12 @@ export class GameRunner {
           // 새로 올림
           t.raised = true
           t.raiseStart = now
+          t.sustained = false
           t.staleAtStart = false
           if (this.phase === 'speak') t.premature = true
         } else if (!up && t.raised) {
           t.raised = false
+          t.sustained = false
           t.staleAtStart = false
         }
         // 유지 시간 충족 체크 (반응 창 내 시작한 올림만 유효 통과로 기록)
@@ -225,8 +281,10 @@ export class GameRunner {
           now - t.raiseStart >= HOLD_MS
         ) {
           t.sustained = true
-          if (this.phase === 'window' || this.phase === 'feedback') {
-            if (t.raiseStart >= this.windowOpenAt && t.crossedAt == null) {
+          if (this.phase === 'window') {
+            if (t.raiseStart >= this.windowOpenAt &&
+              (this.opt.waitForSuccess || t.raiseStart + HOLD_MS <= this.windowOpenAt + WINDOW_MS) &&
+              t.crossedAt == null) {
               t.crossedAt = t.raiseStart
             }
           }
@@ -238,6 +296,7 @@ export class GameRunner {
   /** 지금 이 순간 플레이어의 손 상태가 기대 동작과 일치하는지 (연습 모드 판정용) */
   private poseMatches(pid: PlayerId, expected: ExpectedAction): boolean {
     const p = poseEngine.getPose(pid)
+    if (!p.present || p.handsTracked === false) return false
     switch (expected) {
       case 'none':
         return !p.leftRaised && !p.rightRaised
@@ -265,11 +324,12 @@ export class GameRunner {
 
   private judgePlayer(pid: PlayerId, expected: ExpectedAction): PlayerJudge {
     const t = this.tracks![pid]
+    if (!t.observed) return { correct: false, errorType: '누락', reactionMs: null }
     const premature = t.left.premature || t.right.premature
-    const L = t.left.crossedAt != null || (t.left.raised && !t.left.staleAtStart && t.left.raiseStart >= this.windowOpenAt)
-    const R = t.right.crossedAt != null || (t.right.raised && !t.right.staleAtStart && t.right.raiseStart >= this.windowOpenAt)
+    const L = t.left.crossedAt != null
+    const R = t.right.crossedAt != null
     const rtOf = (hand: 'left' | 'right') => {
-      const c = t[hand].crossedAt ?? (t[hand].raised ? t[hand].raiseStart : null)
+      const c = t[hand].crossedAt
       return c != null ? Math.max(0, Math.round(c - this.windowOpenAt)) : null
     }
 
@@ -283,7 +343,7 @@ export class GameRunner {
 
     switch (expected) {
       case 'none':
-        if (!L && !R) correct = true
+        if (!t.inhibitionViolated) correct = true
         else errorType = '오작동'
         break
       case 'both':
@@ -325,6 +385,7 @@ export class GameRunner {
     if (this.opt.scored) {
       this.score += gained
       this.logs.push({
+        구령시작시각: this.onsetAt,
         구령ID: cmd.id,
         레벨: cmd.level,
         구령: cmd.text,
@@ -350,7 +411,7 @@ export class GameRunner {
   }
 
   private emit(force: boolean) {
-    const now = performance.now()
+    const now = this.now()
     if (!force && now - this.lastEmit < 100) return
     this.lastEmit = now
     const p1 = poseEngine.getPose(1)

@@ -7,13 +7,17 @@ import { GameBScreen, type GameBResult } from './screens/GameBScreen'
 import { GameBResultScreen } from './screens/GameBResultScreen'
 import { GameCScreen } from './screens/GameCScreen'
 import { GameCResultScreen } from './screens/GameCResultScreen'
+import { GameDScreen } from './screens/GameDScreen'
+import { GameDResultScreen } from './screens/GameDResultScreen'
+import type { GameDResult, Shoppers } from './game/gameD'
 import type { GameCResult, Rabbits } from './game/gameC'
 import { ResultScreen } from './screens/ResultScreen'
 import { SiteLoginScreen } from './screens/SiteLoginScreen'
 import { PlayerLoginScreen } from './screens/PlayerLoginScreen'
 import { logoutPlayers, logoutSite, playerAuth, siteAuth } from './game/auth'
 import { HandCursor, useHandControl, usePoseMode } from './components/HandCursor'
-import type { CommandLog } from './game/types'
+import type { CommandLog, FlagSessionMeta } from './game/types'
+import { runNarration } from './game/audio'
 
 type Screen = 'siteLogin' | 'playerLogin' | 'title' | 'village' | 'tutorial' | 'game' | 'result'
 
@@ -29,17 +33,23 @@ function firstScreen(): Screen {
 // 기관 로그인은 수동으로 끄지 않는 이상 유지되므로, 두 번째 실행부터는 개인 로그인이 첫 화면이다.
 export default function App() {
   const [screen, setScreen] = useState<Screen>(firstScreen)
-  const [selectedGame, setSelectedGame] = useState<'flag' | 'campfire' | 'ricecake'>('flag')
+  const [selectedGame, setSelectedGame] = useState<'flag' | 'campfire' | 'ricecake' | 'shopping'>('flag')
+  const [shoppingResult, setShoppingResult] = useState<GameDResult | null>(null)
   const [riceResult, setRiceResult] = useState<GameCResult | null>(null)
   const [campfireResult, setCampfireResult] = useState<GameBResult | null>(null)
   const [avatars, setAvatars] = useState<{ p1: AvatarPick; p2: AvatarPick }>({ p1: 'grandma', p2: 'grandfa' })
-  const [result, setResult] = useState<{ logs: CommandLog[]; score: number }>({ logs: [], score: 0 })
+  const [result, setResult] = useState<{ logs: CommandLog[]; score: number; session: FlagSessionMeta }>({ logs: [], score: 0, session: { startedAt: '', inputMode: '포즈인식' } })
   // 결과의 '다시하기'는 튜토리얼을 다시 거치지 않고 본게임만 새로 시작한다.
   // GameScreen은 내부 상태(구령 진행·점수)를 갖고 있으므로 key를 바꿔 새로 마운트시킨다.
   const [runId, setRunId] = useState(0)
   const [skipPractice, setSkipPractice] = useState(false)
   const [scale, setScale] = useState(1)
   const rabbits: Rabbits = { p1: avatars.p1 === 'grandma' ? 'pink' : 'brown', p2: avatars.p2 === 'grandma' ? 'pink' : 'brown' }
+  const shoppers: Shoppers = { p1: avatars.p1 === 'grandma' ? 'female' : 'male', p2: avatars.p2 === 'grandma' ? 'female' : 'male' }
+
+  useEffect(() => {
+    if (screen === 'result') return runNarration('common_result')
+  }, [screen, runId])
 
   useEffect(() => {
     const onResize = () =>
@@ -108,13 +118,18 @@ export default function App() {
             onExit={() => setScreen('village')}
             onFinish={data => { setRiceResult(data); setScreen('result') }} />
         )}
+        {screen === 'game' && selectedGame === 'shopping' && (
+          <GameDScreen key={runId} shoppers={shoppers} skipPractice={skipPractice}
+            onExit={() => setScreen('village')}
+            onFinish={data => { setShoppingResult(data); setScreen('result') }} />
+        )}
         {screen === 'game' && selectedGame === 'flag' && (
           <GameScreen
             key={runId}
             avatars={avatars}
             skipPractice={skipPractice}
-            onFinish={(logs, score) => {
-              setResult({ logs, score })
+            onFinish={(logs, score, session) => {
+              setResult({ logs, score, session })
               setScreen('result')
             }}
           />
@@ -129,8 +144,14 @@ export default function App() {
             onReplay={() => { setSkipPractice(true); setRunId(n => n + 1); setScreen('game') }}
             onVillage={() => setScreen('village')} onTitle={() => setScreen('title')} />
         )}
+        {screen === 'result' && selectedGame === 'shopping' && shoppingResult && (
+          <GameDResultScreen result={shoppingResult} shoppers={shoppers}
+            onReplay={() => { setSkipPractice(true); setRunId(n => n + 1); setScreen('game') }}
+            onVillage={() => setScreen('village')} onTitle={() => setScreen('title')} />
+        )}
         {screen === 'result' && selectedGame === 'flag' && (
           <ResultScreen
+            session={result.session}
             logs={result.logs}
             score={result.score}
             avatars={avatars}

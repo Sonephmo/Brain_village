@@ -1,0 +1,114 @@
+{
+  "revision": 5,
+  "source": "built-in imagegen; each side sheet generated as one three-pose image",
+  "characters": {
+    "male": {
+      "profile": {
+        "file": "portraits-v5.png",
+        "sheet": [
+          1536,
+          1024
+        ],
+        "rect": [
+          166,
+          0,
+          600,
+          1024
+        ]
+      },
+      "open": {
+        "file": "male-jamjam-sheet-v5.png",
+        "sheet": [
+          2172,
+          724
+        ],
+        "rect": [
+          80,
+          0,
+          600,
+          724
+        ]
+      },
+      "closing": {
+        "file": "male-jamjam-sheet-v5.png",
+        "sheet": [
+          2172,
+          724
+        ],
+        "rect": [
+          836,
+          0,
+          600,
+          724
+        ]
+      },
+      "closed": {
+        "file": "male-jamjam-sheet-v5.png",
+        "sheet": [
+          2172,
+          724
+        ],
+        "rect": [
+          1572,
+          0,
+          600,
+          724
+        ]
+      }
+    },
+    "female": {
+      "profile": {
+        "file": "portraits-v5.png",
+        "sheet": [
+          1536,
+          1024
+        ],
+        "rect": [
+          764,
+          0,
+          600,
+          1024
+        ]
+      },
+      "open": {
+        "file": "female-jamjam-sheet-v5.png",
+        "sheet": [
+          2172,
+          724
+        ],
+        "rect": [
+          140,
+          0,
+          600,
+          724
+        ]
+      },
+      "closing": {
+        "file": "female-jamjam-sheet-v5.png",
+        "sheet": [
+          2172,
+          724
+        ],
+        "rect": [
+          845,
+          0,
+          600,
+          724
+        ]
+      },
+      "closed": {
+        "file": "female-jamjam-sheet-v5.png",
+        "sheet": [
+          2172,
+          724
+        ],
+        "rect": [
+          1543,
+          0,
+          600,
+          724
+        ]
+      }
+    }
+  }
+}

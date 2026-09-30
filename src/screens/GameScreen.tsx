@@ -1,3 +1,5 @@
+import { useGamePause } from '../game/useGamePause'
+import { GamePause } from '../components/GamePause'
 import { useEffect, useRef, useState } from 'react'
 import { FX, IMG, frameSize } from '../assets'
 import { Avatar, poseFromHands } from '../components/Avatar'
@@ -6,9 +8,9 @@ import { Sprite } from '../components/Sprite'
 import { GameTimer } from '../components/GameTimer'
 import { GameRunner, type Snapshot } from '../game/engine'
 import { COMMANDS, PRACTICE, PRACTICE_NARRATION, ROUND_SIZE, flagsForCommand } from '../game/commands'
-import type { CommandLog } from '../game/types'
+import type { CommandLog, FlagSessionMeta } from '../game/types'
 import type { FaceName } from '../assets'
-import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, beep, playCountdown, playNarration, playSfx, stopNarration } from '../game/audio'
+import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, beep, playCountdown, runNarration, playSfx, stopCountdown } from '../game/audio'
 import { playBgm, stopBgm } from '../game/bgm'
 import { poseEngine } from '../game/pose'
 import { CONTENT_ID, endSession, logCommand, logRoleSwap, startSession } from '../game/telemetry'
@@ -28,33 +30,42 @@ export function GameScreen({
   avatars: { p1: AvatarPick; p2: AvatarPick }
   /** 결과에서 '다시하기'로 돌아온 경우. 같은 팀이 방금 연습을 마쳤으므로 본게임부터 들어간다. */
   skipPractice?: boolean
-  onFinish: (logs: CommandLog[], score: number) => void
+  onFinish: (logs: CommandLog[], score: number, session: FlagSessionMeta) => void
 }) {
   const [stage, setStage] = useState<Stage>(skipPractice ? 'fadeIn' : 'practice')
+  const { clock, paused, pause, resume } = useGamePause(stage !== 'end')
+  const [showCamera, setShowCamera] = useState(true)
   const [snap, setSnap] = useState<Snapshot | null>(null)
   const [countIdx, setCountIdx] = useState(-1)
   // 중단은 세션을 끝내는 동작이라 오클릭을 막기 위해 두 번 눌러야 실행된다
   const [abortArmed, setAbortArmed] = useState(false)
   const runnerRef = useRef<GameRunner | null>(null)
+  const abortTimer = useRef(0)
+  const finishedResult = useRef<{ logs: CommandLog[]; score: number; session: FlagSessionMeta } | null>(null)
   const finishRef = useRef(onFinish)
   finishRef.current = onFinish
 
   // BGM: 연습까지는 튜토리얼 트랙을 이어서 재생하고, 카운트다운부터 본게임은 무음.
   // 구령 청취를 방해하지 않기 위한 결정이다(고령자 대상).
   useEffect(() => {
-    if (stage === 'practice') playBgm('tutorial')
+    if (stage === 'practice') playBgm('tutorial', 0.22)
     else stopBgm()
   }, [stage])
-  useEffect(() => () => stopBgm(), [])
+  useEffect(() => () => { stopBgm(); clock.clearTimeout(abortTimer.current) }, [])
 
   // 연습 (무채점 5구령, 튜토리얼 배경)
   useEffect(() => {
     if (stage !== 'practice') return
     const runner = new GameRunner({
+      clock,
       commands: PRACTICE,
       scored: false,
       // 연습은 시간으로 끊지 않고 두 사람이 함께 성공할 때까지 기다린다
       waitForSuccess: true,
+      practiceNarration: (command, onEnd) => {
+        const started = clock.now()
+        return runNarration(PRACTICE_NARRATION[command.id], () => onEnd(clock.now() - started))
+      },
       onSnapshot: setSnap,
       onFinish: () => {
         setStage('fadeOut')
@@ -62,10 +73,9 @@ export function GameScreen({
     })
     runnerRef.current = runner
     // 화면이 바뀐 것을 참가자가 인지할 최소 시간만 두고 시작한다
-    // (안내 음성을 기다리던 3.6초는 TTS 제거로 불필요해졌다)
-    const t = window.setTimeout(() => runner.start(), 1200)
+    const t = clock.setTimeout(() => runner.start(), 1200)
     return () => {
-      window.clearTimeout(t)
+      clock.clearTimeout(t)
       runner.stop()
     }
   }, [stage])
@@ -77,11 +87,13 @@ export function GameScreen({
 
   /** 진행요원용: 지금까지의 점수로 결과 화면으로. 되돌릴 수 없어 두 번 눌러야 실행된다 */
   const requestAbort = () => {
+    if (clock.paused) return
     if (!abortArmed) {
       setAbortArmed(true)
-      window.setTimeout(() => setAbortArmed(false), 4000)
+      abortTimer.current = clock.setTimeout(() => setAbortArmed(false), 4000)
       return
     }
+    clock.clearTimeout(abortTimer.current)
     runnerRef.current?.abort()
   }
 
@@ -89,9 +101,10 @@ export function GameScreen({
   //   1 = 연습에서 현재 구령 건너뛰기 (시간 제한이 없어 막힐 수 있는 구간)
   //   2 = 결과 화면으로 이동. 버튼과 같은 2단계 확인을 거친다 — 세션을 끝내는
   //       동작이라 키 한 번의 오타로 실행되면 안 되고, 화면의 버튼이 무장 상태를
-  //       보여주므로 눌렀는지 알 수 있다.
+  //       안내 문구로 눌렀는지 알 수 있다.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (clock.paused || e.repeat) return
       if (e.key === '1' && stage === 'practice') runnerRef.current?.skipCurrent()
       else if (e.key === '2' && stage === 'main') requestAbort()
     }
@@ -105,18 +118,19 @@ export function GameScreen({
     if (stage !== 'countdown') return
     const withSound = playCountdown()
     const timers = COUNTDOWN_CUES.map((cue, i) =>
-      window.setTimeout(() => {
+      clock.setTimeout(() => {
         setCountIdx(i)
         if (!withSound) beep(i === COUNTDOWN_CUES.length - 1 ? 1320 : 880, 150)
       }, cue),
     )
-    const done = window.setTimeout(() => {
+    const done = clock.setTimeout(() => {
       setCountIdx(-1)
       setStage('main')
     }, COUNTDOWN_TOTAL_MS)
     return () => {
-      timers.forEach(window.clearTimeout)
-      window.clearTimeout(done)
+      timers.forEach(clock.clearTimeout)
+      clock.clearTimeout(done)
+      stopCountdown()
     }
   }, [stage])
 
@@ -125,15 +139,19 @@ export function GameScreen({
     if (stage !== 'main') return
     // 실시간 전송: 세션 시작 → 구령마다 → 종료. 실패해도 게임은 멈추지 않는다.
     const st = poseEngine.status()
+    const session: FlagSessionMeta = { startedAt: new Date().toISOString(), inputMode: st.keyboardMode && !st.cameraOk ? '키보드' : '포즈인식' }
     startSession({
       gameKey: 'orak_flag',
       appVersion: APP_VERSION,
-      inputMode: st.keyboardMode && !st.cameraOk ? '키보드' : '포즈인식',
+      ...session,
     })
     // 동작 지표는 판정과 별개로 계속 흐른다 (구령 사이·반응 창 밖에도 움직임은 있다)
     motionSampler.start()
+    const removePause = clock.onPause(() => motionSampler.stop())
+    const removeResume = clock.onResume(() => motionSampler.start(true))
 
     const runner = new GameRunner({
+      clock,
       commands: COMMANDS,
       scored: true,
       roleSwapAfter: ROUND_SIZE - 1,
@@ -152,30 +170,25 @@ export function GameScreen({
           poseFps: poseEngine.status().fps,
         })
         setStage('end')
-        window.setTimeout(() => finishRef.current(logs, score), 2600)
+        // end 단계의 별도 effect가 화면 전환을 담당한다.
+        finishedResult.current = { logs, score, session }
       },
     })
     runnerRef.current = runner
     runner.start()
     return () => {
+      removePause()
+      removeResume()
       runner.stop()
       motionSampler.stop()
     }
   }, [stage])
 
-  // 연습: 구령이 끝나고 반응 대기가 시작되면 가이드 나레이션을 이어서 들려준다.
-  // 시간 제한이 없으므로 안내가 끝날 때까지 기다려도 진행에 지장이 없다.
-  const narratedRef = useRef<number | null>(null)
   useEffect(() => {
-    if (stage !== 'practice' || snap?.phase !== 'window' || !snap.command) return
-    const id = snap.command.id
-    if (narratedRef.current === id) return
-    narratedRef.current = id
-    const key = PRACTICE_NARRATION[id]
-    if (key) playNarration(key)
-  }, [stage, snap?.phase, snap?.command])
-  useEffect(() => {
-    if (stage !== 'practice') stopNarration()
+    if (stage !== 'end' || !finishedResult.current) return
+    const { logs, score, session } = finishedResult.current
+    const timer = clock.setTimeout(() => finishRef.current(logs, score, session), 2600)
+    return () => clock.clearTimeout(timer)
   }, [stage])
 
   const isPractice = stage === 'practice' || stage === 'fadeOut'
@@ -216,9 +229,12 @@ export function GameScreen({
 
   return (
     <div
+      data-game-paused={paused}
+      data-game-a-stage={stage}
       className={`fill ${stage === 'fadeOut' ? 'game-fade-out' : stage === 'fadeIn' ? 'game-fade-in' : stage === 'practice' ? 'fade-in' : ''}`}
-      style={{ pointerEvents: isTransitioning ? 'none' : undefined }}
+      style={{ pointerEvents: isTransitioning && !paused ? 'none' : undefined }}
       onAnimationEnd={event => {
+        if (clock.paused) return
         // 자식 요소의 효과는 무시하고 화면 전체의 opacity 전환 완료를 기다린다.
         if (event.target !== event.currentTarget) return
         if (stage === 'fadeOut' && event.animationName === 'gameFadeOut') {
@@ -371,26 +387,18 @@ export function GameScreen({
               </p>
             )
           })}
-          {/* 부스에서 동작 인식이 안 되는 참가자가 있어도 진행이 막히지 않도록 하는 예비 수단 */}
-          <button className="pixel-btn secondary staff-skip" onClick={() => runnerRef.current?.skipCurrent()}>
-            이 구령 건너뛰기 ▸ (1)
-          </button>
         </>
       )}
 
-      {/* 진행요원용 중단 (참가자 이탈 등). 지금까지의 점수로 결과 화면으로 넘어간다 */}
-      {stage === 'main' && (
-        <button
-          className="pixel-btn secondary staff-skip"
-          style={abortArmed ? { opacity: 1, background: '#ffd0d0' } : undefined}
-          onClick={requestAbort}
-        >
-          {abortArmed ? '한 번 더 누르면 중단 (2)' : '중단하기 ▸ (2)'}
-        </button>
-      )}
+      {abortArmed && <p className="game-staff-notice" role="status">중단하려면 2를 한 번 더 눌러 주세요</p>}
 
       {/* 카메라 (중앙 하단, ON/OFF 토글 가능) */}
-      <CameraPanel style={{ left: 629, top: 708, width: 661, height: 372 }} />
+      <CameraPanel show={showCamera} hideToggle style={{ left: 629, top: 708, width: 661, height: 372 }} />
+      {stage !== 'end' && <GamePause paused={paused} onPause={pause} onResume={() => void resume()}>
+        <label><input type="checkbox" checked={showCamera} onChange={event => setShowCamera(event.target.checked)} />카메라 미리보기</label>
+        <p>왼쪽 Q / W · 오른쪽 O / P: 왼손 / 오른손</p>
+        <p>1: 연습 건너뛰기 · 2 두 번: 게임 중단</p>
+      </GamePause>}
     </div>
   )
 }

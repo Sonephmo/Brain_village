@@ -1,12 +1,14 @@
+import { GameTools } from '../components/GameTools'
 import { useEffect, useRef, useState } from 'react'
 import { FX, IMG, TUT_CHAR, frameSize } from '../assets'
 import { Sprite } from '../components/Sprite'
 import { GameBAvatar } from '../components/GameBAvatar'
 import { RabbitPortrait } from '../components/GameCRabbit'
+import { GameDShopper } from '../components/GameDShopper'
 import { GAME_C_IMAGES } from '../game/gameCAssets'
 import { poseEngine } from '../game/pose'
 import { cameraStream } from '../game/camera'
-import { playNarration, playSfx, stopNarration, type NarrationKey } from '../game/audio'
+import { runNarration, playSfx, type NarrationKey } from '../game/audio'
 import { playBgm } from '../game/bgm'
 
 import type { Avatar as AvatarId } from '../assets'
@@ -36,10 +38,11 @@ export function TutorialScreen({
   onDone,
   game = 'flag',
 }: {
-  game?: 'flag' | 'campfire' | 'ricecake'
+  game?: 'flag' | 'campfire' | 'ricecake' | 'shopping'
   onDone: (avatars: { p1: AvatarPick; p2: AvatarPick }) => void
 }) {
   const [step, setStep] = useState<Step>('position')
+  const [introReady, setIntroReady] = useState(false)
   const [ok, setOk] = useState<{ p1: boolean; p2: boolean }>({ p1: false, p2: false })
   const [calibProgress, setCalibProgress] = useState(0)
   const [picks, setPicks] = useState<{ p1: AvatarPick | null; p2: AvatarPick | null }>({ p1: null, p2: null })
@@ -57,7 +60,7 @@ export function TutorialScreen({
   // 연습은 GameScreen에 있으므로 여기서 정지하지 않고, GameScreen이 같은 트랙을
   // 다시 요청하면(같은 트랙이면 no-op) 끊기지 않고 계속 재생된다.
   useEffect(() => {
-    playBgm('tutorial')
+    playBgm('tutorial', 0.22)
   }, [])
 
   useEffect(() => {
@@ -73,19 +76,21 @@ export function TutorialScreen({
 
   // 단계 안내 나레이션 (사람 녹음). 화면 텍스트와 같은 문장이어야 한다.
   useEffect(() => {
-    if (step === 'rest' || (step === 'gender' && game === 'ricecake')) return
-    const key: Record<Exclude<Step, 'rest'>, NarrationKey> = {
+    setIntroReady(false)
+    holdRef.current = { p1: 0, p2: 0 }
+    const key: Record<Step, NarrationKey> = {
       position: 'facePosition',
+      rest: 'handPosition',
       calibration: 'stretch',
-      gender: 'genderSelect',
+      gender: game === 'ricecake' ? 'c_select' : 'genderSelect',
     }
-    playNarration(key[step])
-    return () => stopNarration()
+    return runNarration(key[step], () => setIntroReady(true))
   }, [step, game])
 
   // 100ms 폴링으로 단계 진행 체크 (판정용이 아니라 UI 진행용)
   useEffect(() => {
     const iv = window.setInterval(() => {
+      if (!introReady) return
       const now = performance.now()
 
       if (step === 'position') {
@@ -178,15 +183,15 @@ export function TutorialScreen({
       }
     }, 100)
     return () => window.clearInterval(iv)
-  }, [step, picks, game])
+  }, [step, picks, game, introReady])
 
   // 둘 다 선택 완료 → 연습으로
   useEffect(() => {
-    if (picks.p1 && picks.p2) {
+    if (introReady && picks.p1 && picks.p2) {
       const t = window.setTimeout(() => onDone({ p1: picks.p1!, p2: picks.p2! }), 900)
       return () => window.clearTimeout(t)
     }
-  }, [picks, onDone])
+  }, [picks, onDone, introReady])
 
   const pickByClick = (pid: 'p1' | 'p2', pick: AvatarPick) => {
     playSfx('whistleShort')
@@ -213,7 +218,7 @@ export function TutorialScreen({
   })
 
   return (
-    <div className={`fill fade-in ${game === 'ricecake' ? 'game-c-tutorial' : ''}`} data-tutorial-step={step}>
+    <div className={`fill fade-in ${game === 'ricecake' ? 'game-c-tutorial' : ''}`} data-tutorial-step={step} data-response-open={introReady}>
       <img src={game === 'ricecake' ? GAME_C_IMAGES.tutorial : IMG.tutBg} alt="" className="fill" style={{ objectFit: 'cover' }} />
       {game === 'ricecake' && step === 'gender' && <div className="fill" style={{ background: '#fff' }} />}
 
@@ -290,12 +295,13 @@ export function TutorialScreen({
             return (
               <div key={pid}>
                 {opts.map(o => {
-                  const size = game === 'ricecake' ? { width: 388, height: 654 } : frameSize(TUT_CHAR[o.id], { h: 470 })
+                  const size = game === 'ricecake' ? { width: 388, height: 654 }
+                    : game === 'shopping' ? { width: 260, height: 470 } : frameSize(TUT_CHAR[o.id], { h: 470 })
                   return (
                     <div key={o.id}>
                       <button
                         type="button"
-                        aria-label={`${pid}P ${game === 'ricecake' ? o.id === 'grandma' ? '분홍 토끼' : '갈색 토끼' : o.id === 'grandma' ? '할머니' : '할아버지'}`}
+                        aria-label={`${pid}P ${game === 'shopping' ? o.id === 'grandma' ? '여자 캐릭터' : '남자 캐릭터' : game === 'ricecake' ? o.id === 'grandma' ? '분홍 토끼' : '갈색 토끼' : o.id === 'grandma' ? '할머니' : '할아버지'}`}
                         onClick={() => pickByClick(key, o.id)}
                         style={{
                           border: 0, background: 'transparent', padding: 0,
@@ -307,7 +313,9 @@ export function TutorialScreen({
                           borderRadius: 12,
                         }}
                       >
-                        {game === 'ricecake'
+                        {game === 'shopping'
+                          ? <GameDShopper shopper={o.id === 'grandma' ? 'female' : 'male'} pose="profile" style={{ inset: 0, width: 260, height: 470 }} />
+                          : game === 'ricecake'
                           ? <RabbitPortrait rabbit={o.id === 'grandma' ? 'pink' : 'brown'} style={{ width: 388, height: 654 }} />
                           : game === 'campfire'
                           ? <GameBAvatar avatar={o.id} pose="tutorial" width={470 / .75} left={size.width / 2} top={0} />
@@ -336,12 +344,7 @@ export function TutorialScreen({
       )}
 
       {/* 진행요원용 스킵 (부스 상황 대비) */}
-      <button
-        className="pixel-btn secondary staff-skip"
-        onClick={skipStep}
-      >
-        건너뛰기 ▸ (1)
-      </button>
+      <GameTools><button className="pixel-btn secondary" onClick={skipStep}>단계 건너뛰기 (1)</button></GameTools>
     </div>
   )
 }

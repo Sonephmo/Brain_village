@@ -30,6 +30,7 @@ const DEVICE_ID = import.meta.env.VITE_DEVICE_ID ?? 'kiosk-unknown'
 export const CONTENT_ID = import.meta.env.VITE_CONTENT_ID ?? 'tmp-orak-flag'
 
 const QUEUE_KEY = 'bv.telemetry.queue.v1'
+const REJECTED_KEY = 'bv.telemetry.rejected.v1'
 const FLUSH_MS = 5000
 
 export const telemetryEnabled = Boolean(URL_BASE && KEY)
@@ -38,36 +39,69 @@ type Row = Record<string, unknown>
 type Pending =
   | { kind: 'insert'; table: string; rows: Row[] }
   | { kind: 'rpc'; fn: string; args: Row }
+type Queued = Pending & { queueId: string; attempts?: number }
+type SendResult = { state: 'sent' | 'retry' | 'rejected' | 'ambiguous'; reason?: string }
+
+const uuid = () =>
+  crypto.randomUUID?.() ??
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
+  })
 
 /* ── 큐 ─────────────────────────────────────── */
 
-function loadQueue(): Pending[] {
+let memoryQueue: Queued[] = []
+let memoryOnly = false
+
+function loadQueue(): Queued[] {
+  if (memoryOnly) return memoryQueue
   try {
-    return JSON.parse(localStorage.getItem(QUEUE_KEY) ?? '[]')
+    const saved = JSON.parse(localStorage.getItem(QUEUE_KEY) ?? '[]') as (Pending & { queueId?: string })[]
+    const q = saved.map(p => ({ ...p, queueId: p.queueId ?? uuid() }))
+    // 이전 버전의 재전송 대기 데이터에도 고정 ID를 붙여 그대로 이어받는다.
+    if (saved.some(p => !p.queueId)) saveQueue(q)
+    memoryQueue = q
+    return q
   } catch {
-    return []
+    return memoryQueue
   }
 }
 
-function saveQueue(q: Pending[]) {
+function saveQueue(q: Queued[]) {
+  memoryQueue = q
   try {
-    // 큐가 무한히 자라지 않게 뒤에서 200건만 유지한다
-    localStorage.setItem(QUEUE_KEY, JSON.stringify(q.slice(-200)))
+    // 오래된 세션 INSERT를 잘라 버리면 뒤의 수행/종료 기록도 복구할 수 없다.
+    localStorage.setItem(QUEUE_KEY, JSON.stringify(q))
   } catch {
-    /* 저장 공간이 없어도 게임은 계속된다 */
+    memoryOnly = true
+    console.warn('[telemetry] 저장 공간 부족 — 대기 기록을 메모리에 보존합니다. 탭을 닫기 전 연결을 복구해 주세요')
   }
 }
 
 function enqueue(p: Pending) {
   const q = loadQueue()
-  q.push(p)
+  q.push({ ...p, queueId: uuid() })
   saveQueue(q)
+}
+
+/** 서버가 거부한 원문도 보존한다. 불확실한 종료 하나가 이후 세션 전체를 막지 않게 한다. */
+function preserveRejected(p: Queued, reason: string): boolean {
+  try {
+    const rejected = JSON.parse(localStorage.getItem(REJECTED_KEY) ?? '[]') as unknown[]
+    rejected.push({ pending: p, reason, recordedAt: new Date().toISOString() })
+    localStorage.setItem(REJECTED_KEY, JSON.stringify(rejected))
+    console.warn('[telemetry] 서버 확인이 필요한 기록을 별도로 보존했습니다', reason)
+    return true
+  } catch {
+    return false // 별도 보존도 실패하면 원래 큐에서 제거하지 않는다.
+  }
 }
 
 /* ── 전송 ───────────────────────────────────── */
 
-async function send(p: Pending): Promise<boolean> {
-  if (!telemetryEnabled) return false
+async function send(p: Pending): Promise<SendResult> {
+  if (!telemetryEnabled) return { state: 'retry' }
   const path = p.kind === 'rpc' ? `rpc/${p.fn}` : p.table
   const body = p.kind === 'rpc' ? p.args : p.rows
   try {
@@ -77,41 +111,37 @@ async function send(p: Pending): Promise<boolean> {
         'Content-Type': 'application/json',
         apikey: KEY,
         Authorization: `Bearer ${KEY}`,
-        Prefer: 'return=minimal',
+        Prefer: p.kind === 'insert' ? 'resolution=ignore-duplicates,return=minimal' : 'return=minimal',
       },
       body: JSON.stringify(body),
     })
 
-    // 4xx 는 다시 보내도 같은 결과다(스키마 불일치 등). 큐에 쌓아두지 않고 버린다.
+    if ([408, 425, 429].includes(res.status)) return { state: 'retry' }
+    // 영구 거부는 버리지 않고 진단/복구용으로 따로 보존한다.
     if (res.status >= 400 && res.status < 500) {
-      console.warn('[telemetry] 거부됨', path, res.status, await res.text())
-      return true
+      return { state: 'rejected', reason: `${path} ${res.status}: ${await res.text()}` }
     }
-    if (!res.ok) return false
+    if (!res.ok) return { state: 'retry' }
 
     // close_session 은 성공 여부를 boolean 으로 돌려준다.
     // 200 이어도 false 면 «대상 행이 없었다»는 뜻 — 조용한 실패를 여기서 잡는다.
     if (p.kind === 'rpc') {
       const ok = await res.text()
       if (ok.trim() === 'false') {
-        console.warn('[telemetry] 세션을 닫지 못했습니다 — 대상 세션이 없거나 이미 닫혔습니다')
-        return true // 다시 보내도 소용없다
+        return { state: 'ambiguous', reason: 'close_session=false: 대상 없음 또는 이미 종료됨' }
       }
     }
-    return true
+    return { state: 'sent' }
   } catch {
-    return false
+    return { state: 'retry' }
   }
 }
 
-/** 실패하면 큐에 넣고 조용히 돌아온다. 절대 throw 하지 않는다. */
-async function push(p: Pending) {
+/** 전송 중인 항목까지 먼저 저장한 뒤, 단일 소비자가 순서대로 전송한다. */
+function push(p: Pending) {
   if (!telemetryEnabled) return
-  // 앞선 것이 아직 안 올라갔으면 순서를 지켜 뒤에 붙인다.
-  // 세션 INSERT 가 큐에 남아 있는데 종료 호출이 먼저 가면 «대상 없음»으로 유실된다.
-  if (loadQueue().length) return enqueue(p)
-  const ok = await send(p)
-  if (!ok) enqueue(p)
+  enqueue(p)
+  void flushQueue()
 }
 
 let flushing = false
@@ -120,12 +150,22 @@ export async function flushQueue() {
   if (flushing || !telemetryEnabled) return
   flushing = true
   try {
-    let q = loadQueue()
-    while (q.length) {
-      const ok = await send(q[0])
-      if (!ok) break // 아직 안 된다 — 다음 기회에
-      q = q.slice(1)
-      saveQueue(q)
+    while (true) {
+      const pending = loadQueue()[0]
+      if (!pending) break
+      const result = await send(pending)
+      if (result.state === 'retry') break
+      if (result.state === 'ambiguous') {
+        const attempts = (pending.attempts ?? 0) + 1
+        pending.attempts = attempts
+        if (attempts < 3) {
+          saveQueue(loadQueue().map(p => p.queueId === pending.queueId ? { ...p, attempts } : p))
+          break
+        }
+      }
+      if (result.state !== 'sent' && !preserveRejected(pending, result.reason ?? result.state)) break
+      // await 중 추가된 항목을 유지하고, 확인한 항목 하나만 ID로 제거한다.
+      saveQueue(loadQueue().filter(p => p.queueId !== pending.queueId))
     }
   } finally {
     flushing = false
@@ -143,24 +183,18 @@ if (telemetryEnabled) {
 
 /* ── 세션 ───────────────────────────────────── */
 
-const uuid = () =>
-  crypto.randomUUID?.() ??
-  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    const r = (Math.random() * 16) | 0
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
-  })
-
 let sessionId: string | null = null
 let startedAt = ''
 
 export function startSession(info: {
+  startedAt?: string
   gameKey: string
   appVersion: string
   inputMode: '포즈인식' | '키보드'
 }) {
   if (!telemetryEnabled) return null
   sessionId = uuid()
-  startedAt = new Date().toISOString()
+  startedAt = info.startedAt ?? new Date().toISOString()
 
   push({
     kind: 'insert',
@@ -224,8 +258,6 @@ export function logCommand(log: CommandLog, ctx: { contentId: string; index: num
 
   const unitId = `${sessionId}:${log.구령ID}`
   const isFake = log.구령.includes('?')
-  const now = new Date().toISOString()
-
   const row = (actor: 'P1' | 'P2') => {
     const j = log.판정[actor]
     return {
@@ -239,7 +271,7 @@ export function logCommand(log: CommandLog, ctx: { contentId: string; index: num
       level: log.레벨,
       stim_type: isFake ? 'stop' : 'go',
       expected_action: log.기대동작[actor],
-      onset_ts: now,
+      onset_ts: log.구령시작시각,
       rt_ms: j.반응속도ms,
       correct: j.정답,
       error_type: j.오류유형,

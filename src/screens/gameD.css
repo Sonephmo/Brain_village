@@ -1,0 +1,95 @@
+/* Game D uses the authored 1920×1080 stage and the selected temporary shoppers. */
+.shopping-game,.shopping-result { color:#30281e; background:#e6d5b8; }
+.shopping-art { position:relative;flex-shrink:0; }
+.shopping-background { position:absolute;left:-30px;top:4px;width:1980px;height:1080px;object-fit:cover;filter:blur(15px); }
+.shopping-lane { position:absolute;top:0;width:360px;height:1080px;overflow:hidden; }
+.shopping-conveyor { position:absolute;left:0;top:-28px;width:360px;height:1145px; }
+.shopping-belt { position:absolute;left:0;width:360px;height:300px; }
+.shopping-item { position:absolute;left:69px;top:0;width:226px;height:226px;will-change:transform; }
+.shopping-item>.shopping-art { width:226px;height:226px; }
+.shopping-item>span { position:absolute;left:-5px;right:-5px;bottom:0;background:rgba(25,30,37,.9);color:#fff;font-size:30px;text-align:center;line-height:1.3; }
+.shopping-pick-zone { position:absolute;left:52px;top:844px;width:259px;height:209px;border:20px solid #37ff83;border-radius:22px;pointer-events:none; }
+.shopping-instruction { position:absolute;left:388px;top:49px;width:400px;font-size:38px;line-height:1.45;color:#251b10;text-shadow:0 2px 0 #fff; }
+.shopping-instruction>span { display:block;margin-top:16px;font-size:30px; }
+.shopping-progress { position:absolute;left:1230px;top:54px;width:280px;font-size:42px;line-height:1.5;text-align:center;background:#fff8df;border:5px solid #6e4b25;padding:14px; }
+.shopping-list { position:absolute;left:775px;top:181px;width:370px;height:493px; }
+.shopping-list-art { position:absolute;width:100%;height:100%; }
+.shopping-list h2 { position:absolute;top:105px;left:20px;right:20px;text-align:center;font-size:30px; }
+.shopping-list ul { position:absolute;left:30px;right:25px;top:147px;bottom:22px;display:flex;flex-direction:column;justify-content:center;gap:12px;list-style:none; }
+.shopping-list li { position:relative;display:flex;align-items:center;gap:8px;min-height:43px;font-size:28px;line-height:1.15; }
+.shopping-list li>.shopping-art { width:45px;height:45px; }
+.shopping-list li>span:not(.shopping-complete) { flex:1; }
+.shopping-list li>strong { font-weight:normal;font-size:30px;white-space:nowrap; }
+.shopping-list ul.compact { gap:3px; }
+.shopping-list ul.compact li { font-size:26px; }
+.shopping-list ul.compact li>.shopping-art { width:40px;height:40px; }
+.shopping-list li.complete { color:#286334; }
+.shopping-complete { color:#176d32;font-size:28px;position:absolute;left:-22px; }
+.shopping-mark { position:absolute;width:224px;height:56px;left:45px;top:-5px;object-fit:cover;transform:rotate(-7.79deg);opacity:.8;pointer-events:none; }
+.shopping-basket { position:absolute;left:732px;top:715px;width:456px;height:317px; }
+.shopping-basket-items { position:absolute;left:796px;top:875px;width:328px;height:124px;display:flex;align-items:end;justify-content:center;overflow:hidden;gap:0; }
+.shopping-basket-items>.shopping-art { width:80px;height:80px;margin:0 -8px; }
+.shopping-person { position:absolute;top:593px;width:380px;height:459px; }
+.shopping-player-label { position:absolute;top:-55px;width:100%;text-align:center;font-size:36px;color:#fff;text-shadow:3px 3px #302114; }
+.shopping-tracking { position:absolute;top:-10px;width:100%;background:#fff0ce;text-align:center;font-size:28px;padding:8px; }
+.shopping-feedback { position:absolute;top:450px;width:340px;background:#fff0ce;border:4px solid #754827;text-align:center;padding:18px 8px;font-size:32px;line-height:1.3;z-index:5; }
+.shopping-feedback.good { background:#e5ffe5;border-color:#218842; }
+.shopping-fly { position:absolute;width:226px;height:226px;object-fit:contain;z-index:6;pointer-events:none;animation:shopping-to-basket 2s linear forwards;transform-origin:top left; }
+@keyframes shopping-to-basket {
+  0% { transform:translate(2px,25px) scale(1); }
+  13.83% { transform:translate(calc(var(--dx)*.084),-129px) scale(.95); }
+  22.06% { transform:translate(calc(var(--dx)*.177),-194px) scale(.9); }
+  31.29% { transform:translate(calc(var(--dx)*.332),-236px) scale(.83); }
+  41.7% { transform:translate(calc(var(--dx)*.565),-246px) scale(.75); }
+  50.74% { transform:translate(calc(var(--dx)*.735),-227px) scale(.65); }
+  60.98% { transform:translate(calc(var(--dx)*.888),-185px) scale(.55); }
+  70.39%,100% { transform:translate(var(--dx),var(--dy)) scale(.47); }
+}
+.shopping-overlay { position:absolute;inset:0;background:rgba(43,35,23,.46);display:flex;align-items:center;justify-content:center;z-index:20; }
+.shopping-dialog { width:1250px;max-height:1030px;background:#fff8e5;border:8px solid #634625;box-shadow:0 12px 0 #392b1c;padding:30px 50px;text-align:center; }
+.shopping-dialog h1,.shopping-result h1 { font-size:70px;line-height:1.2;margin:8px 0 20px; }
+.shopping-mode { display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin:24px 0;font-size:23px; }
+.shopping-mode .pixel-btn { font-size:23px;padding:9px 18px; }
+.shopping-actions { display:flex;gap:26px;justify-content:center;margin-top:22px; }
+.shopping-game .pixel-btn:disabled { opacity:.45;cursor:default; }
+.shopping-countdown { position:absolute;left:837px;top:417px;width:246px;height:246px;z-index:10;pointer-events:none; }
+.shopping-end { position:absolute;left:410px;right:410px;top:370px;background:#fff8df;border:7px solid #634625;text-align:center;padding:35px;font-size:60px;z-index:12; }
+.shopping-voice { position:absolute;left:340px;right:340px;bottom:12px;z-index:24;padding:12px 24px;border:3px solid #634625;background:#fff8ed;color:#352616;text-align:center;font-size:25px;line-height:1.45;pointer-events:none; }
+.shopping-voice strong { display:block;font-size:22px;color:#745d35;margin-bottom:4px; }
+.shopping-result-content { position:absolute;inset:32px 100px;background:#fff8e8ed;border:7px solid #654727;padding:24px 40px;text-align:center; }
+.shopping-result h1 { font-size:62px;margin:10px 0; }
+.shopping-result-summary { font-size:34px; }
+.shopping-eyebrow { font-size:26px;color:#765d3c; }
+.shopping-result-players { display:grid;grid-template-columns:1fr 1fr;gap:50px;margin:18px 60px 0; }
+.shopping-result-players section { position:relative;border:3px solid #c7ac79;padding:14px 22px 18px;min-height:355px; }
+.shopping-result-players section>div:first-child { position:absolute!important;left:20px;top:45px; }
+.shopping-result-players h2 { font-size:32px;text-align:right;margin-bottom:12px; }
+.shopping-result dl { margin-left:180px; }
+.shopping-result dl>div { display:flex;justify-content:space-between;font-size:27px;line-height:1.65;gap:16px; }
+.shopping-result dt { color:#665238; }
+.shopping-result-list { display:flex;justify-content:center;flex-wrap:wrap;gap:12px;list-style:none;margin:24px auto 0;max-width:1370px; }
+.shopping-result-list li { display:flex;gap:9px;align-items:center;font-size:25px;background:#f2e4be;padding:6px 12px; }
+.shopping-result-list .shopping-art { width:56px;height:56px; }
+@media(prefers-reduced-motion:reduce) { .shopping-fly { animation-duration:1ms; } }
+
+/* Rehearse inside the same authored game scene used by scored play. */
+.shopping-board { position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden; }
+.shopping-tutorial-background { object-fit:cover; }
+.shopping-tutorial { color:#111; }
+.shopping-tutorial-title { position:absolute;top:24px;left:230px;right:230px;text-align:center;font-size:80px;line-height:1.4;font-weight:400;color:#7e7e7e;text-shadow:0 4px 4px #0004; }
+.shopping-tutorial-guide { position:absolute;left:100px;right:100px;top:143px;text-align:center;font-size:48px;line-height:1.3; }
+.shopping-tutorial-guide>span { display:block;font-size:36px;margin-top:8px; }
+.shopping-tutorial-game { position:absolute;left:364.8px;top:273px;width:1190.4px;height:669.6px;overflow:hidden;outline:5px solid #9e8c66;border-radius:8px;box-shadow:0 8px 0 #6b583424; }
+.shopping-tutorial-game>.shopping-board { transform:scale(.62);transform-origin:top left; }
+.shopping-tutorial-next { position:absolute;left:720px;top:966px;width:480px;padding:12px 30px!important;font-size:38px!important; }
+.shopping-tutorial .voice-status { bottom:8px;padding:2px 14px;font-size:24px; }
+.shopping-practice-note { position:absolute;top:980px;left:100px;right:100px;text-align:center;font-size:32px;color:#38673d; }
+.shopping-rehearsal-progress { position:absolute;left:-25px;right:-25px;top:-180px;height:100px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:60px;color:#234a29;background:#fff8dfdd; }
+.shopping-board[data-practice="true"] .shopping-list ul { top:165px;bottom:110px; }
+.shopping-board[data-practice="true"] .shopping-list li { font-size:36px; }
+.shopping-board[data-practice="true"] .shopping-list li>.shopping-art { width:70px;height:70px; }
+.shopping-board[data-practice="true"] .shopping-list li>strong { font-size:42px; }
+.shopping-board[data-practice="true"] .shopping-feedback { top:270px; }
+.shopping-level-setting { display:flex;align-items:center;justify-content:center;gap:20px; }
+.shopping-level-setting select { font:26px 'NeoDunggeunmo',sans-serif;padding:8px;background:#fffdf4;border:2px solid #a49473; }
+.shopping-game[data-paused="true"] .shopping-board * { animation-play-state:paused!important; }

@@ -1,0 +1,75 @@
+{
+  "base": "5cc67a1",
+  "controls": [
+    "A: all 20 prescribed commands with stable correct input award 100 points",
+    "A: premature-reaction flag is scored as incorrect",
+    "B: tracked 2-second stillness succeeds, missing player fails the stillness cue",
+    "Referenced image manifests: 104 local asset files all exist"
+  ],
+  "reproduced": [
+    {
+      "id": "A-absence",
+      "observed": "Neither player tracked: fake command awards 5 points",
+      "log": {
+        "P1": {
+          "정답": true,
+          "오류유형": null,
+          "반응속도ms": null
+        },
+        "P2": {
+          "정답": true,
+          "오류유형": null,
+          "반응속도ms": null
+        }
+      }
+    },
+    {
+      "id": "A-absence-full-run",
+      "observed": "20 commands without either participant: 60/100"
+    },
+    {
+      "id": "A-hold",
+      "observed": "1ms raise immediately before deadline counts as correct, despite HOLD_MS=250",
+      "log": {
+        "정답": true,
+        "오류유형": null,
+        "반응속도ms": 1999
+      }
+    },
+    {
+      "id": "B-inactive-player",
+      "observed": "Right player raises and keeps both arms up during left-only cue: both marked correct",
+      "counts": [
+        2,
+        0
+      ]
+    },
+    {
+      "id": "motion-window-boundary",
+      "observed": "One continuous two-arm hold counted as 6 raises across 3 seconds",
+      "counts": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "telemetry-queue-race",
+      "observed": "A new session appended during an awaited retry is deleted unsent when flush saves its stale queue snapshot",
+      "sent": 1,
+      "remaining": 0
+    },
+    {
+      "id": "telemetry-close-order",
+      "observed": "close_session sent before pending session INSERT completes; false response discarded"
+    },
+    {
+      "id": "hand-start-after-stop",
+      "observed": "Pending start() re-enables gesture engine after stop() has disabled it"
+    },
+    {
+      "id": "pose-stuck-backup-key",
+      "observed": "Q remains raised after window blur: no blur reset registered for A/B backup keys"
+    }
+  ]
+}

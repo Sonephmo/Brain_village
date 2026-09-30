@@ -42,8 +42,8 @@ interface Acc {
   noseY: number[]
   repsLeft: number
   repsRight: number
-  wasLeft: boolean
-  wasRight: boolean
+  wasLeft: boolean | null
+  wasRight: boolean | null
 }
 
 const freshAcc = (): Acc => ({
@@ -70,10 +70,14 @@ class MotionSampler {
   private pending: MotionWindow[] = []
   private running = false
 
-  start() {
+  start(resuming = false) {
     if (this.running) return
     this.running = true
     this.acc = { 1: freshAcc(), 2: freshAcc() }
+    if (resuming) for (const pid of [1, 2] as PlayerId[]) {
+      this.acc[pid].wasLeft = null
+      this.acc[pid].wasRight = null
+    }
     this.windowStart = Date.now()
     this.timer = window.setInterval(() => this.sample(), SAMPLE_MS)
     this.windowTimer = window.setInterval(() => this.closeWindow(), WINDOW_MS)
@@ -93,17 +97,17 @@ class MotionSampler {
       const p = poseEngine.getPose(pid)
       const a = this.acc[pid]
       a.n += 1
-      if (!p.present) {
+      if (!p.present || p.handsTracked === false) {
         // 사람이 안 잡히면 그 표본은 «없음»이다. 0 으로 치환하면 평균이 거짓이 된다.
-        a.wasLeft = false
-        a.wasRight = false
+        a.wasLeft = null
+        a.wasRight = null
         continue
       }
       a.present += 1
 
       // 손을 든 «순간»만 센다 (false → true 전이). 들고 있는 동안 계속 세면 반복이 부풀려진다.
-      if (p.leftRaised && !a.wasLeft) a.repsLeft += 1
-      if (p.rightRaised && !a.wasRight) a.repsRight += 1
+      if (p.leftRaised && a.wasLeft === false) a.repsLeft += 1
+      if (p.rightRaised && a.wasRight === false) a.repsRight += 1
       a.wasLeft = p.leftRaised
       a.wasRight = p.rightRaised
 
@@ -124,11 +128,13 @@ class MotionSampler {
 
   private closeWindow() {
     const startedAt = new Date(this.windowStart).toISOString()
-    this.windowStart = Date.now()
+    const now = Date.now()
+    const elapsed = Math.max(1, now - this.windowStart)
+    this.windowStart = now
 
     for (const pid of [1, 2] as PlayerId[]) {
       const a = this.acc[pid]
-      this.acc[pid] = freshAcc()
+      this.acc[pid] = { ...freshAcc(), wasLeft: a.wasLeft, wasRight: a.wasRight }
       if (!a.n) continue
 
       const reps = a.repsLeft + a.repsRight
@@ -140,7 +146,7 @@ class MotionSampler {
         actor_code: pid === 1 ? 'P1' : 'P2',
         window_start: startedAt,
         rep_count: reps,
-        cadence_spm: reps * 60, // 창이 1초이므로 분당 환산은 ×60
+        cadence_spm: round(reps * 60_000 / elapsed, 3)!,
         lift_max: a.lifts.length ? round(Math.max(...a.lifts), 3) : null,
         lift_mean: round(mean(a.lifts), 3),
         active_ratio: round(a.present ? a.activeSamples / a.present : 0, 3)!,

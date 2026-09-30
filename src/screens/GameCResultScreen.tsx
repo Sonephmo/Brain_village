@@ -1,3 +1,4 @@
+import { GameTools } from '../components/GameTools'
 import { useEffect } from 'react'
 import { RESULT } from '../assets'
 import { Sprite } from '../components/Sprite'
@@ -42,6 +43,6 @@ export function GameCResultScreen({ result, rabbits, onReplay, onVillage, onTitl
     ] as const).map(([key, label, left, action]) => <button className="game-c-result-button" key={key} aria-label={label} onClick={action} style={{ left }}>
       <Sprite frame={RESULT[key]} style={{ inset: 0, width: '100%', height: '100%' }} />
     </button>)}
-    <button className="pixel-btn secondary staff-skip" style={{ top: 18, bottom: 'auto' }} onClick={() => downloadJson({ ...result, rabbits }, `youngcha_gameC_${Date.now()}.json`)}>결과 JSON</button>
+    <GameTools><button className="pixel-btn secondary" onClick={() => downloadJson({ ...result, rabbits }, `youngcha_gameC_${Date.now()}.json`)}>기록 내려받기</button></GameTools>
   </ResultReveal>
 }

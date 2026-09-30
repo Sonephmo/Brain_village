@@ -207,17 +207,6 @@ button.pixel-btn.secondary { background: #e8e8e8; box-shadow: 0 6px 0 #9a9a9a; }
   100% { transform: scale(1); opacity: 1; }
 }
 
-.staff-skip {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  opacity: 0.25;
-  font-size: 22px;
-  padding: 6px 14px;
-  z-index: 50;
-}
-.staff-skip:hover { opacity: 1; }
-
 .toast {
   position: absolute;
   left: 50%;
@@ -319,3 +308,4 @@ button.pixel-btn.secondary { background: #e8e8e8; box-shadow: 0 6px 0 #9a9a9a; }
 .game-b-result-status { margin-top: 4px; font-size: 24px; }
 .game-b-result-button { position: absolute; top: 922px; width: 320px; height: 101px; background: transparent; border: 0; transition: transform .14s, filter .14s; }
 .game-b-result-button:hover, .game-b-result-button:focus-visible { transform: scale(1.04); filter: brightness(1.12); }
+.voice-status { position: absolute; left: 590px; right: 590px; bottom: 28px; margin: 0; padding: 8px 18px; border-radius: 8px; background: rgba(255,255,255,.92); color: #233a2c; font-size: 30px; text-align: center; pointer-events: none; }

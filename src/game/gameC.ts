@@ -10,7 +10,7 @@ export interface RiceBody {
   right: boolean
   aboveHead: boolean
 }
-export type Grip = 'open' | 'closed' | 'unknown'
+export type Grip = 'open' | 'closed' | 'closing' | 'unknown'
 export interface RiceInput extends RiceBody { grip: Grip }
 export const GAME_C_RULES = {
   version: 'flow-2', responseMs: 3000, feedbackMs: 1000,
@@ -68,6 +68,12 @@ export class RiceActionTracker {
   private moved = false
   private started = 0
   constructor(readonly action: RiceAction, readonly openedAt: number) {}
+
+  resetPartial() {
+    this.phase = 'waiting'
+    this.candidate = ''
+    if (!this.complete && this.count === 0) this.reactionMs = null
+  }
 
   /** Emits once per accepted movement, including each of the three kneading cycles. */
   update(input: RiceInput, now: number): RiceFeedback | undefined {

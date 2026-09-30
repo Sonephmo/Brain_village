@@ -1,5 +1,4 @@
-import type { CommandLog, SessionLog } from './types'
-import { poseEngine } from './pose'
+import type { CommandLog, SessionLog, FlagSessionMeta } from './types'
 import { COMMANDS } from './commands'
 
 /** 로그·전송에 함께 쓰는 단일 버전 문자열. 두 군데 두면 반드시 갈라진다. */
@@ -14,11 +13,12 @@ export function buildSessionLog(
   logs: CommandLog[],
   score: number,
   avatars: { p1: 'grandma' | 'grandfa'; p2: 'grandma' | 'grandfa' },
+  session: FlagSessionMeta,
 ): SessionLog {
   return {
     게임: '오락가락 청기백기',
     버전: APP_VERSION,
-    시작시각: new Date().toISOString(),
+    시작시각: session.startedAt,
     아바타: {
       P1: avatars.p1 === 'grandma' ? '할머니' : '할아버지',
       P2: avatars.p2 === 'grandma' ? '할머니' : '할아버지',
@@ -27,7 +27,7 @@ export function buildSessionLog(
       R1: { P1: '청기', P2: '백기' },
       R2: { P1: '백기', P2: '청기' },
     },
-    입력모드: poseEngine.keyboardMode && !poseEngine.cameraOk ? '키보드' : '포즈인식',
+    입력모드: session.inputMode,
     완주: isCompleted(logs),
     진행구령수: logs.length,
     구령기록: logs,

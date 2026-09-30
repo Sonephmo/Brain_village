@@ -1,3 +1,6 @@
+import type { GameClock } from '../game/gameClock'
+import { useGamePause } from '../game/useGamePause'
+import { GamePause } from '../components/GamePause'
 import { useEffect, useRef, useState } from 'react'
 import { GameBAvatar } from '../components/GameBAvatar'
 import { Sprite } from '../components/Sprite'
@@ -6,11 +9,17 @@ import { FX, IMG, type Avatar as AvatarPick } from '../assets'
 import { FIRE_FRAMES, GAME_B_IMAGES, preloadGameB, fireFrameIndex, type FireKind } from '../game/gameBAssets'
 import { FanCounter, FIRE_GUIDES, GAME_B_EVENTS, GAME_B_RULES, taskSucceeded, playerTaskResults, type FireTask } from '../game/gameB'
 import { poseEngine } from '../game/pose'
-import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, beep, playCountdown, playSfx } from '../game/audio'
+import { COUNTDOWN_CUES, COUNTDOWN_TOTAL_MS, beep, playCountdown, playSfx, runNarration, stopCountdown, type NarrationKey } from '../game/audio'
 import { playBgm, stopBgm } from '../game/bgm'
 
 type Stage = 'loading' | 'practice' | 'success' | 'welcome' | 'fadeOut' | 'fadeIn' | 'countdown' | 'main' | 'end'
 type Avatars = { p1: AvatarPick; p2: AvatarPick }
+const PRACTICE_VOICE: Record<FireTask, NarrationKey> = {
+  stand: 'b_practice_both', left: 'b_practice_left', right: 'b_practice_right', big: 'b_stop',
+}
+const EVENT_VOICE: Record<FireTask, NarrationKey> = {
+  stand: 'b_cue_both', left: 'b_cue_left', right: 'b_cue_right', big: 'b_stop',
+}
 export interface GameBResult {
   score: number
   completed: boolean
@@ -19,13 +28,13 @@ export interface GameBResult {
   rulesVersion: 'draft-1'
 }
 
-export function Fire({ kind, tutorial = false, opening = false }: { kind: FireKind; tutorial?: boolean; opening?: boolean }) {
+export function Fire({ kind, tutorial = false, opening = false, clock }: { kind: FireKind; tutorial?: boolean; opening?: boolean; clock?: GameClock }) {
   const [frame, setFrame] = useState(0)
   useEffect(() => {
     setFrame(0)
-    const timer = window.setInterval(() => setFrame(n => n + 1), GAME_B_RULES.frameMs)
-    return () => window.clearInterval(timer)
-  }, [kind])
+    const timer = (clock ?? window).setInterval(() => setFrame(n => n + 1), GAME_B_RULES.frameMs)
+    return () => (clock ?? window).clearInterval(timer)
+  }, [kind, clock])
   const blue = kind === 'big'
   const box = tutorial
     ? blue ? { left: 510, top: 280, width: 900, height: 675 } : { left: 430, top: 152.5, width: 1060, height: 795 }
@@ -46,6 +55,7 @@ export function GameBScreen({ avatars, skipPractice = false, onFinish, onExit }:
   onExit: () => void
 }) {
   const [stage, setStage] = useState<Stage>('loading')
+  const { clock, paused, pause, resume } = useGamePause(stage !== 'loading' && stage !== 'end')
   const [loadError, setLoadError] = useState(false)
   const [loadAttempt, setLoadAttempt] = useState(0)
   const [practiceIndex, setPracticeIndex] = useState(0)
@@ -55,6 +65,7 @@ export function GameBScreen({ avatars, skipPractice = false, onFinish, onExit }:
   const [score, setScore] = useState(0)
   const [remaining, setRemaining] = useState<number>(GAME_B_RULES.durationMs)
   const [countIdx, setCountIdx] = useState(-1)
+  const [responseOpen, setResponseOpen] = useState(false)
   const [abortArmed, setAbortArmed] = useState(false)
   const abortTimer = useRef(0)
   const finish = useRef(onFinish)
@@ -72,14 +83,14 @@ export function GameBScreen({ avatars, skipPractice = false, onFinish, onExit }:
   }, [skipPractice, loadAttempt])
 
   useEffect(() => {
-    if (tutorial) playBgm('tutorial')
+    if (tutorial) playBgm('tutorial', 0.22)
     else stopBgm()
   }, [tutorial])
-  useEffect(() => () => { stopBgm(); window.clearTimeout(abortTimer.current) }, [])
+  useEffect(() => () => { stopBgm(); clock.clearTimeout(abortTimer.current) }, [])
 
   useEffect(() => {
-    const timer = window.setInterval(() => setLive([poseEngine.getPose(1), poseEngine.getPose(2)]), 100)
-    return () => window.clearInterval(timer)
+    const timer = clock.setInterval(() => setLive([poseEngine.getPose(1), poseEngine.getPose(2)]), 100)
+    return () => clock.clearInterval(timer)
   }, [])
 
   const sample = (counters: [FanCounter, FanCounter], now: number) => {
@@ -94,56 +105,77 @@ export function GameBScreen({ avatars, skipPractice = false, onFinish, onExit }:
   useEffect(() => {
     if (stage !== 'practice') return
     const counters: [FanCounter, FanCounter] = [new FanCounter(), new FanCounter()]
+    const removeResume = clock.onResume(() => counters.forEach(counter => counter.resetPartial()))
+    let ready = false
+    setResponseOpen(false)
+    const cancelVoice = runNarration(PRACTICE_VOICE[task], () => { ready = true; setResponseOpen(true) })
     setWaves([0, 0])
-    const timer = window.setInterval(() => {
-      const now = performance.now()
+    const timer = clock.setInterval(() => {
+      if (!ready) return
+      const now = clock.now()
       sample(counters, now)
       // 연습 중 반대 참가자가 흔들었어도 다시 멈추면 재시도할 수 있다.
-      if (task === 'left' && counters[1].count > 0) counters[1] = new FanCounter()
-      if (task === 'right' && counters[0].count > 0) counters[0] = new FanCounter()
+      if (task === 'left' && counters[1].restViolated) counters[1] = new FanCounter()
+      if (task === 'right' && counters[0].restViolated) counters[0] = new FanCounter()
       if (taskSucceeded(task, counters, now, GAME_B_RULES.practiceWaves)) {
-        window.clearInterval(timer)
+        clock.clearInterval(timer)
         playSfx('whistleShort')
         setStage('success')
       }
     }, 50)
-    return () => window.clearInterval(timer)
+    return () => { removeResume(); clock.clearInterval(timer); cancelVoice() }
   }, [stage, practiceIndex])
 
   useEffect(() => {
     if (stage !== 'success' && stage !== 'welcome') return
-    const timer = window.setTimeout(() => {
-      if (stage === 'welcome') setStage('fadeOut')
-      else if (practiceIndex === 3) setStage('welcome')
+    if (stage === 'welcome') return runNarration('b_start', () => setStage('fadeOut'), 2200)
+    const timer = clock.setTimeout(() => {
+      if (practiceIndex === 3) setStage('welcome')
       else { setPracticeIndex(i => i + 1); setStage('practice') }
-    }, stage === 'welcome' ? 2200 : 1000)
-    return () => window.clearTimeout(timer)
+    }, 1000)
+    return () => clock.clearTimeout(timer)
   }, [stage, practiceIndex])
 
   useEffect(() => {
     if (stage !== 'countdown') return
     const sound = playCountdown()
-    const timers = COUNTDOWN_CUES.map((cue, i) => window.setTimeout(() => {
+    const timers = COUNTDOWN_CUES.map((cue, i) => clock.setTimeout(() => {
       setCountIdx(i)
       if (!sound) beep(i === 3 ? 1320 : 880, 150)
     }, cue))
-    timers.push(window.setTimeout(() => { setCountIdx(-1); setStage('main') }, COUNTDOWN_TOTAL_MS))
-    return () => timers.forEach(window.clearTimeout)
+    timers.push(clock.setTimeout(() => { setCountIdx(-1); setStage('main') }, COUNTDOWN_TOTAL_MS))
+    return () => { timers.forEach(clock.clearTimeout); stopCountdown() }
   }, [stage])
 
   useEffect(() => {
     if (stage !== 'main') return
-    const started = performance.now()
     result.current = { score: 0, completed: false, events: [], startedAt: new Date().toISOString(), rulesVersion: 'draft-1' }
+    const removeResume = clock.onResume(() => counters.forEach(counter => counter.resetPartial()))
     let index = 0
+    let openedAt: number | null = null
+    let cancelVoice = () => {}
     let counters: [FanCounter, FanCounter] = [new FanCounter(), new FanCounter()]
+    const announce = () => {
+      cancelVoice()
+      openedAt = null
+      counters = [new FanCounter(), new FanCounter()]
+      setEventIndex(index)
+      setWaves([0, 0])
+      setResponseOpen(false)
+      cancelVoice = runNarration(EVENT_VOICE[GAME_B_EVENTS[index]], () => {
+        openedAt = clock.now()
+        setResponseOpen(true)
+      })
+    }
     setEventIndex(0)
     setWaves([0, 0])
-    const timer = window.setInterval(() => {
-      const now = performance.now()
-      const elapsed = now - started
-      setRemaining(Math.max(0, GAME_B_RULES.durationMs - elapsed))
-      if (elapsed >= (index + 1) * GAME_B_RULES.eventMs) {
+    announce()
+    const timer = clock.setInterval(() => {
+      if (openedAt === null) return
+      const now = clock.now()
+      const elapsed = now - openedAt
+      setRemaining(Math.max(0, GAME_B_RULES.durationMs - index * GAME_B_RULES.eventMs - Math.min(elapsed, GAME_B_RULES.eventMs)))
+      if (elapsed >= GAME_B_RULES.eventMs) {
         const correct = taskSucceeded(GAME_B_EVENTS[index], counters, now, GAME_B_RULES.eventWaves)
         result.current.events.push({ task: GAME_B_EVENTS[index], correct, players: playerTaskResults(GAME_B_EVENTS[index], counters, now, GAME_B_RULES.eventWaves), waves: [counters[0].count, counters[1].count] })
         if (correct) { result.current.score += GAME_B_RULES.pointsPerEvent; playSfx('whistleShort') }
@@ -151,34 +183,35 @@ export function GameBScreen({ avatars, skipPractice = false, onFinish, onExit }:
         index++
         if (index >= GAME_B_EVENTS.length) {
           result.current.completed = true
-          window.clearInterval(timer)
+          clock.clearInterval(timer)
           setStage('end')
           return
         }
-        setEventIndex(index)
-        counters = [new FanCounter(), new FanCounter()]
+        announce()
+        return
       }
       sample(counters, now)
     }, 50)
-    return () => window.clearInterval(timer)
+    return () => { removeResume(); clock.clearInterval(timer); cancelVoice() }
   }, [stage])
 
   useEffect(() => {
     if (stage !== 'end') return
     playSfx('whistleLong')
-    const timer = window.setTimeout(() => finish.current(result.current), 1800)
-    return () => window.clearTimeout(timer)
+    const timer = clock.setTimeout(() => finish.current(result.current), 1800)
+    return () => clock.clearTimeout(timer)
   }, [stage])
 
   const abort = () => {
+    if (clock.paused) return
     if (stage !== 'main') return
-    if (abortArmed) { window.clearTimeout(abortTimer.current); setStage('end') }
-    else { setAbortArmed(true); abortTimer.current = window.setTimeout(() => setAbortArmed(false), 4000) }
+    if (abortArmed) { clock.clearTimeout(abortTimer.current); setStage('end') }
+    else { setAbortArmed(true); abortTimer.current = clock.setTimeout(() => setAbortArmed(false), 4000) }
   }
-  const skip = () => { if (stage === 'practice') setStage('success') }
+  const skip = () => { if (!clock.paused && stage === 'practice') setStage('success') }
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
-      if (e.repeat) return
+      if (clock.paused || e.repeat) return
       if (e.key === '1') skip()
       if (e.key === '2') abort()
     }
@@ -195,8 +228,8 @@ export function GameBScreen({ avatars, skipPractice = false, onFinish, onExit }:
   const fire: FireKind = stage === 'fadeIn' || stage === 'countdown' ? 'start' : task
   const guide = FIRE_GUIDES[task]
   const anim = stage === 'fadeOut' ? 'game-fade-out' : stage === 'fadeIn' ? 'game-fade-in' : ''
-  return <div className={`fill game-b ${anim}`} data-game-b-stage={stage} onAnimationEnd={e => {
-    if (e.target !== e.currentTarget) return
+  return <div className={`fill game-b ${anim}`} data-game-paused={paused} data-game-b-stage={stage} data-event-index={eventIndex} data-response-open={responseOpen} onAnimationEnd={e => {
+    if (clock.paused || e.target !== e.currentTarget) return
     if (stage === 'fadeOut' && e.animationName === 'gameFadeOut') setStage('fadeIn')
     if (stage === 'fadeIn' && e.animationName === 'gameFadeIn') setStage('countdown')
   }}>
@@ -207,12 +240,12 @@ export function GameBScreen({ avatars, skipPractice = false, onFinish, onExit }:
     </> : <>
       <GameTimer value={Math.ceil(remaining / 1000)} />
       <p className="game-b-score">{String(score).padStart(2, '0')}</p>
-      {stage === 'main' && <p className="game-b-event">{task === 'big' ? guide.guide : task === 'stand' ? '함께 부채질해요!' : guide.title}</p>}
+      {stage === 'main' && <p className="game-b-event">{task === 'big' ? guide.guide : task === 'stand' ? '함께 양손을 위아래로 2번 흔들어주세요!' : `${task === 'left' ? '왼쪽' : '오른쪽'} 사람만 2번 흔들고, 다른 사람은 멈춰주세요!`}</p>}
     </>}
     <div style={{ position: 'absolute', ...(tutorial ? { left: 627, top: 681, width: 705, height: 441 } : { left: 560, top: 637, width: 800, height: 500 }), overflow: 'hidden' }}>
       <img src={GAME_B_IMAGES.wood} alt="" style={{ position: 'absolute', width: '100%', height: '127.79%', top: '-13.99%' }} />
     </div>
-    <Fire key={fire} kind={fire} tutorial={tutorial} opening={fire === 'start'} />
+    <Fire clock={clock} key={fire} kind={fire} tutorial={tutorial} opening={fire === 'start'} />
     {([0, 1] as const).map(i => <GameBAvatar key={i} avatar={i === 0 ? avatars.p1 : avatars.p2}
       pose={stage === 'success' || welcome ? 'tutorial' : task === 'big' ? 'stand' : live[i].leftRaised && live[i].rightRaised ? 'up' : 'down'}
       width={tutorial ? 419 : 356} left={tutorial ? i === 0 ? 274 : 1646 : i === 0 ? 299.5 : 1716} top={tutorial ? 712 : 750} />)}
@@ -222,7 +255,8 @@ export function GameBScreen({ avatars, skipPractice = false, onFinish, onExit }:
     </div>)}
     {stage === 'countdown' && countIdx >= 0 && <img key={countIdx} className="pop" src={[IMG.count3, IMG.count2, IMG.count1, IMG.countStart][countIdx]} alt={['3', '2', '1', '시작'][countIdx]} style={{ position: 'absolute', left: 837, top: 417, width: 246, height: 246 }} />}
     {stage === 'end' && <img src={IMG.end} className="pop" alt="끝!" style={{ position: 'absolute', left: 629, top: 301, width: 777, height: 583 }} />}
-    {stage === 'practice' && <button className="pixel-btn secondary staff-skip" onClick={skip}>건너뛰기 ▸ (1)</button>}
-    {stage === 'main' && <button className="pixel-btn secondary staff-skip" onClick={abort}>{abortArmed ? '한 번 더 누르면 중단 (2)' : '중단하기 ▸ (2)'}</button>}
+    {(stage === 'practice' || stage === 'main') && <p className="voice-status" role="status">{responseOpen ? '지금 동작해 주세요' : '안내를 듣고 준비해 주세요'}</p>}
+    {abortArmed && <p className="game-staff-notice" role="status">중단하려면 2를 한 번 더 눌러 주세요</p>}
+  {stage !== 'end' && <GamePause paused={paused} onPause={pause} onResume={() => void resume()} />}
   </div>
 }

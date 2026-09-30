@@ -12,6 +12,7 @@ const FILE: Record<BgmName, string> = {
   report: '리포트페이지',
 }
 
+let pausedByGame = false
 let el: HTMLAudioElement | null = null
 let current: BgmName | null = null
 let pendingGestureHook: (() => void) | null = null
@@ -29,7 +30,7 @@ export function playBgm(name: BgmName, volume = 0.45) {
   // 개발 모드의 StrictMode 이중 호출로 Audio가 두 개 생기는 것도 막는다.
   if (current === name && el) {
     el.volume = volume
-    if (el.paused) void el.play().catch(() => undefined)
+    if (el.paused && !pausedByGame) void el.play().catch(() => undefined)
     return
   }
   stopBgm()
@@ -39,7 +40,8 @@ export function playBgm(name: BgmName, volume = 0.45) {
   el = a
   current = name
 
-  const tryPlay = () => a.play().catch(() => undefined)
+  const tryPlay = () => pausedByGame ? Promise.resolve() : a.play().catch(() => undefined)
+  if (pausedByGame) return
   void a.play().catch(() => {
     // 자동재생 거부 → 첫 사용자 입력에 재시도
     const hook = () => {
@@ -75,4 +77,11 @@ export function currentBgm(): { track: BgmName | null; playing: boolean } {
 // 개발 중 화면별 BGM 배선을 콘솔에서 바로 확인하기 위한 훅 (프로덕션 빌드에는 포함되지 않는다)
 if (import.meta.env.DEV) {
   ;(window as unknown as { __bgm?: unknown }).__bgm = { currentBgm, playBgm, stopBgm }
+}
+
+/** Pause in place so tutorial music continues from the same position. */
+export function setBgmPaused(paused: boolean) {
+  pausedByGame = paused
+  if (paused) { clearGestureHook(); el?.pause() }
+  else if (el?.paused) void el.play().catch(() => undefined)
 }

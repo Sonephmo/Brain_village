@@ -1,0 +1,1372 @@
+{
+  "checkedAt": "2026-09-30T01:59:40.792Z",
+  "references": 202,
+  "frames": 59,
+  "counts": {
+    ".mp3": 50,
+    ".png": 140,
+    ".m4a": 2,
+    ".jpg": 1,
+    ".woff2": 1,
+    ".task": 2,
+    ".js": 3,
+    ".wasm": 3
+  },
+  "issues": [],
+  "warnings": [
+    {
+      "file": "assets/game-b/result-background.png",
+      "problem": "JPEG data uses a .png filename; browser decode checked separately"
+    },
+    {
+      "file": "assets/game_bg.png",
+      "problem": "JPEG data uses a .png filename; browser decode checked separately"
+    }
+  ],
+  "unusedCandidates": [
+    "assets/BGM/오프닝.mp3",
+    "assets/Cursor_Idle.png",
+    "assets/Cursor_Selecting.png",
+    "assets/game-b/face_down.png",
+    "assets/game-b/face_stand.png",
+    "assets/game-b/face_up.png",
+    "assets/game-d/apple.png",
+    "assets/game-d/banana.png",
+    "assets/game-d/basket-back.png",
+    "assets/game-d/basket-front.png",
+    "assets/game-d/beef.png",
+    "assets/game-d/belt.png",
+    "assets/game-d/book.png",
+    "assets/game-d/cabbage.png",
+    "assets/game-d/carrot.png",
+    "assets/game-d/characters/female-closed.png",
+    "assets/game-d/characters/female-closing.png",
+    "assets/game-d/characters/female-jamjam-sheet-v5.png",
+    "assets/game-d/characters/female-open.png",
+    "assets/game-d/characters/female-profile-v4.png",
+    "assets/game-d/characters/female-profile.png",
+    "assets/game-d/characters/male-closed.png",
+    "assets/game-d/characters/male-closing.png",
+    "assets/game-d/characters/male-jamjam-sheet-v5.png",
+    "assets/game-d/characters/male-open.png",
+    "assets/game-d/characters/male-profile-v3.png",
+    "assets/game-d/characters/male-profile-v4.png",
+    "assets/game-d/characters/male-profile.png",
+    "assets/game-d/characters/portraits-v5.png",
+    "assets/game-d/chicken.png",
+    "assets/game-d/conveyor.png",
+    "assets/game-d/cookie.png",
+    "assets/game-d/eraser.png",
+    "assets/game-d/fish.png",
+    "assets/game-d/grape.png",
+    "assets/game-d/juice.png",
+    "assets/game-d/kleenex.png",
+    "assets/game-d/list.png",
+    "assets/game-d/milk.png",
+    "assets/game-d/note.png",
+    "assets/game-d/onion.png",
+    "assets/game-d/orange.png",
+    "assets/game-d/pencil.png",
+    "assets/game-d/pork.png",
+    "assets/game-d/scissors.png",
+    "assets/game-d/shampoo.png",
+    "assets/game-d/shrimp.png",
+    "assets/game-d/snack.png",
+    "assets/game-d/squid.png",
+    "assets/game-d/tissue.png",
+    "assets/game-d/tomato.png",
+    "assets/game-d/towel.png",
+    "assets/game-d/wettissue.png",
+    "assets/map_bg.png",
+    "assets/Sound/브레인빌리지v_03_튜토리얼_02가람이/07_두_사람_모두_한손을_들어주세요.mp3",
+    "assets/title_logo.png"
+  ],
+  "inventory": [
+    {
+      "file": "assets/BGM/Title.mp3",
+      "bytes": 2440070,
+      "sha256": "9f8b5c705eec8ecbd99f1d6b3848305753260e1793e243e52dba6dcf75827961"
+    },
+    {
+      "file": "assets/BGM/리포트페이지.mp3",
+      "bytes": 2230656,
+      "sha256": "0578add8eb731fb254623cc622f142cee73698784348f5478d7ca20f92ef2a03"
+    },
+    {
+      "file": "assets/BGM/튜토리얼.mp3",
+      "bytes": 1314886,
+      "sha256": "b38dd8867ef3827464ff05aba33140d99c625c32f388c85bb256e78017658927"
+    },
+    {
+      "file": "assets/Cursor_Idle_cur.png",
+      "bytes": 12462,
+      "sha256": "b17fd42e31f31b8a7c80fa352e52a419a3bcc1ea3b9529c10afcae9d9344c0eb",
+      "width": 81,
+      "height": 128
+    },
+    {
+      "file": "assets/Cursor_Selecting_cur.png",
+      "bytes": 12107,
+      "sha256": "d67a34e590b0bb7d57e7a793df79bff4ef544ecd9daa2e5209b766f013dd644c",
+      "width": 81,
+      "height": 128
+    },
+    {
+      "file": "assets/Sound/01_청기.mp3",
+      "bytes": 17412,
+      "sha256": "41f1df54f7745ae547c167323512cd18c0fcc541ea30cf0d42c5f29d25e003c4"
+    },
+    {
+      "file": "assets/Sound/02_백기.mp3",
+      "bytes": 18948,
+      "sha256": "d1b1ecdba79ce5743c8f8ea2fec73f27a18c71928a50ae1016009d69353e979a"
+    },
+    {
+      "file": "assets/Sound/03_들어.mp3",
+      "bytes": 14724,
+      "sha256": "7eb75e1d0c367bf3826905f4e5291c9db923b75feffa93d95819dda3a3f3101b"
+    },
+    {
+      "file": "assets/Sound/04_올리지_말고.mp3",
+      "bytes": 23940,
+      "sha256": "fb38ef3d3aa75ab24e5dc1d5cb808d0ca443f1bcd78f1bd865a72ac2f2f629b2"
+    },
+    {
+      "file": "assets/Sound/05_양손.mp3",
+      "bytes": 18948,
+      "sha256": "6d0b45466ee6a46ef52327ac321235e740f72531e7fbddbe35f7fb451bce4fb4"
+    },
+    {
+      "file": "assets/Sound/06_왼손.mp3",
+      "bytes": 18948,
+      "sha256": "f021b1efa20af23727ba6fea00d8e02eb954927c5d4125bde6b214a344cf4cf0"
+    },
+    {
+      "file": "assets/Sound/07_오른손.mp3",
+      "bytes": 20484,
+      "sha256": "902f7b4d1c6658359c6b9e17f8941971423fa73fa824ec92b8644a2266ff405b"
+    },
+    {
+      "file": "assets/Sound/CountDown.mp3",
+      "bytes": 128640,
+      "sha256": "37e730b274e14affc084a3263d35515d59de3b97747264fb15c889b82d538495"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/a_practice_left.mp3",
+      "bytes": 40092,
+      "sha256": "e045a3b8e84bbbf22927b911304464f4d89772ae294ebaeb7bb7689778b07320"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/b_cue_both.mp3",
+      "bytes": 40860,
+      "sha256": "64d816b5384b35190754bcf60a54289f38cdd175033335096e88e7de2d8b53f7"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/b_cue_left.mp3",
+      "bytes": 45852,
+      "sha256": "ff767309ad3cd1c073973d1cd70103e24b91aca2eebfde3f84e8ce3b40bcd9aa"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/b_cue_right.mp3",
+      "bytes": 45852,
+      "sha256": "0d1d26086782aa5ff8db7e89c1423471f04041fcac1dfec709380c0f74faa0b1"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/b_practice_both.mp3",
+      "bytes": 59292,
+      "sha256": "766942ebd87d8b8bbb5a1bbb09259b13d284661a79cfdf415c7c4879d13d33a0"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/b_practice_left.mp3",
+      "bytes": 101532,
+      "sha256": "203dfc16ea1f8e67ed252730da2a664df9005361376abe2fa8a74ae4a4961a9c"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/b_practice_right.mp3",
+      "bytes": 104604,
+      "sha256": "9b5f78bb770241102f3f285cf61f5483c439152c7e4aa607eea024db4195c7f6"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/b_start.mp3",
+      "bytes": 67356,
+      "sha256": "b2333f80ffabe0d86ccef6c276568bf435de8a75648a0dd7ed5ef88fb93ffa04"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/b_stop.mp3",
+      "bytes": 41628,
+      "sha256": "652c6414b2655aa1f1a964cb0212789afcc793b9dccc4d6c2f177a747af69e26"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/c_cue_left.mp3",
+      "bytes": 38172,
+      "sha256": "2144afbbacda61de5606a7e053ded2c16f03cbb9eacbfb0cbebab32897d9ddeb"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/c_cue_pound.mp3",
+      "bytes": 31644,
+      "sha256": "8aa43abb8eb9c107b5ce860111b1e59d3a42c4dfc349626d12263bb14720b04a"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/c_cue_right.mp3",
+      "bytes": 38940,
+      "sha256": "96ae5e6c1d08ed370bda3a6ea841701edaf81ff24d2f019f4c7723d94746b29c"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/c_cue_squeeze.mp3",
+      "bytes": 37020,
+      "sha256": "b34d4fcbcba88f0a8ec903f94ed51af7d550f6e115dadb5a2488f64e63e42814"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/c_finish.mp3",
+      "bytes": 48924,
+      "sha256": "8697ff3849d021f2dfc2e7ba8f18c08a669794ede43de559bd8702650330eab3"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/c_practice_left.mp3",
+      "bytes": 42012,
+      "sha256": "2c6e0b47251242c3ad51c64895589b067099898c0c42661fe8502cebeb3d477f"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/c_practice_pound.mp3",
+      "bytes": 53532,
+      "sha256": "d26776e5371c12e3cdc85c6468439d4b934cee618e7386353dfd32a79f9bd225"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/c_practice_right.mp3",
+      "bytes": 43932,
+      "sha256": "b7f5ccc795e7a3f093ff654c1d98640cb5d37b943305b8235bfca6eba84d4b1d"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/c_practice_squeeze.mp3",
+      "bytes": 64668,
+      "sha256": "c9ae7f610b65b6726b0d883f31d84253593864fd3f0fc1a733dedb852a63e529"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/c_select.mp3",
+      "bytes": 38940,
+      "sha256": "1d33101615959baab50fcd9ae953a611e27431c9d1537b00acb8cbfc47039bc9"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/c_swap.mp3",
+      "bytes": 42012,
+      "sha256": "8c5fafe07a74cd2370ba856174c81aaad7f96e2031f94910edb00cab69973326"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/common_result.mp3",
+      "bytes": 68124,
+      "sha256": "26964949be75b1250e53e422614df23c246663c513b8340530190af89734f1a6"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/d_complete.mp3",
+      "bytes": 42018,
+      "sha256": "0055cefffac73dec1de1e76638f523c4a74cb86f0b7c3c891a06b5cc35926970"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/d_correct.mp3",
+      "bytes": 26658,
+      "sha256": "d4ba8cc45ac5d5894001c754b19be1cf324e689eeb0378f6af672b2de8d5ff3d"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/d_empty.mp3",
+      "bytes": 45090,
+      "sha256": "0c5da231fad4f2001fad9a3029660f64c0e8bf3da6acc83d743538c56efd6019"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/d_practice.mp3",
+      "bytes": 118050,
+      "sha256": "f4aaa871d8cc699c18b6f86ada039e2674f0c39c45ac2a00c0184fb9eb896dd1"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/d_resume.mp3",
+      "bytes": 82338,
+      "sha256": "389cfeebdd14be409477f32ade33333785ba89aaa1342b51e2655a759bfa02c4"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/d_rules.mp3",
+      "bytes": 123426,
+      "sha256": "84e61b7e4cac5e664a9a67b8b2afcc33d768106f61d285d048a6e514c83bf53a"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/d_start.mp3",
+      "bytes": 63138,
+      "sha256": "f4b041668e973d86ff9ddc1a7580f6ee0b255e2c645fd7cd0ffa0f5ac593c2f2"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/d_success.mp3",
+      "bytes": 66594,
+      "sha256": "000ab1d97063f714f149cb39a93b9ca25e6335fc6fc9f387fa1bf8c40c91fb94"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/d_timeout.mp3",
+      "bytes": 61218,
+      "sha256": "994a9220898407afbcf6cebcccbd0435dbf52acd3b52bfa61b6fe03783b1ffcd"
+    },
+    {
+      "file": "assets/Sound/garam-guidance/d_wrong.mp3",
+      "bytes": 70434,
+      "sha256": "d6e04de3e4ecde8efe451b2f427b243777d5fdec7072a0a8df77b6dca99b7e46"
+    },
+    {
+      "file": "assets/Sound/마무리휘슬.m4a",
+      "bytes": 47524,
+      "sha256": "77b7445fb89148aae25153f81562ec4a573046bea646e3016c4fd592c5829e0e"
+    },
+    {
+      "file": "assets/Sound/브레인빌리지v_03_튜토리얼_02가람이/01_얼굴을_원_안에_위치시켜주세요.mp3",
+      "bytes": 40462,
+      "sha256": "6cc4151197d5ad2002f30f979e38d948ca253261974fec7bf6ce4628144c23a6"
+    },
+    {
+      "file": "assets/Sound/브레인빌리지v_03_튜토리얼_02가람이/02_양손을_원_안에_위치시켜_주세요.mp3",
+      "bytes": 41230,
+      "sha256": "d1ad4e12a7e7f4be914909a983bf26a0089c1f9cd515af8b81ab6594fb649820"
+    },
+    {
+      "file": "assets/Sound/브레인빌리지v_03_튜토리얼_02가람이/03_양팔을_3초간_머리_위로_들어주세요.mp3",
+      "bytes": 46222,
+      "sha256": "1eafedc845bef1d9916189ef107f3661ec1a890f5b1672d5406c853fe05e0c44"
+    },
+    {
+      "file": "assets/Sound/브레인빌리지v_03_튜토리얼_02가람이/04_당신의_성별을_선택해주세요.mp3",
+      "bytes": 39310,
+      "sha256": "db3187009eafeeeb2a67fedc4f727b251214f3df4df5caba2bd7a95e3f25daba"
+    },
+    {
+      "file": "assets/Sound/브레인빌리지v_03_튜토리얼_02가람이/05_청기를_들고_있는_사람이_양손을_위로_들어주세요.mp3",
+      "bytes": 56974,
+      "sha256": "13677997d72daadb0d83b6eccf2e2cb6d5d9c52e1c94a98485fc3998c7af33be"
+    },
+    {
+      "file": "assets/Sound/브레인빌리지v_03_튜토리얼_02가람이/06_백기를_들고_있는_사람이_양손을_위로_들어주세요.mp3",
+      "bytes": 56974,
+      "sha256": "ec7626aa18da3c62ecc13fde2304dc1dcd9e093c63fa0624ac5b848e1141e9e7"
+    },
+    {
+      "file": "assets/Sound/브레인빌리지v_03_튜토리얼_02가람이/08_두_사람_모두_오른손을_들어주세요.mp3",
+      "bytes": 44302,
+      "sha256": "3e433dbbd1b6c390e4b90ee30156938170e499f906a5a7e0c12675df00a8c974"
+    },
+    {
+      "file": "assets/Sound/브레인빌리지v_03_튜토리얼_02가람이/09_두_사람_모두_양손을_들어주세요.mp3",
+      "bytes": 41230,
+      "sha256": "a4ba7e080fd52c92fd5daf289bceb56c0643f24cfd9a9636e66d6f547618c33f"
+    },
+    {
+      "file": "assets/Sound/짧은휘슬.m4a",
+      "bytes": 20692,
+      "sha256": "bd14b3da072a11cebf3a81786595214e4e7dcfddf8d910c7412c4a0531330c20"
+    },
+    {
+      "file": "assets/Sprite/fa_blue_up-1.png",
+      "bytes": 318028,
+      "sha256": "ac8df222ed908cc045ef0b30e8f5a4f9d4768513c886b9ebcb9abae9136fa0b6",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/fa_blue_up-2.png",
+      "bytes": 316519,
+      "sha256": "3dfa3c50e96bc5918197415955a2d9c5b8ab0fef266c0973764af0e3388309c9",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/fa_blue_up-3.png",
+      "bytes": 321369,
+      "sha256": "1cf1202b8fe37afbcc012795db9a623b941c90d3dcab73883f48ccdf3b838d9a",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/fa_blue_up.png",
+      "bytes": 332536,
+      "sha256": "ff643b424efccb570941defd663b99ae7210ecaed4f98b5b1d4d25899c24dfad",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/fa_white_up-1.png",
+      "bytes": 309844,
+      "sha256": "ac2caeacaf7b3cfc0aa58b0dc6e0d13403e2adc1366d366d4a8df87f70994ad2",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/fa_white_up-2.png",
+      "bytes": 307119,
+      "sha256": "0bf516ea288a73d3cb01e095a3bb00fcd89c18cf5f4d67a3c0cbb315819d8b3b",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/fa_white_up-3.png",
+      "bytes": 312671,
+      "sha256": "eafd2df91853fa8f5ad2e3348541b36975066522f887e718f004cb643f9410f5",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/fa_white_up.png",
+      "bytes": 323771,
+      "sha256": "26bbf9377e8eeb3be05dcbeec30b6242d2dae7ff0cf6cd042e0f4bd22641078c",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/face_angry_left.png",
+      "bytes": 22792,
+      "sha256": "c2fc3e533ba477c810c7c4a54a714a00e3ebc48182273d328373506424e252c7",
+      "width": 300,
+      "height": 300
+    },
+    {
+      "file": "assets/Sprite/face_angry_right.png",
+      "bytes": 23599,
+      "sha256": "c7d6526854047196f162dfb7823284690427ea181a9028d387920899bcc046d4",
+      "width": 300,
+      "height": 300
+    },
+    {
+      "file": "assets/Sprite/face_good.png",
+      "bytes": 19966,
+      "sha256": "2965e071983ddf2e95bc095e096c356bb826c302d4dff296383d097f63732868",
+      "width": 295,
+      "height": 296
+    },
+    {
+      "file": "assets/Sprite/face_sad.png",
+      "bytes": 35110,
+      "sha256": "f60f0bb57127ab3b18e4fb1a31c74f908a2921138cb82ba51d391b5c0d9b7c89",
+      "width": 300,
+      "height": 300
+    },
+    {
+      "file": "assets/Sprite/face_stand.png",
+      "bytes": 25199,
+      "sha256": "afa68eb7f76d2bdda9150e97b57a4595522a4f723f991ffa24fabd0ed220adae",
+      "width": 300,
+      "height": 300
+    },
+    {
+      "file": "assets/Sprite/ma_blue_up_selected-1.png",
+      "bytes": 330613,
+      "sha256": "d801fabdb3cefc43716fde1974f175d3e3dd321392cbbfdf8625e3a60191fc63",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/ma_blue_up_selected-2.png",
+      "bytes": 328497,
+      "sha256": "c3cc7d1619980b32584a276198a6d785ae2e853fc5f2948fd01ada87437a2bf7",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/ma_blue_up_selected-3.png",
+      "bytes": 350614,
+      "sha256": "a0e7042acd202b1b9c723e5d73f1f0ec06cfb23495af7fb410b93dcd632b4a59",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/ma_blue_up_selected.png",
+      "bytes": 346847,
+      "sha256": "98520a98d14bde1bd0cb4278c621a83cd09b398970d615b4d141992151615471",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/ma_white_up-1.png",
+      "bytes": 317968,
+      "sha256": "9ae2f12a4e705f4fe4c21d6703642f79cad20afe429ecf3ec7612408dbce9ee5",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/ma_white_up-2.png",
+      "bytes": 318066,
+      "sha256": "dae9aa9639d61bbf9f372a67790b47913dcfd667e42136292490fcc37fafd8e2",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/ma_white_up-3.png",
+      "bytes": 338397,
+      "sha256": "8b4662aa3d1993e1b2134b3ec2dc64adeb4bf06e263e2b224e4097d0fad242e3",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/Sprite/ma_white_up.png",
+      "bytes": 332117,
+      "sha256": "a82db04ccd05a996a410614034c898bf6705b744748a4e519e638b59f18c2803",
+      "width": 800,
+      "height": 800
+    },
+    {
+      "file": "assets/btn_home.png",
+      "bytes": 728692,
+      "sha256": "2d886206c369d854c21f5bc529bde75d21a5ae12dbc9ef083a074eac65de9f9a",
+      "width": 2172,
+      "height": 724
+    },
+    {
+      "file": "assets/btn_retry.png",
+      "bytes": 734535,
+      "sha256": "80376a3dc89dbd8eb7cf418edd432ccba67fbeea7452ace64e0793385483ca53",
+      "width": 2172,
+      "height": 724
+    },
+    {
+      "file": "assets/btn_yes.png",
+      "bytes": 591504,
+      "sha256": "d59d713eb72e156e7995599d560ec9da3acde748caca2cd3bbe6c4e47c096345",
+      "width": 2172,
+      "height": 724
+    },
+    {
+      "file": "assets/count1.png",
+      "bytes": 343425,
+      "sha256": "2347a66e21de09daaf67f9b0d344deed869fe2fefce87d62809c1ed0b868abe1",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/count2.png",
+      "bytes": 526016,
+      "sha256": "883bc19613814fcf44e7bf32e3d003ea41fc6cc25353a819c80d617d6659f8c2",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/count3.png",
+      "bytes": 507942,
+      "sha256": "d6fb55bf1ef9a14cd94eed6854d4282d632f25a3346a2da622bf290ac92c0055",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/count_start.png",
+      "bytes": 409023,
+      "sha256": "9faa0f78000381363b68b7cb073bdaaa53845c31105fe892f5e696f2f4f66d2b",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/end.png",
+      "bytes": 624427,
+      "sha256": "fa85fb3f0545c7750bc053be64a2efac917ca70fd2787ab2fb756f4194a578b1",
+      "width": 1448,
+      "height": 1086
+    },
+    {
+      "file": "assets/face_zone.png",
+      "bytes": 17779,
+      "sha256": "85b49dd570e0caf47f5237878a641b52478753c726149b0a480f749a2316beaa",
+      "width": 700,
+      "height": 770
+    },
+    {
+      "file": "assets/game-b/background.png",
+      "bytes": 2269466,
+      "sha256": "77cdb8a3fd52fd0bca452aa2d3a8249e54f59afe9890e8afc3eac86174986998",
+      "width": 1536,
+      "height": 864
+    },
+    {
+      "file": "assets/game-b/boy_down.png",
+      "bytes": 806988,
+      "sha256": "1f3e414e2a00d4f434ceec028e34c8f5aaf7d9a9e294ecb81c8d48f9138e5d4b",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/boy_stand.png",
+      "bytes": 402605,
+      "sha256": "9a00e551d900cdd55c88317843617aa093565883669e1eedc1cb23a5c69464fb",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/boy_tutorial.png",
+      "bytes": 381761,
+      "sha256": "223c6bb1e39a814be0c1f8f90bf6cb530becad9ac8b0c44298cf705447e52cbe",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/boy_up.png",
+      "bytes": 682645,
+      "sha256": "18be9853c85e3b5adf2d2299c9e923a5437732ce96aa338deb9eab52b90425f5",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/family-boy.png",
+      "bytes": 809799,
+      "sha256": "4030c4b7e501e1addfef0b96a6518aae0e6324edfa0c241be0a4d27d5476e492",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "assets/game-b/family-cat.png",
+      "bytes": 884299,
+      "sha256": "c5a252a97f9896e89141df8ca7fbf06a495e67e7ab0c61ba9650df2e7d933ba3",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "assets/game-b/family-dog.png",
+      "bytes": 730656,
+      "sha256": "693b08e651418ba72cb5c0a5159b56f06b32e056bb1aa40588ee933f7bc290bd",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "assets/game-b/family-girl.png",
+      "bytes": 995091,
+      "sha256": "7ba8ab0f96cdf5673ff50c9acad7742809879d1b920452f4fdffa13cb8dbb75e",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "assets/game-b/fire_big_01.png",
+      "bytes": 622936,
+      "sha256": "ae48aa383d388afc85ecf29fded68f9a209686771fb8c20a17f78a797fc69f8c",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_big_02.png",
+      "bytes": 651511,
+      "sha256": "dbfa5e6a38247a6c69f9f6c2dc1edf45846cc4897f71a32b26e6bc253b788fc1",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_big_03.png",
+      "bytes": 769909,
+      "sha256": "4e074c0a4be6145b335c78a7595a2c2107d5dbb99ce3a3c49482b8bfd8285dba",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_big_04.png",
+      "bytes": 419551,
+      "sha256": "2e0fa865738b56b08da53e338c1af8948e17e11d6daf500abbe9e6c85e931154",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_big_05.png",
+      "bytes": 142842,
+      "sha256": "87ab938ab4e3691e275d952822c4029e7036209b8a6ae78ffad652d4dc46b5ee",
+      "width": 363,
+      "height": 475
+    },
+    {
+      "file": "assets/game-b/fire_big_06.png",
+      "bytes": 149243,
+      "sha256": "f8075096cd4fa9c548d0c0b8c14f05b9b2288a666302803dce70318c1d6df534",
+      "width": 343,
+      "height": 465
+    },
+    {
+      "file": "assets/game-b/fire_big_07.png",
+      "bytes": 182668,
+      "sha256": "7182b73cffe8492b98a87bb9293094b1c83f8824bd6e6e3949005f288eb467bc",
+      "width": 351,
+      "height": 474
+    },
+    {
+      "file": "assets/game-b/fire_left_01.png",
+      "bytes": 571015,
+      "sha256": "e303ba30ab43be9b93ddc885d2f12c6385d9f748f924c87975048a6c3d4a21c2",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_left_02.png",
+      "bytes": 615847,
+      "sha256": "2e0cf84d28e09e213ff42d7e11e084c2ecf7c6baeb58fcac4d5aaeea7e512163",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_left_03.png",
+      "bytes": 605351,
+      "sha256": "abce40322630b273b36db1cccca85658d1c5b7ff925a39fa8d46517e85bf52f5",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_left_04.png",
+      "bytes": 581391,
+      "sha256": "9288d8ace032235c7c76724c8a36985cb0a2922a6b206b0f41d36ef62eef7a9d",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_right_01.png",
+      "bytes": 571015,
+      "sha256": "e303ba30ab43be9b93ddc885d2f12c6385d9f748f924c87975048a6c3d4a21c2",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_right_02.png",
+      "bytes": 615847,
+      "sha256": "2e0cf84d28e09e213ff42d7e11e084c2ecf7c6baeb58fcac4d5aaeea7e512163",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_right_03.png",
+      "bytes": 605351,
+      "sha256": "abce40322630b273b36db1cccca85658d1c5b7ff925a39fa8d46517e85bf52f5",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_right_04.png",
+      "bytes": 581391,
+      "sha256": "9288d8ace032235c7c76724c8a36985cb0a2922a6b206b0f41d36ef62eef7a9d",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_stand_01.png",
+      "bytes": 462364,
+      "sha256": "6b02e6614eba64ad4581faf9cefce7e11324d94f34a6e1b2cfbc80ee3509c733",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_stand_02.png",
+      "bytes": 523181,
+      "sha256": "6b6dd571429ce70bd769aa7e3c351cca7cb95444c46c2bf73b1067064c7300bf",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_stand_03.png",
+      "bytes": 455577,
+      "sha256": "7e9663049ad7d237031bfbf0c39fda0c811b339d5c81cc4c9553784b8c04e58b",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_stand_04.png",
+      "bytes": 541070,
+      "sha256": "316c8dac25a596e2dee7d7198b9d9ed5c6fd0317dec19cd5ed635ebca0993841",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_start_01.png",
+      "bytes": 100106,
+      "sha256": "9de1db762e3c565b2a4744d4590432df571582aa4aab97b91b64f92029983dfd",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_start_02.png",
+      "bytes": 263833,
+      "sha256": "cd557b8a4bcdabef9337125521598c9452e14ca1ac053809386671f61128e65a",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_start_03.png",
+      "bytes": 389426,
+      "sha256": "2de6f0834096fa8eb12489aca4ae347c13da2fac36b487b2ccad952e338a89d8",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/fire_start_04.png",
+      "bytes": 573904,
+      "sha256": "652f5d57b330fe802b790a84ec7b2fa18a9d9438631031de35140fe9e19792c4",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/firewood.png",
+      "bytes": 434242,
+      "sha256": "7c4153b377180e1192b51511c903614f8ac39aa7616965f6853254f5a9b61f82",
+      "width": 1402,
+      "height": 1122
+    },
+    {
+      "file": "assets/game-b/girl_down.png",
+      "bytes": 803276,
+      "sha256": "131423b592e794122a8c57396245a02acbcd7e455745a902e076d8728f985dfd",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/girl_stand.png",
+      "bytes": 418728,
+      "sha256": "e7f93e563e5548613116faded7d09f4f659b8ba569e9c76203d7e6b7bb7606b3",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/girl_tutorial.png",
+      "bytes": 397211,
+      "sha256": "898623158f19c4181eb849a9135e79a2510ade86f8d5bc5645ed5273dce0c743",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/girl_up.png",
+      "bytes": 665703,
+      "sha256": "c5eda31d4ed699f901e5ad0aba441758f84ae6c56ee138822d859fc460c421ad",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-b/heart.png",
+      "bytes": 135706,
+      "sha256": "e00064f5b57ed40a6c711568878b9fe9d50302076c0e3ba16bf69ececd7026ba",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "file": "assets/game-b/report-background.png",
+      "bytes": 2228676,
+      "sha256": "f1987c173b58cd06bbee681eda65bee0a3105dd210b94d592b27a328475fb2bf",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "file": "assets/game-b/report-flame-empty.png",
+      "bytes": 196688,
+      "sha256": "d8eadd4ee09ac85edf494aad4806b6840653f4b5ecbfcee3fbedbdba14bb15ad",
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "file": "assets/game-b/report-p1-card.png",
+      "bytes": 803591,
+      "sha256": "93045492113676d0a915fc9d32a28738fc4f3d958541de1a01a61170fb9c7b60",
+      "width": 1770,
+      "height": 755
+    },
+    {
+      "file": "assets/game-b/report-p1-panel.png",
+      "bytes": 959447,
+      "sha256": "76f39cc1546475a779a85401b1f11eb9d0b9e36b433608d23be79aad80812c1f",
+      "width": 1399,
+      "height": 726
+    },
+    {
+      "file": "assets/game-b/report-p2-card.png",
+      "bytes": 863505,
+      "sha256": "c9156fa8eff01fb4b5d8a4164dae08261281565c4ca3d10a57f68a78d4d488bd",
+      "width": 1770,
+      "height": 755
+    },
+    {
+      "file": "assets/game-b/report-p2-panel.png",
+      "bytes": 984843,
+      "sha256": "1d63951e7a9da8e69c431577a6ebed6d3deeb29867a832406b21166440472d4b",
+      "width": 1399,
+      "height": 726
+    },
+    {
+      "file": "assets/game-b/result-background.png",
+      "bytes": 316609,
+      "sha256": "3b7cab607c380c57ff318fedb42a8d68facdb9891fd7ec14d7b9b90223797de8"
+    },
+    {
+      "file": "assets/game-b/tutorial-background.png",
+      "bytes": 405259,
+      "sha256": "846c1f7badff3ab285fd3904b78726455839192d675b1c7649357e3d15ab661f",
+      "width": 1024,
+      "height": 577
+    },
+    {
+      "file": "assets/game-c/brown-down.png",
+      "bytes": 387612,
+      "sha256": "3cfed70b1005bf8f8cf1f463bd2fc9ba9b5236d6063285b64d2cb08bcfd35f00",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/brown-idle.png",
+      "bytes": 358782,
+      "sha256": "635e7b9d2c37dcb1bea0f8b82b4e242eca680b3cde7a3729fd1eab545ae7e3c8",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/brown-squeeze-1.png",
+      "bytes": 342543,
+      "sha256": "083920ff0467b19e80bbef7b1a1c8322f8fa02e6abf573e8a1e9bb6ae47fcc69",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/brown-squeeze-2.png",
+      "bytes": 358028,
+      "sha256": "131910bd46a581a36baad51d5383609e0e0bdc4b4aeca925d49b7968dffcd586",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/brown-up.png",
+      "bytes": 477847,
+      "sha256": "5db08b03c2a1dee63e179e4d654e8d7e7a5fea972129eae28058e63ec647fb55",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/dough-1.png",
+      "bytes": 162202,
+      "sha256": "19d425b1f1316defd0a2498d19925556a6836ae5f655416d20af304aa9689242",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/dough-2.png",
+      "bytes": 172280,
+      "sha256": "d6671c401f5702cc51b96c13d325af6d06829160061f6eaa6c9e4aa178b4b294",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/dough-3.png",
+      "bytes": 171289,
+      "sha256": "4dbd917c5017ff0541b671cfd7dd16f7616619bd0c87f1850e0e1fba8a7ed798",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/dough-4.png",
+      "bytes": 144289,
+      "sha256": "176dff22dd4d6c4e01d19e7803071746b0f3fcdcb06077967462e113144f3277",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/hand-zone.png",
+      "bytes": 11080,
+      "sha256": "91e47a288fa18030173abc088fb450c81b5a8118f405ac9ff7e0cb0ed06a6714",
+      "width": 450,
+      "height": 496
+    },
+    {
+      "file": "assets/game-c/mix-feedback-sheet.png",
+      "bytes": 414865,
+      "sha256": "ed52eb828d52b46c6e44d5d6821a270b8322be1f1f47c219aa02cf7a20249a58",
+      "width": 2172,
+      "height": 724
+    },
+    {
+      "file": "assets/game-c/pink-down.png",
+      "bytes": 437969,
+      "sha256": "ea3b60a3728fc6f30dd00aba2a525b95817ccdb3853fbd4172180ff6c84ed528",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/pink-idle.png",
+      "bytes": 376473,
+      "sha256": "35192630e99ac319fc77d711a909f2d741aa6c2c975cce1b3e9f32e6fcd1adf8",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/pink-squeeze-1.png",
+      "bytes": 341445,
+      "sha256": "433c9ed9cecc8d72e274dfe23154a2a8ee169a138f33401d6f75cbc577777807",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/pink-squeeze-2.png",
+      "bytes": 365940,
+      "sha256": "9566c6a78a841a3cad4cd346d05dfdf09cfc79b84d9e6c74c6f8ef101d5d0a54",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/pink-up.png",
+      "bytes": 508816,
+      "sha256": "5e684ec25e6b0eff277c52110fcd94a7857c61f6c9779c89e637eddd27e150e8",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "file": "assets/game-c/play-background-original.png",
+      "bytes": 1326844,
+      "sha256": "a5010a316d87c44a82945dc36a0dc4093573694570410e6e58c194d169d9f302",
+      "width": 1671,
+      "height": 941
+    },
+    {
+      "file": "assets/game-c/play-background.png",
+      "bytes": 509350,
+      "sha256": "6ea0580a702488ec443b624dccb4213c2e9f982c4e43c38fe502d1de78925a4f",
+      "width": 1024,
+      "height": 577
+    },
+    {
+      "file": "assets/game-c/play-speech-bubble.png",
+      "bytes": 769900,
+      "sha256": "8c72f354c192bf9622d8636ca8c05f52e820e2bf36a7df6de7f91589edc660f8",
+      "width": 1353,
+      "height": 1024
+    },
+    {
+      "file": "assets/game-c/pound-feedback-sheet.png",
+      "bytes": 366243,
+      "sha256": "888be9a74d90430a5c025d57df748a93a40f300e6adacfd1df32016d14531427",
+      "width": 2172,
+      "height": 724
+    },
+    {
+      "file": "assets/game-c/rabbit-select-sheet.png",
+      "bytes": 570687,
+      "sha256": "a45c4fa6213b12e73b392783d1912b4fbede8ef5638694e8b88f87f1c3dcc07f",
+      "width": 1264,
+      "height": 843
+    },
+    {
+      "file": "assets/game-c/rating-empty.png",
+      "bytes": 33677,
+      "sha256": "fecee8d27103ae4b42ef475285a76a36c65679ed241e178882228c7bdb7abdab",
+      "width": 254,
+      "height": 182
+    },
+    {
+      "file": "assets/game-c/rating-full.png",
+      "bytes": 57305,
+      "sha256": "603732e4beea824bcedc01b3f4cba1c597129c5e54d3c3135f7ef668b72cc3b4",
+      "width": 254,
+      "height": 182
+    },
+    {
+      "file": "assets/game-c/report-p1-card.png",
+      "bytes": 803591,
+      "sha256": "93045492113676d0a915fc9d32a28738fc4f3d958541de1a01a61170fb9c7b60",
+      "width": 1770,
+      "height": 755
+    },
+    {
+      "file": "assets/game-c/report-p1-panel.png",
+      "bytes": 959447,
+      "sha256": "76f39cc1546475a779a85401b1f11eb9d0b9e36b433608d23be79aad80812c1f",
+      "width": 1399,
+      "height": 726
+    },
+    {
+      "file": "assets/game-c/report-p2-card.png",
+      "bytes": 996038,
+      "sha256": "f85cc391dfee972d922957fb0f0c3a7d978e75ee4508d2a20b6c572f33a3caa1",
+      "width": 1770,
+      "height": 755
+    },
+    {
+      "file": "assets/game-c/report-p2-panel.png",
+      "bytes": 984843,
+      "sha256": "1d63951e7a9da8e69c431577a6ebed6d3deeb29867a832406b21166440472d4b",
+      "width": 1399,
+      "height": 726
+    },
+    {
+      "file": "assets/game-c/result-over50.png",
+      "bytes": 2540020,
+      "sha256": "ee2c6ce45c5fceec9c93d01b3c09f0cf1e0c387ebd5d7004c67106c9d6e0cb30",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "file": "assets/game-c/result-under50.png",
+      "bytes": 2415780,
+      "sha256": "c8d5ccdaf8c6ccf2e986d677da60f5d3eda9d2083c127fca0479abfd5997c95e",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "file": "assets/game-c/rice-cake-sheet.png",
+      "bytes": 1582037,
+      "sha256": "14127e393d7b1db3c5d39dde0e81c65dc55c1e8666a18df1e5678064c29a0f75",
+      "width": 2400,
+      "height": 1309
+    },
+    {
+      "file": "assets/game-c/score-moon.png",
+      "bytes": 362729,
+      "sha256": "3ef352e0a621ffbd267d11edc90e707d2965bfa25ace8b4fbab354dad6d00848",
+      "width": 1366,
+      "height": 1024
+    },
+    {
+      "file": "assets/game-c/speech-bubble.png",
+      "bytes": 769900,
+      "sha256": "8c72f354c192bf9622d8636ca8c05f52e820e2bf36a7df6de7f91589edc660f8",
+      "width": 1353,
+      "height": 1024
+    },
+    {
+      "file": "assets/game-c/tutorial-background.png",
+      "bytes": 404198,
+      "sha256": "9fc7fe736f7ac47803142209bd964e0c5c65da4921c080fede263a7a4df85600",
+      "width": 1024,
+      "height": 577
+    },
+    {
+      "file": "assets/game-c/wood-plate.png",
+      "bytes": 506913,
+      "sha256": "33549cb10a22795fc297606a53d9bb75d8156d23af250de16159b1eb2dc7de9a",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "file": "assets/game-d/background.png",
+      "bytes": 1311955,
+      "sha256": "17fbc2a1ebaaf0415d9e6864ce7cbeedc8439f7d3105355f7b36a20ce16dcdd7",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "file": "assets/game-d/characters/female-jamjam-sheet-selected.png",
+      "bytes": 670843,
+      "sha256": "d4424158408b90a5401bbcb27146bdde9a28e297d8699fb8fa1664aa38ff14a2",
+      "width": 2172,
+      "height": 724
+    },
+    {
+      "file": "assets/game-d/characters/female-profile-v3.png",
+      "bytes": 394854,
+      "sha256": "d12494027f5cd94d139e39afae17a1c6f9fe4b8238914d370d046b1ad0632b09",
+      "width": 1448,
+      "height": 1086
+    },
+    {
+      "file": "assets/game-d/characters/male-jamjam-sheet-selected.png",
+      "bytes": 690999,
+      "sha256": "dda2e0609e4dec11039a41ce79f63c24b963277bea8630b206734349fd931750",
+      "width": 2172,
+      "height": 724
+    },
+    {
+      "file": "assets/game-d/characters/male-profile-selected.png",
+      "bytes": 559304,
+      "sha256": "aebe8a936bfeb9bf209658e358a6e149db1bfbc6ee7fad6a60dfdc345c7eb1f7",
+      "width": 1448,
+      "height": 1086
+    },
+    {
+      "file": "assets/game-d/source/basket-back.png",
+      "bytes": 502045,
+      "sha256": "6a123af83a96b806e1c2af7a0b2895f67d339fba6f150dcfa6a05be5611f2a15",
+      "width": 744,
+      "height": 515
+    },
+    {
+      "file": "assets/game-d/source/belt.png",
+      "bytes": 330778,
+      "sha256": "83594a6a4945d5f3a9219c40c54db1c7ef86d150b278c21d27268d786df3456e",
+      "width": 1374,
+      "height": 1145
+    },
+    {
+      "file": "assets/game-d/source/complete-mark.png",
+      "bytes": 245868,
+      "sha256": "3743ac826313f64fb9fc41f4bb219c40720587c216ddd01ab5043dd88c59d65a",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "file": "assets/game-d/source/conveyor.png",
+      "bytes": 422566,
+      "sha256": "e6659c3f95378b9abf36facaa2cc2534d43a861d8509442ab57fc8ef1634ea76",
+      "width": 1374,
+      "height": 1145
+    },
+    {
+      "file": "assets/game-d/source/food-sheet.png",
+      "bytes": 625145,
+      "sha256": "3079f7f4f59f2aa4253dfc7c54bbd4a2419e93655ba57320aee0580376df7209",
+      "width": 1774,
+      "height": 887
+    },
+    {
+      "file": "assets/game-d/source/list.png",
+      "bytes": 1049797,
+      "sha256": "4e12014288a4380250caf2675a157d50ae776007f68d12a97e9a1f6724494231",
+      "width": 1678,
+      "height": 937
+    },
+    {
+      "file": "assets/game-d/source/milk-sheet.png",
+      "bytes": 693399,
+      "sha256": "0b6414005b1538250bcecd933a5c040bbfb001f7e6b52409c31b33d8d8f6017d",
+      "width": 1774,
+      "height": 887
+    },
+    {
+      "file": "assets/game-d/source/produce-sheet.png",
+      "bytes": 518973,
+      "sha256": "500d8933d5e757c5c9c2137a8592222faf3a15ce0bffa692421652e0680febb3",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "file": "assets/game-d/source/stationery-sheet.png",
+      "bytes": 580573,
+      "sha256": "a9ac6d58422c6db652ff0550e0b322027a5be37aeff8ac57839924a02e97817b",
+      "width": 1774,
+      "height": 887
+    },
+    {
+      "file": "assets/game_bg.png",
+      "bytes": 316609,
+      "sha256": "3b7cab607c380c57ff318fedb42a8d68facdb9891fd7ec14d7b9b90223797de8"
+    },
+    {
+      "file": "assets/map_youngchavill.png",
+      "bytes": 3592607,
+      "sha256": "6e36743a7dc5b8ef2173cb9a50da5782b2bed3a703a64b5ecde33047e63973cd",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "assets/prize_20.png",
+      "bytes": 1182245,
+      "sha256": "b2655fbc832f233aec8ec9872ad5bc5c26fff2fdb8d23e6c35dd2d036ecf43b7",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/prize_40.png",
+      "bytes": 1462059,
+      "sha256": "cf4547da06c0674cc900d7ba73924103d5479f63b77cbffdc560479c0813f185",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/prize_60.png",
+      "bytes": 1655359,
+      "sha256": "12d51d720cd6972b18215cf1af06162c09a9533819f2d1c58d871081769501ec",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/prize_80.png",
+      "bytes": 1743058,
+      "sha256": "b55af534cf0947fb2b5e18853eb2b8762907a2b622c67bb8932b82f95e7b967b",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/prize_90.png",
+      "bytes": 1464232,
+      "sha256": "81ad6d7610570b177100a17d70baaeea99623f3e2a6625f94c258d25e3c22baa",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/result_banner.png",
+      "bytes": 977513,
+      "sha256": "eee94e48088e7e248eb17cf428300aea29833390005ed466ed3d3611b6c8b974",
+      "width": 2172,
+      "height": 724
+    },
+    {
+      "file": "assets/result_feedback_panel.png",
+      "bytes": 983530,
+      "sha256": "666592914a96195065b6fcc284cbd968c8caed76a1f8ed9ee8c4480b4c7ffe48",
+      "width": 1448,
+      "height": 1086
+    },
+    {
+      "file": "assets/result_score_panel.png",
+      "bytes": 1138656,
+      "sha256": "be278b8b4383a7089d5d954514e4bf7c109d771978aeb1b342d51b1de7982e36",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "file": "assets/sheet_effects.png",
+      "bytes": 1079258,
+      "sha256": "731f7dce27c9dba5035793c6825386d71e7bf1216b323dcaa72cc983bca01ff3",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "assets/sheet_tut_chars.png",
+      "bytes": 1711452,
+      "sha256": "7d4528ebc1e53f477b189ae131428e011360c6f0c83e325067d685dbf2020307",
+      "width": 2400,
+      "height": 1792
+    },
+    {
+      "file": "assets/title_main.jpg",
+      "bytes": 638534,
+      "sha256": "3e742c6f927e100023bbd58151f474ce347985580d36031d84acf35cf90f16e5"
+    },
+    {
+      "file": "assets/title_youngchavill.png",
+      "bytes": 1011039,
+      "sha256": "1b573b31bb7e290e24c569c4b23f69c1d685c2c6c92bfbd9342066467f9a6d0e",
+      "width": 2584,
+      "height": 1454
+    },
+    {
+      "file": "assets/tut_bg.png",
+      "bytes": 405259,
+      "sha256": "846c1f7badff3ab285fd3904b78726455839192d675b1c7649357e3d15ab661f",
+      "width": 1024,
+      "height": 577
+    },
+    {
+      "file": "fonts/neodgm.woff2",
+      "bytes": 38192,
+      "sha256": "a345cf3aaaf00c699f4770709bab4827022ebc99a8b9b839832299d49c6cdae1"
+    },
+    {
+      "file": "models/gesture_recognizer.task",
+      "bytes": 8373440,
+      "sha256": "97952348cf6a6a4915c2ea1496b4b37ebabc50cbbf80571435643c455f2b0482"
+    },
+    {
+      "file": "models/pose_landmarker_lite.task",
+      "bytes": 5777746,
+      "sha256": "59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a"
+    },
+    {
+      "file": "wasm/vision_wasm_internal.js",
+      "bytes": 330871,
+      "sha256": "cb02b4055399393acb242851e241477497b3b862d565ab6daeb40b24fe8b7712"
+    },
+    {
+      "file": "wasm/vision_wasm_internal.wasm",
+      "bytes": 11153617,
+      "sha256": "6a5c64584c2ab61c763b6e204afbdbc7ce1caf7f5216187322bca8df94f646bc"
+    },
+    {
+      "file": "wasm/vision_wasm_module_internal.js",
+      "bytes": 330905,
+      "sha256": "b03642e858f88a02f628ba808ea0f7c6c0036aa282164d06c3071b77239f986c"
+    },
+    {
+      "file": "wasm/vision_wasm_module_internal.wasm",
+      "bytes": 11153641,
+      "sha256": "617b8e0248dbd27e9d7ece4218004eae4cefb499196d1bb4fa0e3fef21708756"
+    },
+    {
+      "file": "wasm/vision_wasm_nosimd_internal.js",
+      "bytes": 330665,
+      "sha256": "a3caad71acce4a3abc4451935a33d9834b2c90dba9fd4b6f95bdb621a4db41a9"
+    },
+    {
+      "file": "wasm/vision_wasm_nosimd_internal.wasm",
+      "bytes": 10481398,
+      "sha256": "8a3092d34c79d3f57e6ba8592105e8a90f6b07c27891ffecd14cca428bfd3e31"
+    }
+  ]
+}

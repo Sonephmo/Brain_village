@@ -1,0 +1,115 @@
+{
+  "revision": "selected-temporary-20260930",
+  "status": "temporary",
+  "source": "User-selected male profile; matching female v3 profile; each side sheet generated as one three-pose image with built-in imagegen",
+  "characters": {
+    "male": {
+      "profile": {
+        "file": "male-profile-selected.png",
+        "sheet": [
+          1448,
+          1086
+        ],
+        "rect": [
+          403,
+          0,
+          600,
+          1086
+        ]
+      },
+      "open": {
+        "file": "male-jamjam-sheet-selected.png",
+        "sheet": [
+          2172,
+          724
+        ],
+        "rect": [
+          151,
+          0,
+          600,
+          724
+        ]
+      },
+      "closing": {
+        "file": "male-jamjam-sheet-selected.png",
+        "sheet": [
+          2172,
+          724
+        ],
+        "rect": [
+          830,
+          0,
+          600,
+          724
+        ]
+      },
+      "closed": {
+        "file": "male-jamjam-sheet-selected.png",
+        "sheet": [
+          2172,
+          724
+        ],
+        "rect": [
+          1509,
+          0,
+          600,
+          724
+        ]
+      }
+    },
+    "female": {
+      "profile": {
+        "file": "female-profile-v3.png",
+        "sheet": [
+          1448,
+          1086
+        ],
+        "rect": [
+          422,
+          0,
+          600,
+          1086
+        ]
+      },
+      "open": {
+        "file": "female-jamjam-sheet-selected.png",
+        "sheet": [
+          2172,
+          724
+        ],
+        "rect": [
+          217,
+          0,
+          600,
+          724
+        ]
+      },
+      "closing": {
+        "file": "female-jamjam-sheet-selected.png",
+        "sheet": [
+          2172,
+          724
+        ],
+        "rect": [
+          829,
+          0,
+          600,
+          724
+        ]
+      },
+      "closed": {
+        "file": "female-jamjam-sheet-selected.png",
+        "sheet": [
+          2172,
+          724
+        ],
+        "rect": [
+          1457,
+          0,
+          600,
+          724
+        ]
+      }
+    }
+  }
+}
